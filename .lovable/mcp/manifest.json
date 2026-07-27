@@ -1,0 +1,353 @@
+{
+  "version": 1,
+  "sdk_version": "0.22.2",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://tdlxebwkmpgqaceoabsj.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "houskase-mcp",
+      "version": "0.2.0",
+      "title": "Houskase"
+    },
+    "tools": [
+      {
+        "name": "search_products",
+        "title": "Search Houskase products",
+        "description": "Search the Houskase catalog by keyword and/or category. Returns product name, slug, short description, price, MOQ, and stock.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free-text search across name and description."
+            },
+            "category_slug": {
+              "type": "string",
+              "description": "Filter by category slug (optional)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max rows to return (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_product",
+        "title": "Get product details",
+        "description": "Fetch full details for a single Houskase product by id or slug — description, features, images, pricing, and stock.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Product UUID."
+            },
+            "slug": {
+              "type": "string",
+              "description": "Product slug (alternative to id)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_categories",
+        "title": "List product categories",
+        "description": "List all active product categories on Houskase (name, slug, parent).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_orders",
+        "title": "List my orders",
+        "description": "List the signed-in user's Houskase orders — id, order number, status, payment status, total, placed date. RLS restricts to the caller's own orders.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max rows (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_order",
+        "title": "Get order details",
+        "description": "Fetch full details for one of the signed-in user's Houskase orders — items, shipping address, totals, status. RLS restricts to the caller's own orders.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "order_id": {
+              "type": "string",
+              "description": "Order UUID."
+            },
+            "order_number": {
+              "type": "string",
+              "description": "Order number (alternative to order_id)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_order_timeline",
+        "title": "Get order status timeline",
+        "description": "Return the full status change history for one of the signed-in user's orders — every status transition with a timestamp, plus payment status changes.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "order_id": {
+              "type": "string",
+              "description": "Order UUID."
+            },
+            "order_number": {
+              "type": "string",
+              "description": "Order number (alternative to order_id)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_my_rfqs",
+        "title": "List my quote requests",
+        "description": "List the signed-in user's bulk quote requests (RFQs). RLS restricts to the caller's own RFQs.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Max rows (default 20)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_rfq",
+        "title": "Create bulk quote request (RFQ)",
+        "description": "Create a Houskase bulk quote request (RFQ) for the signed-in user with a list of products, quantities, and optional notes. Returns the RFQ number.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "product_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Product UUID."
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Requested quantity."
+                  },
+                  "target_price": {
+                    "type": "number",
+                    "description": "Optional target price per unit (INR)."
+                  },
+                  "variation_id": {
+                    "type": "string",
+                    "description": "Optional product variation UUID."
+                  }
+                },
+                "required": [
+                  "product_id",
+                  "quantity"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "description": "Line items for the quote request."
+            },
+            "notes": {
+              "type": "string",
+              "description": "Optional message to the sales team."
+            },
+            "company_name": {
+              "type": "string",
+              "description": "Optional company name (for B2B)."
+            },
+            "gst_number": {
+              "type": "string",
+              "description": "Optional GST number (for B2B)."
+            }
+          },
+          "required": [
+            "items"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "initiate_checkout",
+        "title": "Start checkout for my cart",
+        "description": "Create a pending order from the signed-in user's cart and return a checkout URL to complete payment in the browser. Requires a shipping address.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "shipping_address": {
+              "type": "object",
+              "properties": {
+                "full_name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "phone": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "line1": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "line2": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "state": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "pincode": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "country": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "full_name",
+                "phone",
+                "line1",
+                "city",
+                "state",
+                "pincode"
+              ],
+              "additionalProperties": false,
+              "description": "Shipping address for the order."
+            },
+            "notes": {
+              "type": "string",
+              "description": "Optional order notes."
+            },
+            "use_same_billing_address": {
+              "type": "boolean",
+              "description": "Use shipping address for billing (default true)."
+            }
+          },
+          "required": [
+            "shipping_address"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_my_profile",
+        "title": "Get my profile",
+        "description": "Return the signed-in user's Houskase profile (name, phone, buyer type).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

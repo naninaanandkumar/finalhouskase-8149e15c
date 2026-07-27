@@ -1,0 +1,22 @@
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /checkout
+Disallow: /reset-password
+Disallow: /forgot-password
+
+Sitemap: https://houskase.com/sitemap.xml

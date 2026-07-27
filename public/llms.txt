@@ -1,0 +1,23 @@
+# Houskase
+
+> Houskase — Effortless everyday essentials. Premium towels, tissues, cleaning accessories, kitchen & office supplies delivered across India.
+
+Houskase is an Indian direct-to-consumer brand selling premium household essentials, including face & bath towels, sports towels, dry & wet tissues, kitchen items, office supplies, and cleaning accessories. Both retail and bulk (B2B / RFQ) options are available.
+
+## Pages
+
+- [Home](/): Brand overview, featured products, trending reels, promo banners.
+- [Products](/products): Full catalog of towels, tissues, cleaning and household essentials with filters and search.
+- [Bulk Order / RFQ](/rfq): Request-for-quotation flow for wholesale and business buyers.
+- [About Us](/about-us): Brand story, values, cities served, and quality commitments.
+- [Help & FAQ](/help): Orders, shipping, payments, returns, and customer support.
+- [Track Order](/courier-tracking): Look up delivery status using an order or AWB number.
+
+## Guides
+
+
+
+## Optional
+
+- [Login](/login): Customer sign-in.
+- [Signup](/signup): New customer registration.

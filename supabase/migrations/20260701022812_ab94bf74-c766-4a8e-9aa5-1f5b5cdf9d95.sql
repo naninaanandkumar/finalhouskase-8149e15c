@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.create_product_image_signed_url(text, integer) FROM anon, authenticated, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.create_product_image_signed_urls(text[], integer) FROM anon, authenticated, PUBLIC;
