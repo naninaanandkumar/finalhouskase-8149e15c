@@ -526,7 +526,7 @@ var get_my_profile_default = defineTool10({
 });
 
 // src/lib/mcp/index.ts
-var projectRef = "tdlxebwkmpgqaceoabsj";
+var projectRef = "chluqosgiybinocdmrpy";
 var mcp_default = defineMcp({
   name: "houskase-mcp",
   title: "Houskase",
