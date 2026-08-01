@@ -15,7 +15,7 @@ export default function EkartSettings() {
   const [testTracking, setTestTracking] = useState("");
   const { toast } = useToast();
 
-  const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ekart-webhook`;
+  const trackUrl = "https://app.elite.ekartlogistics.in/track/";
 
   const runVerify = async () => {
     setTesting(true);
