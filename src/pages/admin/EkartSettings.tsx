@@ -15,7 +15,7 @@ export default function EkartSettings() {
   const [testTracking, setTestTracking] = useState("");
   const { toast } = useToast();
 
-  const webhookUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ekart-webhook`;
+  const trackUrl = "https://app.elite.ekartlogistics.in/track/";
 
   const runVerify = async () => {
     setTesting(true);
@@ -50,17 +50,20 @@ export default function EkartSettings() {
         <CardHeader className="pb-3"><CardTitle className="text-sm">Credentials</CardTitle></CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
-            Ekart credentials are stored as backend secrets. Ask the developer to add or update the following via secure secrets:
+            Ekart credentials are stored as backend secrets. The official Ekart API authenticates with
+            <code> POST /integrations/v2/auth/token/&#123;client_id&#125;</code> using a username and password —
+            no client secret is used.
           </p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><code>EKART_CLIENT_ID</code> — from your Ekart onboarding</li>
-            <li><code>EKART_CLIENT_SECRET</code> — Ekart API secret</li>
-            <li><code>EKART_WEBHOOK_SECRET</code> — optional; if set, Ekart must send it as <code>x-ekart-signature</code></li>
+            <li><code>EKART_CLIENT_ID</code> — from your Ekart onboarding (used in the auth URL path)</li>
+            <li><code>EKART_USERNAME</code> — Ekart account username</li>
+            <li><code>EKART_PASSWORD</code> — Ekart account password</li>
             <li><code>EKART_BASE_URL</code> — optional; defaults to <code>https://app.elite.ekartlogistics.in</code></li>
           </ul>
           <Alert>
             <AlertDescription className="text-xs">
-              The verify button below tries to fetch a live access token from Ekart using the currently stored credentials.
+              The verify button below fetches a live access token from Ekart using the stored credentials.
+              Tokens are cached until shortly before expiry and refreshed automatically.
             </AlertDescription>
           </Alert>
           <Button onClick={runVerify} disabled={testing}>
@@ -81,15 +84,16 @@ export default function EkartSettings() {
       </Card>
 
       <Card>
-        <CardHeader className="pb-3"><CardTitle className="text-sm">Webhook URL</CardTitle></CardHeader>
+        <CardHeader className="pb-3"><CardTitle className="text-sm">Public tracking link</CardTitle></CardHeader>
         <CardContent className="space-y-2 text-sm">
-          <p className="text-muted-foreground">Give this URL to Ekart so shipment status updates flow into your orders automatically.</p>
+          <p className="text-muted-foreground">Every created shipment can be tracked publicly at this prefix + tracking id.</p>
           <div className="flex gap-2">
-            <Input value={webhookUrl} readOnly className="font-mono text-xs" />
-            <Button variant="outline" size="icon" onClick={() => copy(webhookUrl)}><Copy className="h-4 w-4" /></Button>
+            <Input value={trackUrl} readOnly className="font-mono text-xs" />
+            <Button variant="outline" size="icon" onClick={() => copy(trackUrl)}><Copy className="h-4 w-4" /></Button>
           </div>
         </CardContent>
       </Card>
+
 
       <Card>
         <CardHeader className="pb-3"><CardTitle className="text-sm">Quick tracking test</CardTitle></CardHeader>
