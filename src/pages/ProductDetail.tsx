@@ -262,6 +262,8 @@ export default function ProductDetail() {
     setSelectedVariationId(null);
     setSelectedImage("");
     setQuantity(1);
+    setVariations([]);
+    setProductAttributes([]);
   }, [id]);
 
   useEffect(() => {
