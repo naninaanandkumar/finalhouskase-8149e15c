@@ -1,9 +1,13 @@
 import { useCallback } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { SocialRail } from "@/components/layout/SocialRail";
 import { HeroSection } from "@/components/home/HeroSection";
 import { HeroMarquee } from "@/components/home/HeroMarquee";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
+import { TaggedProductSection } from "@/components/home/TaggedProductSection";
+import { TestimonialsSection } from "@/components/home/TestimonialsSection";
+import { AboutUsSection } from "@/components/home/AboutUsSection";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { DynamicProductSections } from "@/components/home/DynamicProductSections";
 import { TrustSection } from "@/components/home/TrustSection";
