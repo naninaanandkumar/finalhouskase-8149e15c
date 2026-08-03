@@ -160,6 +160,14 @@ async function sendViaSmtp(
   html: string,
   messageId: string,
 ): Promise<SendResult> {
+  if (!cfg.host || !cfg.user || !cfg.pass) {
+    return {
+      ok: false,
+      provider: 'smtp:not-configured',
+      errorCode: 'EMAIL_NOT_CONFIGURED',
+      errorMessage: 'Email sending is not configured yet (missing SMTP_HOST / SMTP_USER / SMTP_PASS).',
+    };
+  }
   const client = new SMTPClient({
     connection: {
       hostname: cfg.host,
@@ -168,6 +176,7 @@ async function sendViaSmtp(
       auth: { username: cfg.user, password: cfg.pass },
     },
   });
+
   try {
     await client.send({
       from: normalizeFromAddress(cfg.from, cfg.user),
