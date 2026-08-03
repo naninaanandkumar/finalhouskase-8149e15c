@@ -100,7 +100,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 left-0 right-0 z-50 bg-card shadow-sm">
-      <AnnouncementBar />
+
       {/* Main Header - White/Card */}
       <div className="bg-card md:border-b md:border-border">
         <div className="container mx-auto pl-3 pr-4 sm:px-4">
