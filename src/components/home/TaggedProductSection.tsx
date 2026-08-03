@@ -104,7 +104,7 @@ export function TaggedProductSection({
             >
               {/* Sunburst label panel */}
               <div
-                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[22%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[16%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
                 aria-hidden="true"
               >
                 <div
@@ -126,7 +126,7 @@ export function TaggedProductSection({
 
               {loading
                 ? [...Array(4)].map((_, i) => (
-                    <div key={i} className="shrink-0 w-[45%] sm:w-[30%] lg:w-[22%] space-y-2">
+                    <div key={i} className="shrink-0 w-[45%] sm:w-[30%] lg:w-[19.5%] space-y-2">
                       <Skeleton className="aspect-square rounded-xl" />
                       <Skeleton className="h-4 w-3/4" />
                     </div>
@@ -136,7 +136,7 @@ export function TaggedProductSection({
                       key={product.id}
                       product={product}
                       index={idx}
-                      className="shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[22%] bg-card rounded-xl"
+                      className="shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[19.5%] bg-card rounded-xl"
                     />
                   ))}
             </div>
@@ -169,9 +169,15 @@ export function TaggedProductSection({
   return (
     <section className={`py-8 sm:py-10 ${className}`}>
       <div className="container mx-auto px-3 sm:px-4">
-        <SectionHeading title={title} subtitle={subtitle} />
-
-
+        <SectionHeading
+          title={title}
+          subtitle={subtitle}
+          action={
+            <Link to="/products" className="text-accent font-medium text-sm hover:underline flex items-center gap-1">
+              View All <ArrowRight className="h-4 w-4" />
+            </Link>
+          }
+        />
 
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
@@ -184,27 +190,18 @@ export function TaggedProductSection({
             ))}
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory sm:pb-2 lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
-              {products.map((product, idx) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  index={idx}
-                  className="sm:w-[calc(33.333%-0.5rem)] md:w-[calc(25%-0.5625rem)] lg:w-auto sm:flex-shrink-0 sm:snap-start"
-                />
-              ))}
-            </div>
-            <div className="mt-4 text-center">
-              <Link
-                to="/products"
-                className="inline-flex items-center gap-1 text-accent font-medium text-sm hover:underline"
-              >
-                View All <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </>
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory sm:pb-2 lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
+            {products.map((product, idx) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                index={idx}
+                className="sm:w-[calc(33.333%-0.5rem)] md:w-[calc(25%-0.5625rem)] lg:w-auto sm:flex-shrink-0 sm:snap-start"
+              />
+            ))}
+          </div>
         )}
+
       </div>
     </section>
   );
