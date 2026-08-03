@@ -35,12 +35,17 @@ const Index = () => {
         jsonLd={jsonLd}
       />
       <Header />
+      <SocialRail />
       <h1 className="sr-only">Houskase — Premium Towels, Tissues & Cleaning Essentials for Home & Office</h1>
       <main className="pt-0">
         <HeroSection onFetchStatus={noop} />
         <HeroMarquee />
         <FeaturedProducts onFetchStatus={noop} />
-        <ReelsSection title="Trending Reels" />
+        <TaggedProductSection tag="mega saver packs" title="Mega Saver Packs" className="bg-secondary/30" />
+        <TaggedProductSection tag="bestseller" title="Bestseller" />
+        <ReelsSection title="Products Reels" />
+        <TestimonialsSection />
+        <AboutUsSection />
         <DynamicProductSections onFetchStatus={noop} />
       </main>
       <TrustSection />
