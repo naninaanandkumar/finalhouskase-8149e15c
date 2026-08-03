@@ -75,10 +75,70 @@ export function TaggedProductSection({
 
   if (!loading && products.length === 0) return null;
 
+  if (variant === "showcase") {
+    return (
+      <section className={`py-6 sm:py-8 ${className}`}>
+        <div className="container mx-auto px-3 sm:px-4">
+          <SectionHeading title={title} subtitle={subtitle} />
+
+          <div className="rounded-2xl bg-primary p-3 sm:p-4">
+            <div className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 [&::-webkit-scrollbar]:hidden">
+              {/* Sunburst label panel */}
+              <div
+                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[22%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+                aria-hidden="true"
+              >
+                <div
+                  className="absolute inset-0 opacity-70"
+                  style={{
+                    background:
+                      "repeating-conic-gradient(from 0deg at 50% 50%, hsl(var(--primary-foreground) / 0.14) 0deg 9deg, transparent 9deg 18deg)",
+                  }}
+                />
+                <div className="relative text-center px-3 py-10">
+                  <p className="font-display font-extrabold leading-none tracking-tight text-primary-foreground text-3xl sm:text-4xl lg:text-5xl">
+                    {panelLabelTop}
+                  </p>
+                  <p className="font-display font-bold italic text-primary-foreground/90 text-xl sm:text-2xl lg:text-3xl -mt-1">
+                    {panelLabelBottom}
+                  </p>
+                </div>
+              </div>
+
+              {loading
+                ? [...Array(4)].map((_, i) => (
+                    <div key={i} className="shrink-0 w-[45%] sm:w-[30%] lg:w-[22%] space-y-2">
+                      <Skeleton className="aspect-square rounded-xl" />
+                      <Skeleton className="h-4 w-3/4" />
+                    </div>
+                  ))
+                : products.map((product, idx) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      index={idx}
+                      className="shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[22%] bg-card rounded-xl"
+                    />
+                  ))}
+            </div>
+          </div>
+
+          <div className="mt-4 text-center">
+            <Link to="/products" className="inline-flex items-center gap-1 text-accent font-medium text-sm hover:underline">
+              View All <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className={`py-6 sm:py-8 ${className}`}>
       <div className="container mx-auto px-3 sm:px-4">
         <SectionHeading title={title} subtitle={subtitle} />
+
+
 
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
