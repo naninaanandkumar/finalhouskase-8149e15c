@@ -7,6 +7,15 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
 };
 
+// denomailer surfaces connection failures as background rejections which would
+// otherwise kill the worker mid-request (client sees a CORS/network error).
+addEventListener('unhandledrejection', (event) => {
+  event.preventDefault();
+  console.error('Unhandled rejection (suppressed):', (event as PromiseRejectionEvent).reason);
+});
+
+
+
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -160,6 +169,14 @@ async function sendViaSmtp(
   html: string,
   messageId: string,
 ): Promise<SendResult> {
+  if (!cfg.host || !cfg.user || !cfg.pass) {
+    return {
+      ok: false,
+      provider: 'smtp:not-configured',
+      errorCode: 'EMAIL_NOT_CONFIGURED',
+      errorMessage: 'Email sending is not configured yet (missing SMTP_HOST / SMTP_USER / SMTP_PASS).',
+    };
+  }
   const client = new SMTPClient({
     connection: {
       hostname: cfg.host,
@@ -168,6 +185,7 @@ async function sendViaSmtp(
       auth: { username: cfg.user, password: cfg.pass },
     },
   });
+
   try {
     await client.send({
       from: normalizeFromAddress(cfg.from, cfg.user),

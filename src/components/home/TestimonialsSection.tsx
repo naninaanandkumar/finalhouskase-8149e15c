@@ -42,7 +42,7 @@ export function TestimonialsSection() {
   return (
     <section className="py-8 sm:py-10 bg-secondary/30">
       <div className="container mx-auto px-3 sm:px-4">
-        <SectionHeading title="Product Reviews" subtitle="What People Say About Us?" />
+        <SectionHeading title="Product Reviews" />
 
         <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {reviews.slice(0, 4).map((r) => (
