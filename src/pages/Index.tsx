@@ -42,7 +42,14 @@ const Index = () => {
         <HeroMarquee />
         <FeaturedProducts onFetchStatus={noop} />
         <TaggedProductSection tag="mega saver packs" title="Mega Saver Packs" className="bg-secondary/30" />
-        <TaggedProductSection tag="bestseller" title="Bestseller" />
+        <TaggedProductSection
+          tag="bestseller"
+          title="Bestseller"
+          variant="showcase"
+          panelLabelTop="BEST"
+          panelLabelBottom="Sellers"
+        />
+
         <ReelsSection title="Products Reels" />
         <TestimonialsSection />
         <AboutUsSection />
