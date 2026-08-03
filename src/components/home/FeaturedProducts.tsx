@@ -73,13 +73,16 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
   return (
     <section className="pt-8 pb-2 sm:pt-10 sm:pb-3 bg-background">
       <div className="container mx-auto px-3 sm:px-4">
-        <SectionHeading title="Trending Products" />
-        <div className="flex justify-end mb-3">
-          <Link to="/products" className="text-accent font-medium text-sm hover:underline flex items-center gap-1">
-            View All
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
+        <SectionHeading
+          title="Trending Products"
+          action={
+            <Link to="/products" className="text-accent font-medium text-sm hover:underline flex items-center gap-1">
+              View All
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          }
+        />
+
 
 
         {loading ? (
