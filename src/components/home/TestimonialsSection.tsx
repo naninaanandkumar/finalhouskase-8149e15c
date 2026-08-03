@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Star, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SectionHeading } from "./SectionHeading";
@@ -19,6 +19,8 @@ const FALLBACK: Review[] = [
 
 export function TestimonialsSection() {
   const [reviews, setReviews] = useState<Review[]>(FALLBACK);
+  const railRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -39,16 +41,35 @@ export function TestimonialsSection() {
     };
   }, []);
 
+  // Auto slide
+  useEffect(() => {
+    if (reviews.length <= 1) return;
+    const id = window.setInterval(() => {
+      setActive((i) => (i + 1) % reviews.length);
+    }, 3500);
+    return () => window.clearInterval(id);
+  }, [reviews.length]);
+
+  useEffect(() => {
+    const el = railRef.current;
+    if (!el) return;
+    const card = el.children[active] as HTMLElement | undefined;
+    if (card) el.scrollTo({ left: card.offsetLeft - el.offsetLeft, behavior: "smooth" });
+  }, [active]);
+
   return (
-    <section className="py-8 sm:py-10 bg-secondary/30">
+    <section className="py-8 sm:py-10 bg-background">
       <div className="container mx-auto px-3 sm:px-4">
         <SectionHeading title="Product Reviews" />
 
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {reviews.slice(0, 4).map((r) => (
+        <div
+          ref={railRef}
+          className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {reviews.map((r) => (
             <article
               key={r.id}
-              className="relative rounded-xl border border-border bg-card p-4 shadow-sm hover:shadow-md transition-shadow"
+              className="relative shrink-0 snap-start w-[85%] sm:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)] rounded-xl border border-border bg-card p-4 shadow-sm"
             >
               <Quote className="absolute top-3 right-3 h-6 w-6 text-accent/15" />
               <div className="flex items-center gap-0.5 mb-2">
@@ -62,6 +83,18 @@ export function TestimonialsSection() {
               <p className="text-sm text-muted-foreground leading-relaxed line-clamp-5">{r.review_text}</p>
               <p className="mt-3 text-sm font-semibold text-foreground">{r.reviewer_name}</p>
             </article>
+          ))}
+        </div>
+
+        <div className="mt-4 flex items-center justify-center gap-2">
+          {reviews.map((r, i) => (
+            <button
+              key={r.id}
+              type="button"
+              aria-label={`Show review ${i + 1}`}
+              onClick={() => setActive(i)}
+              className={`h-2 rounded-full transition-all ${active === i ? "w-5 bg-accent" : "w-2 bg-muted-foreground/30"}`}
+            />
           ))}
         </div>
       </div>

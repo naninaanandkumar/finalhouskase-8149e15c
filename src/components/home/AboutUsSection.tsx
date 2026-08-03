@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Leaf, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SectionHeading } from "./SectionHeading";
+
 
 
 const highlights = [
@@ -14,8 +14,6 @@ export function AboutUsSection() {
   return (
     <section className="py-8 sm:py-10">
       <div className="container mx-auto px-3 sm:px-4">
-        <SectionHeading title="About Us" />
-
         <div className="grid gap-6 lg:grid-cols-2 items-center">
           <div className="overflow-hidden rounded-xl border border-border">
             <img
@@ -28,6 +26,7 @@ export function AboutUsSection() {
 
 
           <div>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-foreground mb-3">About Us</h2>
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
               Houskase is an Indian everyday-essentials brand building thoughtfully crafted towels, tissues and
               cleaning accessories for modern homes, offices and businesses. We obsess over the small things —

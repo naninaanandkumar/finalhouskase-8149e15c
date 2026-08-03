@@ -71,7 +71,7 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
   }, [onFetchStatus]);
 
   return (
-    <section className="py-6 sm:py-8 bg-secondary/30">
+    <section className="pt-6 pb-1 sm:pt-8 sm:pb-3 bg-secondary/30">
       <div className="container mx-auto px-3 sm:px-4">
         <SectionHeading title="Trending Products" />
         <div className="flex justify-end mb-3">

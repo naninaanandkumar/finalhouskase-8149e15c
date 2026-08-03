@@ -113,7 +113,7 @@ export function ReelsSection({ title = "Featured Videos", excludeProductId, limi
   if (reels.length === 0) return null;
 
   return (
-    <section className="py-6 sm:py-10 bg-background">
+    <section className="py-6 sm:py-10 bg-background -mt-10">
       <div className="container mx-auto px-3 sm:px-4 relative">
         <SectionHeading title={title} />
 
