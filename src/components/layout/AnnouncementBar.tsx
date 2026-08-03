@@ -69,7 +69,7 @@ export function AnnouncementBar() {
   const loop = Array.from({ length: repeats }).flatMap(() => slides);
 
   return (
-    <div className="bg-[#AD1E2A] text-white overflow-hidden">
+    <div className="bg-background text-foreground border-y border-border overflow-hidden">
       <div className="marquee-track h-8 flex items-center relative overflow-hidden">
         <div className="animate-marquee flex whitespace-nowrap min-w-max">
           {loop.map((s, i) => (
