@@ -328,6 +328,8 @@ export function Header() {
           </div>
         </div>
       </div>
+
+      <AnnouncementBar />
     </header>
   );
 }
