@@ -113,9 +113,8 @@ export function ReelsSection({ title = "Featured Videos", excludeProductId, limi
   return (
     <section className="py-6 sm:py-10 bg-background">
       <div className="container mx-auto px-3 sm:px-4 relative">
-        <div className="relative flex items-center justify-center mb-4 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl font-display font-bold text-center">{title}</h2>
-        </div>
+        <SectionHeading title={title} />
+
 
 
         {/* Slider scroller */}
