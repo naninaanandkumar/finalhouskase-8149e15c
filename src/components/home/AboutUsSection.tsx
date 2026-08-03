@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Leaf, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SectionHeading } from "./SectionHeading";
+
 
 
 const highlights = [
