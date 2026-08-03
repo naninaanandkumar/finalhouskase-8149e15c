@@ -24,6 +24,10 @@ interface TaggedProductSectionProps {
   subtitle?: string;
   limit?: number;
   className?: string;
+  /** "showcase" renders a coloured panel with a sunburst label + horizontal product rail */
+  variant?: "grid" | "showcase";
+  panelLabelTop?: string;
+  panelLabelBottom?: string;
 }
 
 const tagVariants = (tag: string) => {
@@ -36,7 +40,17 @@ const tagVariants = (tag: string) => {
   return Array.from(new Set([base, lower, upper, title, hyphen, underscore]));
 };
 
-export function TaggedProductSection({ tag, title, subtitle, limit = 6, className = "" }: TaggedProductSectionProps) {
+export function TaggedProductSection({
+  tag,
+  title,
+  subtitle,
+  limit = 6,
+  className = "",
+  variant = "grid",
+  panelLabelTop = "BEST",
+  panelLabelBottom = "Sellers",
+}: TaggedProductSectionProps) {
+
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
