@@ -14,17 +14,18 @@ export function AboutUsSection() {
   return (
     <section className="py-8 sm:py-10">
       <div className="container mx-auto px-3 sm:px-4">
-        <SectionHeading title="About Us" subtitle="The company behind Houskase" />
+        <SectionHeading title="About Us" />
 
         <div className="grid gap-6 lg:grid-cols-2 items-center">
           <div className="overflow-hidden rounded-xl border border-border">
             <img
-              src={aboutBanner.url}
+              src="https://ik.imagekit.io/houskase/left%20side%20image.png"
               alt="Houskase premium bamboo home essentials"
               loading="lazy"
               className="w-full h-full object-cover"
             />
           </div>
+
 
           <div>
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
