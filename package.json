@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:otp": "vitest run src/test/signup-otp-flow.test.tsx src/test/admin-otp-logs.test.tsx",
     "test:watch": "vitest",
+    "security:scan": "node scripts/security-scan.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.app.json"
   },
   "dependencies": {
