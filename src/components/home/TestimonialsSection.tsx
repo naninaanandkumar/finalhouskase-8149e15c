@@ -53,7 +53,7 @@ export function TestimonialsSection() {
   }, [active]);
 
   return (
-    <section className="py-8 sm:py-10 bg-background">
+    <section className="py-8 sm:py-10 bg-[#ffffff]">
       <div className="container mx-auto px-3 sm:px-4">
         <SectionHeading title="Product Reviews" />
 
