@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Leaf, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "./SectionHeading";
-import aboutBanner from "@/assets/about-banner.png.asset.json";
+
 
 const highlights = [
   { icon: Leaf, title: "Eco-conscious", text: "Reusable, washable bamboo essentials made to last." },
