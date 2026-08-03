@@ -19,7 +19,7 @@ export function AboutUsSection() {
         <div className="grid gap-6 lg:grid-cols-2 items-center">
           <div className="overflow-hidden rounded-xl border border-border">
             <img
-              src={aboutBanner}
+              src={aboutBanner.url}
               alt="Houskase premium bamboo home essentials"
               loading="lazy"
               className="w-full h-full object-cover"
