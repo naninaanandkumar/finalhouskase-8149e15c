@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Star, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SectionHeading } from "./SectionHeading";
 
 interface Review {
@@ -121,6 +122,8 @@ export function TestimonialsSection() {
             />
           ))}
         </div>
+          </>
+        )}
       </div>
     </section>
   );
