@@ -104,7 +104,7 @@ export function TaggedProductSection({
             >
               {/* Sunburst label panel */}
               <div
-                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[22%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[16%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
                 aria-hidden="true"
               >
                 <div
@@ -126,7 +126,7 @@ export function TaggedProductSection({
 
               {loading
                 ? [...Array(4)].map((_, i) => (
-                    <div key={i} className="shrink-0 w-[45%] sm:w-[30%] lg:w-[22%] space-y-2">
+                    <div key={i} className="shrink-0 w-[45%] sm:w-[30%] lg:w-[19.5%] space-y-2">
                       <Skeleton className="aspect-square rounded-xl" />
                       <Skeleton className="h-4 w-3/4" />
                     </div>
@@ -136,7 +136,7 @@ export function TaggedProductSection({
                       key={product.id}
                       product={product}
                       index={idx}
-                      className="shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[22%] bg-card rounded-xl"
+                      className="shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[19.5%] bg-card rounded-xl"
                     />
                   ))}
             </div>
