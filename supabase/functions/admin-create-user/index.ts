@@ -70,6 +70,12 @@
        throw new Error("Email, password, and buyer_type are required");
      }
  
+     // Runtime allow-list: never let a caller-supplied value grant admin roles.
+     const ALLOWED_BUYER_TYPES = ["shop", "retail"] as const;
+     if (!ALLOWED_BUYER_TYPES.includes(buyer_type as typeof ALLOWED_BUYER_TYPES[number])) {
+       throw new Error("Invalid buyer_type. Allowed values: shop, retail");
+     }
+ 
      // Create the user
      const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
        email,

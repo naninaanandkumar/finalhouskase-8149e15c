@@ -398,9 +398,11 @@ serve(async (req: Request) => {
       shippingAddress?.full_name || sanitizeText(profile?.full_name, 200) || "Customer";
     const profileEmail = sanitizeEmail(profile?.email ?? "");
 
+    // Buyer-initiated notifications ALWAYS go to the order owner's own address.
+    // Only admins may override the recipient (e.g. resending to a support inbox).
     let recipientEmail = profileEmail || signedInEmail;
-    if (notificationType !== "new_order") {
-      recipientEmail = sanitizeEmail(body.to_email || profileEmail);
+    if (isAdmin && body.to_email) {
+      recipientEmail = sanitizeEmail(body.to_email);
     }
 
     if (!isValidEmail(recipientEmail)) {
