@@ -104,11 +104,11 @@ export function TaggedProductSection({
             >
               {/* Sunburst label panel */}
               <div
-                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[16%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
                 aria-hidden="true"
               >
                 <div
-                  className="absolute inset-0 opacity-70 animate-[spin_28s_linear_infinite]"
+                  className="absolute inset-0 opacity-70"
                   style={{
                     background:
                       "repeating-conic-gradient(from 0deg at 50% 50%, hsl(var(--primary-foreground) / 0.14) 0deg 9deg, transparent 9deg 18deg)",
