@@ -1837,7 +1837,39 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
           {/* Product Tags */}
           <CollapsibleSection id="tags" title="Product tags" openSections={openSections} toggleSection={toggleSection}>
             <div className="space-y-3">
+              <div className="rounded-md border bg-muted/40 p-3 space-y-2">
+                <p className="text-xs font-medium">Homepage sections</p>
+                <p className="text-xs text-muted-foreground">
+                  Ye tag lagate hi product homepage ke us section me turant show ho jayega.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { tag: "bestseller", label: "Bestseller section" },
+                    { tag: "mega saver packs", label: "Mega Saver Packs section" },
+                    { tag: "trending", label: "Trending section" },
+                  ].map(({ tag, label }) => {
+                    const active = tags.some((t) => t.toLowerCase() === tag);
+                    return (
+                      <Button
+                        key={tag}
+                        type="button"
+                        size="sm"
+                        variant={active ? "default" : "outline"}
+                        onClick={() =>
+                          setTags((prev) =>
+                            active ? prev.filter((t) => t.toLowerCase() !== tag) : [...prev, tag]
+                          )
+                        }
+                      >
+                        {active ? "✓ " : "+ "}
+                        {label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
               <div className="flex gap-2">
+
                 <Input
                   value={newTag}
                   onChange={(e) => setNewTag(e.target.value)}
