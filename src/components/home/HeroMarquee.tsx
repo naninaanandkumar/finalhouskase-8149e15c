@@ -53,15 +53,15 @@ export function HeroMarquee() {
   const loop = [...list, ...list];
 
   return (
-    <div className="bg-gradient-to-r from-accent/10 via-accent/5 to-accent/10 border-y border-accent/20 overflow-hidden">
-      <div className="marquee-track h-10 sm:h-11 flex items-center relative overflow-hidden">
+    <div className="overflow-hidden text-white" style={{ backgroundColor: "#ad1e2a" }}>
+      <div className="marquee-track h-8 flex items-center relative overflow-hidden">
         <div className="animate-marquee-fast flex whitespace-nowrap min-w-max">
           {loop.map((s, i) => (
             <span
               key={`${s.id}-${i}`}
-              className="inline-flex items-center gap-2 px-6 text-[12px] sm:text-[13px] font-semibold text-foreground/85"
+              className="inline-flex items-center gap-2 px-6 text-[12px] sm:text-[13px] font-medium text-white"
             >
-              <Sparkles className="h-3.5 w-3.5 text-accent shrink-0" />
+              <Sparkles className="h-3.5 w-3.5 shrink-0" />
               <span>{s.text}</span>
             </span>
           ))}

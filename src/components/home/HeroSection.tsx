@@ -118,13 +118,6 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
   const activeSlide = heroSlides[currentSlide] || heroSlides[0];
 
-  // Build tabs from slides
-  const heroTabs = heroSlides.slice(0, 5).map((slide, idx) => ({
-    label: slide.title,
-    offer: slide.badge_label || "",
-    slideIdx: idx,
-  }));
-
   return (
     <section className="w-full">
       {/* Hero Slider - responsive heights to match uploaded banner aspect on desktop */}
@@ -198,124 +191,6 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
       </div>
       )}
 
-      {/* Tabs below slider - Moglix style */}
-      {heroTabs.length > 0 && (
-      <div className="hidden md:block border-b border-border bg-card">
-        <div className="container mx-auto px-4">
-          <div className="flex items-stretch">
-            {heroTabs.map((tab, idx) => (
-              <button
-                key={idx}
-                onClick={() => goToSlide(tab.slideIdx)}
-                className={`flex-1 py-2 px-3 text-center border-b-2 transition-colors ${
-                  currentSlide === tab.slideIdx
-                    ? "border-accent text-accent"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <p className="text-xs font-semibold uppercase truncate">{tab.label}</p>
-                <p className={`text-[10px] ${currentSlide === tab.slideIdx ? "text-accent" : "text-muted-foreground"}`}>
-                  {tab.offer}
-                </p>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-      )}
-
-      {/* Promo Banners - compact like Moglix ~120px */}
-      {showPromoBanners && promoBanners.length > 0 && (
-      <div className="py-2 sm:py-3 bg-background">
-        <div className="container mx-auto px-3 sm:px-4">
-          {/* Desktop: 5 grid */}
-          <div className="hidden md:grid grid-cols-5 gap-2">
-            {promoBanners.slice(0, 5).map((banner) => (
-              <SmartLink key={banner.id} to={banner.link || "/products"} className="group relative rounded-lg overflow-hidden h-[100px] lg:h-[120px]">
-                <SignedImage src={banner.image_url} alt={banner.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-black/70">
-                  <p className="text-white text-[11px] font-bold leading-tight">{banner.title}</p>
-                  <p className="text-accent text-[10px] font-semibold leading-tight">{banner.offer_text}</p>
-                </div>
-              </SmartLink>
-            ))}
-          </div>
-
-          {/* Tablet: 4 visible in slider */}
-          <div className="hidden sm:block md:hidden">
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-              {promoBanners.map((banner) => (
-                <SmartLink key={banner.id} to={banner.link || "/products"} className="group relative rounded-lg overflow-hidden flex-shrink-0 w-[calc(25%-6px)] h-[90px]">
-                  <SignedImage src={banner.image_url} alt={banner.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 px-2 py-1.5 bg-black/70">
-                    <p className="text-white text-[11px] font-bold leading-tight">{banner.title}</p>
-                    <p className="text-accent text-[10px] font-semibold leading-tight">{banner.offer_text}</p>
-                  </div>
-                </SmartLink>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile: circular auto-sliding row (4 per row, no nav arrows) */}
-          <MobilePromoCircles banners={promoBanners} />
-        </div>
-      </div>
-      )}
     </section>
-  );
-}
-
-function MobilePromoCircles({ banners }: { banners: PromoBanner[] }) {
-  const scrollerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (banners.length <= 4) return;
-    const el = scrollerRef.current;
-    if (!el) return;
-    const itemWidth = el.scrollWidth / banners.length;
-    let idx = 0;
-    const id = setInterval(() => {
-      if (!el) return;
-      idx = (idx + 1) % banners.length;
-      const maxScroll = el.scrollWidth - el.clientWidth;
-      const target = idx * itemWidth;
-      if (target > maxScroll + 4) {
-        el.scrollTo({ left: 0, behavior: "smooth" });
-        idx = 0;
-      } else {
-        el.scrollTo({ left: target, behavior: "smooth" });
-      }
-    }, 2500);
-    return () => clearInterval(id);
-  }, [banners.length]);
-
-  if (!banners.length) return null;
-
-  return (
-    <div className="sm:hidden">
-      <div
-        ref={scrollerRef}
-        className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 py-2 [&::-webkit-scrollbar]:hidden"
-      >
-        {banners.map((banner) => (
-          <SmartLink
-            key={banner.id}
-            to={banner.link || "/products"}
-            className="flex-shrink-0 w-[calc(25%-9px)] snap-start flex flex-col items-center gap-1.5"
-          >
-            <div className="relative w-full aspect-square rounded-full overflow-hidden ring-2 ring-accent/30 bg-secondary">
-              <SignedImage
-                src={banner.mobile_image_url || banner.image_url}
-                alt={banner.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <p className="text-[10px] font-semibold text-foreground leading-tight text-center line-clamp-2 w-full">
-              {banner.title}
-            </p>
-          </SmartLink>
-        ))}
-      </div>
-    </div>
   );
 }

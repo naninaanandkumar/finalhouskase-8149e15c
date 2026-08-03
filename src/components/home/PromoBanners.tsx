@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SignedImage } from "@/components/common/SignedImage";
 
@@ -9,107 +10,137 @@ interface PromoBanner {
   title: string;
   offer_text: string | null;
   image_url: string;
+  mobile_image_url?: string | null;
   link: string | null;
-  sort_order: number;
-  is_active: boolean;
-  created_at: string;
 }
 
 interface PromoBannersProps {
   onFetchStatus?: (status: string) => void;
 }
 
-export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
-  const [banners, setBanners] = useState<PromoBanner[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchPromoBanners = async () => {
-      try {
-        setLoading(true);
-        onFetchStatus?.("loading");
-
-        const { data, error: fetchError } = await supabase
-          .from("promo_banners")
-          .select("*")
-          .eq("is_active", true)
-          .order("sort_order", { ascending: true });
-
-        if (fetchError) {
-          console.error("Error fetching promo banners:", fetchError);
-          setError(fetchError.message);
-          onFetchStatus?.("error");
-          return;
-        }
-
-        setBanners(data || []);
-        onFetchStatus?.("success");
-      } catch (err) {
-        console.error("Unexpected error:", err);
-        setError("Failed to load promo banners");
-        onFetchStatus?.("error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPromoBanners();
-  }, [onFetchStatus]);
-
-  if (loading) {
+function CircleLink({
+  to,
+  className,
+  children,
+  ariaLabel,
+}: {
+  to?: string | null;
+  className?: string;
+  children: React.ReactNode;
+  ariaLabel?: string;
+}) {
+  const href = to?.trim() || "/products";
+  if (isExternalHref(href)) {
     return (
-      <section className="w-full py-8 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2].map((i) => (
-              <div
-                key={i}
-                className="h-48 md:h-64 bg-gray-200 rounded-lg animate-pulse"
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+      <a href={href} className={className} aria-label={ariaLabel} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
     );
   }
-
-  if (error || banners.length === 0) {
-    return null;
-  }
-
-  // Display banners in a responsive grid
   return (
-    <section className="w-full py-8 px-4 bg-white">
-      <div className="max-w-7xl mx-auto">
-        <div className={`grid gap-4 ${banners.length === 1 ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2"}`}>
+    <Link to={href} className={className} aria-label={ariaLabel}>
+      {children}
+    </Link>
+  );
+}
+
+export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
+  const [banners, setBanners] = useState<PromoBanner[]>([]);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      onFetchStatus?.("loading");
+      const { data, error } = await supabase
+        .from("promo_banners")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true });
+      if (error) {
+        onFetchStatus?.("error");
+        return;
+      }
+      setBanners((data || []) as PromoBanner[]);
+      onFetchStatus?.("success");
+    })();
+  }, [onFetchStatus]);
+
+  useEffect(() => {
+    if (banners.length <= 4) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    const itemWidth = el.scrollWidth / banners.length;
+    let idx = 0;
+    const id = setInterval(() => {
+      idx = (idx + 1) % banners.length;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      const target = idx * itemWidth;
+      if (target > maxScroll + 4) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+        idx = 0;
+      } else {
+        el.scrollTo({ left: target, behavior: "smooth" });
+      }
+    }, 2500);
+    return () => clearInterval(id);
+  }, [banners.length]);
+
+  if (banners.length === 0) return null;
+
+  return (
+    <section className="w-full py-4 sm:py-6 bg-background">
+      <div className="container mx-auto px-3 sm:px-4">
+        {/* Mobile / tablet: auto-scrolling circles */}
+        <div
+          ref={scrollerRef}
+          className="md:hidden flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 py-1 [&::-webkit-scrollbar]:hidden"
+        >
           {banners.map((banner) => (
-            <a
+            <CircleLink
               key={banner.id}
-              href={banner.link || "#"}
-              target={banner.link && isExternalHref(banner.link) ? "_blank" : undefined}
-              rel={banner.link && isExternalHref(banner.link) ? "noopener noreferrer" : undefined}
-              className="group relative overflow-hidden rounded-lg block h-48 md:h-64"
+              to={banner.link}
+              ariaLabel={banner.title}
+              className="flex-shrink-0 w-[calc(25%-9px)] snap-start flex flex-col items-center gap-1.5"
             >
-              <SignedImage
-                src={banner.image_url}
-                alt={banner.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
-              {banner.title && (
-                <div className="absolute inset-0 flex flex-col justify-center items-start p-6">
-                  <h3 className="text-white text-xl md:text-2xl font-bold mb-2">
-                    {banner.title}
-                  </h3>
-                  {banner.offer_text && (
-                    <p className="text-white/90 text-sm md:text-base">
-                      {banner.offer_text}
-                    </p>
-                  )}
-                </div>
+              <div className="relative w-full aspect-square rounded-full overflow-hidden ring-2 ring-accent/30 bg-secondary">
+                <SignedImage
+                  src={banner.mobile_image_url || banner.image_url}
+                  alt={banner.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <p className="text-[10px] font-semibold text-foreground leading-tight text-center line-clamp-2 w-full">
+                {banner.title}
+              </p>
+            </CircleLink>
+          ))}
+        </div>
+
+        {/* Desktop: circles row */}
+        <div className="hidden md:flex flex-wrap items-start justify-center gap-6 lg:gap-10">
+          {banners.map((banner) => (
+            <CircleLink
+              key={banner.id}
+              to={banner.link}
+              ariaLabel={banner.title}
+              className="group flex w-[120px] lg:w-[140px] flex-col items-center gap-2"
+            >
+              <div className="relative w-[110px] h-[110px] lg:w-[130px] lg:h-[130px] rounded-full overflow-hidden ring-2 ring-accent/30 bg-secondary transition-transform duration-300 group-hover:scale-105">
+                <SignedImage
+                  src={banner.image_url}
+                  alt={banner.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <p className="text-xs font-semibold text-foreground text-center leading-tight line-clamp-2">
+                {banner.title}
+              </p>
+              {banner.offer_text && (
+                <p className="text-[11px] font-medium text-accent text-center leading-tight line-clamp-1">
+                  {banner.offer_text}
+                </p>
               )}
-            </a>
+            </CircleLink>
           ))}
         </div>
       </div>

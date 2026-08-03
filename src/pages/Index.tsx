@@ -4,6 +4,7 @@ import { Footer } from "@/components/layout/Footer";
 import { SocialRail } from "@/components/layout/SocialRail";
 import { HeroSection } from "@/components/home/HeroSection";
 import { HeroMarquee } from "@/components/home/HeroMarquee";
+import { PromoBanners } from "@/components/home/PromoBanners";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { TaggedProductSection } from "@/components/home/TaggedProductSection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
@@ -40,6 +41,7 @@ const Index = () => {
       <main className="pt-0">
         <HeroSection onFetchStatus={noop} />
         <HeroMarquee />
+        <PromoBanners />
         <FeaturedProducts onFetchStatus={noop} />
         <TaggedProductSection tag="mega saver packs" title="Mega Saver Packs" className="bg-secondary/30" />
         <TaggedProductSection
