@@ -79,27 +79,29 @@ export function TaggedProductSection({
     return (
       <section className={`py-6 sm:py-8 ${className}`}>
         <div className="container mx-auto px-3 sm:px-4">
-          <SectionHeading title={title} subtitle={subtitle} />
-
           <div className="rounded-2xl bg-primary p-3 sm:p-4">
-            <div className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 [&::-webkit-scrollbar]:hidden">
+            <div
+              ref={railRef}
+              onScroll={handleScroll}
+              className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            >
               {/* Sunburst label panel */}
               <div
                 className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[22%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
                 aria-hidden="true"
               >
                 <div
-                  className="absolute inset-0 opacity-70"
+                  className="absolute inset-0 opacity-70 animate-[spin_28s_linear_infinite]"
                   style={{
                     background:
                       "repeating-conic-gradient(from 0deg at 50% 50%, hsl(var(--primary-foreground) / 0.14) 0deg 9deg, transparent 9deg 18deg)",
                   }}
                 />
                 <div className="relative text-center px-3 py-10">
-                  <p className="font-display font-extrabold leading-none tracking-tight text-primary-foreground text-3xl sm:text-4xl lg:text-5xl">
+                  <p className="font-display font-extrabold leading-none tracking-tight text-primary-foreground text-3xl sm:text-4xl lg:text-5xl animate-[pulse_2.6s_ease-in-out_infinite]">
                     {panelLabelTop}
                   </p>
-                  <p className="font-display font-bold italic text-primary-foreground/90 text-xl sm:text-2xl lg:text-3xl -mt-1">
+                  <p className="font-display font-bold italic text-primary-foreground/90 text-xl sm:text-2xl lg:text-3xl -mt-1 animate-[bounce_2.6s_ease-in-out_infinite]">
                     {panelLabelBottom}
                   </p>
                 </div>
@@ -121,6 +123,20 @@ export function TaggedProductSection({
                     />
                   ))}
             </div>
+          </div>
+
+          <div className="mt-3 flex items-center justify-center gap-2">
+            {[0, 1, 2].map((i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to slide ${i + 1}`}
+                onClick={() => scrollToDot(i)}
+                className={`h-2 rounded-full transition-all ${
+                  activeDot === i ? "w-5 bg-accent" : "w-2 bg-muted-foreground/30"
+                }`}
+              />
+            ))}
           </div>
 
           <div className="mt-4 text-center">
