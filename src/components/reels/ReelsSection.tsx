@@ -97,12 +97,15 @@ export function ReelsSection({ title = "Featured Videos", excludeProductId, limi
 
   if (loading) {
     return (
-      <section className="py-6 sm:py-10">
+      <section className="py-8 sm:py-10 bg-background -mt-10">
         <div className="container mx-auto px-3 sm:px-4">
-          <Skeleton className="h-7 w-48 mb-4 mx-auto" />
-          <div className="flex gap-3 overflow-hidden">
+          <SectionHeading title={title} />
+          <div className="flex gap-3 sm:gap-4 overflow-hidden">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="aspect-[9/16] w-[46%] sm:w-[30%] md:w-[23%] lg:w-[18%] flex-shrink-0 rounded-xl" />
+              <div key={i} className="w-[46%] sm:w-[30%] md:w-[23%] lg:w-[18%] flex-shrink-0 space-y-2">
+                <Skeleton className="aspect-[9/16] w-full rounded-xl" />
+                <Skeleton className="h-3.5 w-3/4" />
+              </div>
             ))}
           </div>
         </div>
@@ -110,10 +113,22 @@ export function ReelsSection({ title = "Featured Videos", excludeProductId, limi
     );
   }
 
-  if (reels.length === 0) return null;
+  if (reels.length === 0) {
+    return (
+      <section className="py-8 sm:py-10 bg-background -mt-10">
+        <div className="container mx-auto px-3 sm:px-4">
+          <SectionHeading title={title} />
+          <div className="rounded-xl border border-dashed border-border bg-card/50 py-10 text-center">
+            <p className="text-sm font-medium text-foreground">No reels yet</p>
+            <p className="mt-1 text-xs text-muted-foreground">Product videos will appear here soon.</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="py-6 sm:py-10 bg-background -mt-10">
+    <section className="py-8 sm:py-10 bg-background -mt-10">
       <div className="container mx-auto px-3 sm:px-4 relative">
         <SectionHeading title={title} />
 
