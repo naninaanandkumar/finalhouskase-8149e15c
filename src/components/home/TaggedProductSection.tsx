@@ -104,11 +104,11 @@ export function TaggedProductSection({
             >
               {/* Sunburst label panel */}
               <div
-                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[16%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
                 aria-hidden="true"
               >
                 <div
-                  className="absolute inset-0 opacity-70 animate-[spin_28s_linear_infinite]"
+                  className="absolute inset-0 opacity-70"
                   style={{
                     background:
                       "repeating-conic-gradient(from 0deg at 50% 50%, hsl(var(--primary-foreground) / 0.14) 0deg 9deg, transparent 9deg 18deg)",
@@ -126,9 +126,14 @@ export function TaggedProductSection({
 
               {loading
                 ? [...Array(4)].map((_, i) => (
-                    <div key={i} className="shrink-0 w-[45%] sm:w-[30%] lg:w-[19.5%] space-y-2">
-                      <Skeleton className="aspect-square rounded-xl" />
+                    <div
+                      key={i}
+                      className="shrink-0 w-[45%] sm:w-[30%] lg:w-[18.5%] rounded-xl bg-card p-2 space-y-2"
+                    >
+                      <Skeleton className="aspect-square rounded-lg" />
                       <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                      <Skeleton className="h-4 w-1/3" />
                     </div>
                   ))
                 : products.map((product, idx) => (
@@ -136,7 +141,7 @@ export function TaggedProductSection({
                       key={product.id}
                       product={product}
                       index={idx}
-                      className="shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[19.5%] bg-card rounded-xl"
+                      className="shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[18.5%] bg-card rounded-xl"
                     />
                   ))}
             </div>
