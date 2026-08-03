@@ -94,7 +94,7 @@ export function TaggedProductSection({
 
   if (variant === "showcase") {
     return (
-      <section className={`py-6 sm:py-8 ${className}`}>
+      <section className={`py-8 sm:py-10 ${className}`}>
         <div className="container mx-auto px-3 sm:px-4">
           <div className="rounded-2xl bg-primary p-3 sm:p-4">
             <div
@@ -167,7 +167,7 @@ export function TaggedProductSection({
   }
 
   return (
-    <section className={`py-6 sm:py-8 ${className}`}>
+    <section className={`py-8 sm:py-10 ${className}`}>
       <div className="container mx-auto px-3 sm:px-4">
         <SectionHeading title={title} subtitle={subtitle} />
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Star, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SectionHeading } from "./SectionHeading";
 
 interface Review {
@@ -19,6 +20,7 @@ const FALLBACK: Review[] = [
 
 export function TestimonialsSection() {
   const [reviews, setReviews] = useState<Review[]>(FALLBACK);
+  const [loading, setLoading] = useState(true);
   const railRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
@@ -35,6 +37,7 @@ export function TestimonialsSection() {
       if (!isMounted) return;
       const rows = (data as Review[] | null)?.filter((r) => r.review_text) || [];
       if (rows.length >= 3) setReviews(rows);
+      setLoading(false);
     })();
     return () => {
       isMounted = false;
@@ -62,6 +65,28 @@ export function TestimonialsSection() {
       <div className="container mx-auto px-3 sm:px-4">
         <SectionHeading title="Product Reviews" />
 
+        {loading ? (
+          <div className="flex gap-3 sm:gap-4 overflow-hidden">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="shrink-0 w-[85%] sm:w-[calc(50%-0.5rem)] lg:w-[calc(25%-0.75rem)] rounded-xl border border-border bg-card p-4 space-y-2"
+              >
+                <Skeleton className="h-3.5 w-24" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-5/6" />
+                <Skeleton className="h-3 w-2/3" />
+                <Skeleton className="h-3.5 w-28 mt-3" />
+              </div>
+            ))}
+          </div>
+        ) : reviews.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-card/50 py-10 text-center">
+            <p className="text-sm font-medium text-foreground">No reviews yet</p>
+            <p className="mt-1 text-xs text-muted-foreground">Customer reviews will show up here.</p>
+          </div>
+        ) : (
+          <>
         <div
           ref={railRef}
           className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
@@ -97,6 +122,8 @@ export function TestimonialsSection() {
             />
           ))}
         </div>
+          </>
+        )}
       </div>
     </section>
   );
