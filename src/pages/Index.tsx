@@ -1,9 +1,13 @@
 import { useCallback } from "react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { SocialRail } from "@/components/layout/SocialRail";
 import { HeroSection } from "@/components/home/HeroSection";
 import { HeroMarquee } from "@/components/home/HeroMarquee";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
+import { TaggedProductSection } from "@/components/home/TaggedProductSection";
+import { TestimonialsSection } from "@/components/home/TestimonialsSection";
+import { AboutUsSection } from "@/components/home/AboutUsSection";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { DynamicProductSections } from "@/components/home/DynamicProductSections";
 import { TrustSection } from "@/components/home/TrustSection";
@@ -31,12 +35,17 @@ const Index = () => {
         jsonLd={jsonLd}
       />
       <Header />
+      <SocialRail />
       <h1 className="sr-only">Houskase — Premium Towels, Tissues & Cleaning Essentials for Home & Office</h1>
       <main className="pt-0">
         <HeroSection onFetchStatus={noop} />
         <HeroMarquee />
         <FeaturedProducts onFetchStatus={noop} />
-        <ReelsSection title="Trending Reels" />
+        <TaggedProductSection tag="mega saver packs" title="Mega Saver Packs" className="bg-secondary/30" />
+        <TaggedProductSection tag="bestseller" title="Bestseller" />
+        <ReelsSection title="Products Reels" />
+        <TestimonialsSection />
+        <AboutUsSection />
         <DynamicProductSections onFetchStatus={noop} />
       </main>
       <TrustSection />

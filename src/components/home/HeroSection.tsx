@@ -157,9 +157,6 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
               {...(currentSlide === 0 ? { fetchpriority: "high" as any } : {})}
               className={`${activeSlide?.mobile_image_url ? "hidden md:block" : "block"} w-full h-full bg-muted object-cover`}
             />
-            {(activeSlide as any)?.show_text !== false && (
-              <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/40 to-transparent" />
-            )}
             {activeSlide?.cta_link && (
               <SmartLink to={activeSlide.cta_link} ariaLabel={activeSlide.title} className="absolute inset-0 z-[1]" />
             )}
@@ -167,16 +164,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
             <div className="absolute inset-0 z-[2] flex items-center py-4 sm:py-6 md:py-8 pointer-events-none" style={{ paddingLeft: "max(0.75rem, env(safe-area-inset-left))", paddingRight: "max(0.75rem, env(safe-area-inset-right))" }}>
               <div className="container mx-auto px-3 sm:px-4 md:px-6">
                 <div className="max-w-[min(34rem,92vw)] pointer-events-auto">
-                  {(activeSlide as any)?.show_text !== false && (
-                    <>
-                      <h2 className="text-base sm:text-2xl md:text-3xl lg:text-4xl font-display font-bold text-white mb-1 sm:mb-2 leading-tight line-clamp-2">
-                        {activeSlide?.title}
-                      </h2>
-                      <p className="text-white/90 text-xs sm:text-sm md:text-base mb-2 sm:mb-4 max-w-md line-clamp-2">
-                        {activeSlide?.subtitle}
-                      </p>
-                    </>
-                  )}
+
                   {(activeSlide as any)?.show_buttons !== false && (
                     <SmartLink to={activeSlide?.cta_link || "/products"}>
                       <Button size="sm" className="bg-accent hover:bg-accent-hover text-accent-foreground shadow-lg h-8 sm:h-9 text-xs sm:text-sm">
