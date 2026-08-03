@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { SignedImage } from "@/components/common/SignedImage";
 import { getSignedImageUrl, isProductBucketUrl } from "@/lib/signedImageUrls";
 import { useReducedMotionReels } from "@/hooks/useReducedMotionReels";
+import { SectionHeading } from "@/components/home/SectionHeading";
+
 
 
 interface YouTubePlayerApi {
