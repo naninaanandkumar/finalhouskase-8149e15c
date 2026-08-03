@@ -169,9 +169,15 @@ export function TaggedProductSection({
   return (
     <section className={`py-8 sm:py-10 ${className}`}>
       <div className="container mx-auto px-3 sm:px-4">
-        <SectionHeading title={title} subtitle={subtitle} />
-
-
+        <SectionHeading
+          title={title}
+          subtitle={subtitle}
+          action={
+            <Link to="/products" className="text-accent font-medium text-sm hover:underline flex items-center gap-1">
+              View All <ArrowRight className="h-4 w-4" />
+            </Link>
+          }
+        />
 
         {loading ? (
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
@@ -184,27 +190,18 @@ export function TaggedProductSection({
             ))}
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-2 gap-3 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory sm:pb-2 lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
-              {products.map((product, idx) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  index={idx}
-                  className="sm:w-[calc(33.333%-0.5rem)] md:w-[calc(25%-0.5625rem)] lg:w-auto sm:flex-shrink-0 sm:snap-start"
-                />
-              ))}
-            </div>
-            <div className="mt-4 text-center">
-              <Link
-                to="/products"
-                className="inline-flex items-center gap-1 text-accent font-medium text-sm hover:underline"
-              >
-                View All <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </>
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory sm:pb-2 lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
+            {products.map((product, idx) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                index={idx}
+                className="sm:w-[calc(33.333%-0.5rem)] md:w-[calc(25%-0.5625rem)] lg:w-auto sm:flex-shrink-0 sm:snap-start"
+              />
+            ))}
+          </div>
         )}
+
       </div>
     </section>
   );
