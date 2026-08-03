@@ -11,15 +11,8 @@ interface Review {
   review_text: string | null;
 }
 
-const FALLBACK: Review[] = [
-  { id: "f1", reviewer_name: "Ananya Sharma", rating: 5, review_text: "The bamboo towels are unbelievably soft and absorbent. Zero lint even after multiple washes." },
-  { id: "f2", reviewer_name: "Rahul Mehta", rating: 5, review_text: "Ordered in bulk for our office pantry. Quality is consistent and delivery was quick." },
-  { id: "f3", reviewer_name: "Priya Nair", rating: 4, review_text: "Great value for money. The cleaning cloths handle kitchen grease really well." },
-  { id: "f4", reviewer_name: "Vikram Singh", rating: 5, review_text: "Packaging was premium and the products feel genuinely durable. Repeat customer now." },
-];
-
 export function TestimonialsSection() {
-  const [reviews, setReviews] = useState<Review[]>(FALLBACK);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const railRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
@@ -31,12 +24,11 @@ export function TestimonialsSection() {
         .from("product_reviews")
         .select("id, reviewer_name, rating, review_text")
         .eq("is_approved", true)
-        .gte("rating", 4)
         .order("created_at", { ascending: false })
-        .limit(8);
+        .limit(12);
       if (!isMounted) return;
-      const rows = (data as Review[] | null)?.filter((r) => r.review_text) || [];
-      if (rows.length >= 3) setReviews(rows);
+      const rows = (data as Review[] | null)?.filter((r) => r.review_text && r.review_text.trim()) || [];
+      setReviews(rows);
       setLoading(false);
     })();
     return () => {
