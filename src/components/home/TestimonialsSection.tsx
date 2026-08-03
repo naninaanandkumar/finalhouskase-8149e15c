@@ -19,6 +19,7 @@ const FALLBACK: Review[] = [
 
 export function TestimonialsSection() {
   const [reviews, setReviews] = useState<Review[]>(FALLBACK);
+  const [loading, setLoading] = useState(true);
   const railRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
