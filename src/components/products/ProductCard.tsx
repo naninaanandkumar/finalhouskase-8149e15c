@@ -154,24 +154,24 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
                 </div>
               )}
             </div>
-          </div>
 
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-border px-2 sm:px-3 py-2.5 flex gap-2 transition-all duration-200">
-            <button
-              onClick={handleAddToCart}
-              disabled={isAdding || isBuying}
-              className="flex items-center justify-center w-10 h-9 border border-border rounded hover:bg-secondary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {isAdding ? <Loader2 className="h-4 w-4 animate-spin text-foreground" /> : <ShoppingCart className="h-4 w-4 text-foreground" />}
-            </button>
-            <button
-              onClick={handleBuyNow}
-              disabled={isAdding || isBuying}
-              className="flex-1 min-w-0 h-9 bg-accent hover:bg-accent-hover text-accent-foreground text-[11px] sm:text-xs font-bold rounded transition-colors uppercase tracking-wide disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5"
-            >
-              {isBuying && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              {isBuying ? "Processing..." : "Buy Now"}
-            </button>
+            <div className="mt-3 flex gap-2">
+              <button
+                onClick={handleAddToCart}
+                disabled={isAdding || isBuying}
+                className="flex items-center justify-center w-10 h-9 border border-border rounded hover:bg-secondary transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isAdding ? <Loader2 className="h-4 w-4 animate-spin text-foreground" /> : <ShoppingCart className="h-4 w-4 text-foreground" />}
+              </button>
+              <button
+                onClick={handleBuyNow}
+                disabled={isAdding || isBuying}
+                className="flex-1 min-w-0 h-9 bg-accent hover:bg-accent-hover text-accent-foreground text-[11px] sm:text-xs font-bold rounded transition-colors uppercase tracking-wide disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center gap-1.5"
+              >
+                {isBuying && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                {isBuying ? "Processing..." : "Buy Now"}
+              </button>
+            </div>
           </div>
         </div>
       </Link>
