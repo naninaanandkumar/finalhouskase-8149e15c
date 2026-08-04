@@ -199,7 +199,7 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
               </div>
             )}
 
-            <div className="mt-3 flex gap-2 pt-0 mt-auto">
+            <div className="mt-auto pt-3 flex gap-2">
               <button
                 onClick={handleAddToCart}
                 disabled={isAdding || isBuying}
