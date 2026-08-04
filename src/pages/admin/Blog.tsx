@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { SignedImage } from "@/components/common/SignedImage";
+import { BlogContent } from "@/components/blog/BlogContent";
 
 interface Post {
   id: string;
@@ -24,6 +25,9 @@ interface Post {
   is_published: boolean;
   sort_order: number;
   published_at: string;
+  meta_title: string | null;
+  meta_description: string | null;
+  canonical_url: string | null;
 }
 
 const slugify = (s: string) =>
@@ -39,6 +43,9 @@ const emptyForm = {
   tags: "",
   is_published: true,
   sort_order: "0",
+  meta_title: "",
+  meta_description: "",
+  canonical_url: "",
 };
 
 export default function AdminBlog() {
@@ -48,6 +55,7 @@ export default function AdminBlog() {
   const [editing, setEditing] = useState<Post | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
 
   const load = async () => {
@@ -72,6 +80,9 @@ export default function AdminBlog() {
         tags: (p.tags || []).join(", "),
         is_published: p.is_published,
         sort_order: String(p.sort_order ?? 0),
+        meta_title: p.meta_title || "",
+        meta_description: p.meta_description || "",
+        canonical_url: p.canonical_url || "",
       });
     } else {
       setEditing(null);
@@ -96,6 +107,9 @@ export default function AdminBlog() {
       tags: form.tags ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
       is_published: form.is_published,
       sort_order: parseInt(form.sort_order) || 0,
+      meta_title: form.meta_title.trim() || null,
+      meta_description: form.meta_description.trim() || null,
+      canonical_url: form.canonical_url.trim() || null,
     };
     const { error } = editing
       ? await supabase.from("blog_posts").update(payload).eq("id", editing.id)
@@ -133,7 +147,26 @@ export default function AdminBlog() {
               <div className="space-y-2"><Label>Slug (URL)</Label><Input value={form.slug} onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))} placeholder="auto from title" /></div>
             </div>
             <div className="space-y-2"><Label>Short summary</Label><Textarea rows={2} value={form.excerpt} onChange={(e) => setForm((p) => ({ ...p, excerpt: e.target.value }))} /></div>
-            <div className="space-y-2"><Label>Content *</Label><Textarea rows={12} value={form.content} onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))} placeholder="Write your post. Leave a blank line between paragraphs." /></div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Content *</Label>
+                <Button type="button" variant="outline" size="sm" onClick={() => setShowPreview((v) => !v)}>
+                  {showPreview ? "Hide preview" : "Preview"}
+                </Button>
+              </div>
+              <Textarea rows={14} value={form.content} onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))} placeholder="Write your post. Leave a blank line between paragraphs." />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Formatting: <code>## Heading</code>, <code>### Sub heading</code>, <code>- bullet</code>, <code>1. numbered</code>,
+                {" "}<code>&gt; quote</code>, <code>**bold**</code>, <code>[text](link)</code>, <code>![caption](image-url)</code>,
+                {" "}<code>---</code> divider, and an icon grid:
+                {" "}<code>:::grid</code> … <code>Title :: description</code> … <code>:::</code>
+              </p>
+              {showPreview && (
+                <div className="rounded-lg border border-border bg-background p-4 max-h-[500px] overflow-y-auto">
+                  <BlogContent content={form.content} />
+                </div>
+              )}
+            </div>
             <div className="space-y-2">
               <Label>Cover image</Label>
               <ImageUpload value={form.cover_image} onChange={(url) => setForm((p) => ({ ...p, cover_image: url }))} bucket="product-images" />
@@ -144,6 +177,24 @@ export default function AdminBlog() {
               <div className="space-y-2"><Label>Sort order</Label><Input type="number" value={form.sort_order} onChange={(e) => setForm((p) => ({ ...p, sort_order: e.target.value }))} /></div>
             </div>
             <div className="flex items-center justify-between"><Label>Published</Label><Switch checked={form.is_published} onCheckedChange={(c) => setForm((p) => ({ ...p, is_published: c }))} /></div>
+            <div className="rounded-lg border border-border p-4 space-y-4">
+              <p className="text-sm font-semibold">SEO</p>
+              <div className="space-y-2">
+                <Label>SEO title</Label>
+                <Input value={form.meta_title} onChange={(e) => setForm((p) => ({ ...p, meta_title: e.target.value }))} placeholder="Leave blank to use the post title" />
+                <p className="text-xs text-muted-foreground">{form.meta_title.length}/60 characters</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Meta description</Label>
+                <Textarea rows={2} value={form.meta_description} onChange={(e) => setForm((p) => ({ ...p, meta_description: e.target.value }))} placeholder="Leave blank to use the short summary" />
+                <p className="text-xs text-muted-foreground">{form.meta_description.length}/160 characters</p>
+              </div>
+              <div className="space-y-2">
+                <Label>Canonical URL</Label>
+                <Input value={form.canonical_url} onChange={(e) => setForm((p) => ({ ...p, canonical_url: e.target.value }))} placeholder={`/blog/${slugify(form.slug || form.title) || "your-post-slug"}`} />
+                <p className="text-xs text-muted-foreground">Leave blank to auto-use the post URL.</p>
+              </div>
+            </div>
             <div className="flex gap-2 pt-2">
               <Button variant="outline" onClick={() => setShowForm(false)} className="flex-1">Cancel</Button>
               <Button onClick={handleSave} disabled={isSaving} className="flex-1 bg-gradient-accent">{isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editing ? "Update" : "Create"}</Button>

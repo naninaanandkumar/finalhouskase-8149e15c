@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { SEOHead } from "@/components/SEOHead";
 import { SignedImage } from "@/components/common/SignedImage";
 import { supabase } from "@/integrations/supabase/client";
+import { BlogContent } from "@/components/blog/BlogContent";
 
 interface Post {
   id: string;
@@ -17,6 +18,9 @@ interface Post {
   author: string | null;
   tags: string[] | null;
   published_at: string;
+  meta_title?: string | null;
+  meta_description?: string | null;
+  canonical_url?: string | null;
 }
 
 export default function BlogPost() {
@@ -42,8 +46,35 @@ export default function BlogPost() {
   return (
     <div className="min-h-screen bg-background">
       <SEOHead
-        title={post ? `${post.title} — Houskase Blog` : "Blog — Houskase"}
-        description={post?.excerpt || "Read the latest from the Houskase blog."}
+        title={post ? post.meta_title || `${post.title} — Houskase Blog` : "Blog — Houskase"}
+        description={
+          post?.meta_description ||
+          post?.excerpt ||
+          "Read the latest from the Houskase blog."
+        }
+        canonical={post ? post.canonical_url || `${window.location.origin}/blog/${post.slug}` : undefined}
+        ogType="article"
+        ogImage={post?.cover_image || undefined}
+        keywords={post?.tags?.join(", ")}
+        jsonLd={
+          post
+            ? {
+                "@context": "https://schema.org",
+                "@type": "BlogPosting",
+                headline: post.title,
+                description: post.meta_description || post.excerpt || undefined,
+                image: post.cover_image || undefined,
+                datePublished: post.published_at,
+                author: { "@type": "Person", name: post.author || "Houskase" },
+                publisher: { "@type": "Organization", name: "Houskase" },
+                mainEntityOfPage: {
+                  "@type": "WebPage",
+                  "@id": post.canonical_url || `${window.location.origin}/blog/${post.slug}`,
+                },
+                keywords: post.tags?.join(", "),
+              }
+            : undefined
+        }
       />
       <Header />
       <main className="container mx-auto px-3 sm:px-4 py-8 max-w-3xl">
@@ -67,10 +98,8 @@ export default function BlogPost() {
                 <SignedImage src={post.cover_image} alt={post.title} className="w-full object-cover" />
               </div>
             )}
-            <div className="mt-5 space-y-4 text-sm sm:text-base leading-relaxed text-foreground/90">
-              {post.content.split(/\n{2,}/).map((para, i) => (
-                <p key={i} className="whitespace-pre-line">{para}</p>
-              ))}
+            <div className="mt-5">
+              <BlogContent content={post.content} />
             </div>
             {post.tags && post.tags.length > 0 && (
               <div className="mt-6 flex flex-wrap gap-2">

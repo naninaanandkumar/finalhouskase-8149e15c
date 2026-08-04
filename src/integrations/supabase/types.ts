@@ -50,12 +50,15 @@ export type Database = {
       blog_posts: {
         Row: {
           author: string | null
+          canonical_url: string | null
           content: string
           cover_image: string | null
           created_at: string
           excerpt: string | null
           id: string
           is_published: boolean
+          meta_description: string | null
+          meta_title: string | null
           published_at: string
           slug: string
           sort_order: number
@@ -65,12 +68,15 @@ export type Database = {
         }
         Insert: {
           author?: string | null
+          canonical_url?: string | null
           content?: string
           cover_image?: string | null
           created_at?: string
           excerpt?: string | null
           id?: string
           is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
           published_at?: string
           slug: string
           sort_order?: number
@@ -80,12 +86,15 @@ export type Database = {
         }
         Update: {
           author?: string | null
+          canonical_url?: string | null
           content?: string
           cover_image?: string | null
           created_at?: string
           excerpt?: string | null
           id?: string
           is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
           published_at?: string
           slug?: string
           sort_order?: number

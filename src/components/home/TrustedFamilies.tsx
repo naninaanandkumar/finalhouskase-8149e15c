@@ -20,16 +20,23 @@ export function TrustedFamilies() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const fetchItems = async () => {
       const { data } = await supabase
         .from("family_testimonials")
         .select("id, name, age, heading, message, rating, image_url")
         .eq("is_active", true)
         .order("sort_order", { ascending: true });
       if (!cancelled) setItems((data as FamilyTestimonial[]) || []);
-    })();
+    };
+    fetchItems();
+    // Instant refresh when an admin adds / edits / reorders / deletes a testimonial.
+    const channel = supabase
+      .channel("family_testimonials_public")
+      .on("postgres_changes", { event: "*", schema: "public", table: "family_testimonials" }, fetchItems)
+      .subscribe();
     return () => {
       cancelled = true;
+      supabase.removeChannel(channel);
     };
   }, []);
 
