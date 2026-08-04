@@ -255,10 +255,15 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
 
   useEffect(() => {
     fetchData();
+    // Always clear per-product state so one product never inherits another's
+    // variations / attributes when the form is reused.
+    setAttributes([]);
+    setVariations([]);
+    setExistingVariations([]);
     if (product) {
       fetchProductData();
     }
-  }, [product]);
+  }, [product?.id]);
 
   const fetchData = async () => {
     const [categoriesRes, brandsRes, attrsRes, attrValsRes] = await Promise.all([
@@ -303,12 +308,13 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
       setAttributes(Object.values(grouped));
     }
 
+    const loadedForId = product.id;
     const { data: variationsData } = await supabase
       .from("product_variations")
       .select("*")
-      .eq("product_id", product.id);
-    
-    if (variationsData && variationsData.length > 0) {
+      .eq("product_id", loadedForId);
+
+    if (variationsData && variationsData.length > 0 && variationsData.every(v => v.product_id === loadedForId)) {
       setExistingVariations(variationsData);
       setProductType("variable");
       
