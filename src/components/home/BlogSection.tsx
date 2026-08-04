@@ -21,7 +21,7 @@ export function BlogSection() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    const fetchPosts = async () => {
       const { data } = await supabase
         .from("blog_posts")
         .select("id, title, slug, excerpt, cover_image, author, published_at")
@@ -30,9 +30,15 @@ export function BlogSection() {
         .order("published_at", { ascending: false })
         .limit(3);
       if (!cancelled) setPosts((data as BlogPost[]) || []);
-    })();
+    };
+    fetchPosts();
+    const channel = supabase
+      .channel("blog_posts_home")
+      .on("postgres_changes", { event: "*", schema: "public", table: "blog_posts" }, fetchPosts)
+      .subscribe();
     return () => {
       cancelled = true;
+      supabase.removeChannel(channel);
     };
   }, []);
 

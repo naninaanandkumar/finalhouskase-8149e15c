@@ -66,38 +66,53 @@ export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
 
   if (banners.length === 0) return null;
 
-  // Duplicate the list so the right-to-left marquee loops seamlessly.
-  const loop = [...banners, ...banners];
+  // "Shop All" (or the first banner) stays pinned; everything else scrolls right-to-left.
+  const pinnedIndex = Math.max(0, banners.findIndex((b) => b.title.trim().toLowerCase() === "shop all"));
+  const pinned = banners[pinnedIndex];
+  const rest = banners.filter((_, i) => i !== pinnedIndex);
+  // Duplicate enough times so the marquee never shows a gap.
+  const loop = rest.length >= 4 ? [...rest, ...rest] : [...rest, ...rest, ...rest, ...rest];
+
+  const itemWidth =
+    "w-[calc((100vw-24px-36px)/4)] sm:w-[calc((100vw-32px-60px)/5)] lg:w-[140px]";
+
+  const Item = ({ banner, className }: { banner: PromoBanner; className?: string }) => (
+    <CircleLink
+      to={banner.link}
+      ariaLabel={banner.title}
+      className={`group flex flex-col items-center gap-1.5 sm:gap-2 flex-shrink-0 ${itemWidth} ${className || ""}`}
+    >
+      <div className="relative w-full aspect-square rounded-full overflow-hidden ring-2 ring-accent/30 bg-secondary transition-transform duration-300 group-hover:scale-105">
+        <SignedImage
+          src={banner.mobile_image_url || banner.image_url}
+          alt={banner.title}
+          className="w-full h-full object-cover"
+        />
+      </div>
+      <p className="text-[10px] sm:text-xs font-semibold text-foreground text-center leading-tight line-clamp-2 w-full">
+        {banner.title}
+      </p>
+      {banner.offer_text && (
+        <p className="hidden sm:block text-[11px] font-medium text-accent text-center leading-tight line-clamp-1">
+          {banner.offer_text}
+        </p>
+      )}
+    </CircleLink>
+  );
 
   return (
     <section className="w-full py-4 sm:py-6 bg-background">
-      <div className="container mx-auto px-3 sm:px-4 overflow-hidden marquee-track">
-        {/* Smooth continuous right-to-left slider: 4 visible on phone, 5 on tablet, 7 on desktop */}
-        <div className="flex w-max animate-marquee-slow gap-3 sm:gap-[15px]">
-          {loop.map((banner, i) => (
-            <CircleLink
-              key={`${banner.id}-${i}`}
-              to={banner.link}
-              ariaLabel={banner.title}
-              className="group flex flex-col items-center gap-1.5 sm:gap-2 flex-shrink-0 w-[calc((100vw-24px-36px)/4)] sm:w-[calc((100vw-32px-60px)/5)] lg:w-[140px]"
-            >
-              <div className="relative w-full aspect-square rounded-full overflow-hidden ring-2 ring-accent/30 bg-secondary transition-transform duration-300 group-hover:scale-105">
-                <SignedImage
-                  src={banner.mobile_image_url || banner.image_url}
-                  alt={banner.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <p className="text-[10px] sm:text-xs font-semibold text-foreground text-center leading-tight line-clamp-2 w-full">
-                {banner.title}
-              </p>
-              {banner.offer_text && (
-                <p className="hidden sm:block text-[11px] font-medium text-accent text-center leading-tight line-clamp-1">
-                  {banner.offer_text}
-                </p>
-              )}
-            </CircleLink>
-          ))}
+      <div className="container mx-auto px-3 sm:px-4">
+        {/* Pinned first circle + smooth continuous right-to-left slider (4 visible on phone, 5 on tablet) */}
+        <div className="flex items-start gap-3 sm:gap-[15px]">
+          {pinned && <Item banner={pinned} />}
+          <div className="flex-1 min-w-0 overflow-hidden marquee-track">
+            <div className="flex w-max animate-marquee-slow gap-3 sm:gap-[15px] pl-3 sm:pl-[15px]">
+              {loop.map((banner, i) => (
+                <Item key={`${banner.id}-${i}`} banner={banner} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

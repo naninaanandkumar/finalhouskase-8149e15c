@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit, Trash2, ArrowLeft, Loader2, Users } from "lucide-react";
+import { Plus, Edit, Trash2, ArrowLeft, Loader2, Users, ArrowUp, ArrowDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -37,9 +37,30 @@ export default function AdminFamilyTestimonials() {
 
   const load = async () => {
     setIsLoading(true);
-    const { data } = await supabase.from("family_testimonials").select("*").order("sort_order");
+    const { data } = await supabase
+      .from("family_testimonials")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
     setItems((data as Item[]) || []);
     setIsLoading(false);
+  };
+
+  const move = async (index: number, direction: -1 | 1) => {
+    const target = index + direction;
+    if (target < 0 || target >= items.length) return;
+    const reordered = [...items];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    setItems(reordered); // optimistic
+    const updates = reordered.map((it, i) =>
+      supabase.from("family_testimonials").update({ sort_order: i }).eq("id", it.id),
+    );
+    const results = await Promise.all(updates);
+    const failed = results.find((r) => r.error);
+    if (failed?.error) {
+      toast({ title: "Reorder failed", description: failed.error.message, variant: "destructive" });
+    }
+    load();
   };
 
   useEffect(() => { load(); }, []);
@@ -147,10 +168,16 @@ export default function AdminFamilyTestimonials() {
             <div className="text-center py-12"><Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" /><p className="text-muted-foreground">No testimonials yet</p></div>
           ) : (
             <Table>
-              <TableHeader><TableRow><TableHead>Photo</TableHead><TableHead>Name</TableHead><TableHead>Heading</TableHead><TableHead>Rating</TableHead><TableHead>Status</TableHead><TableHead className="w-24"></TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead className="w-20">Order</TableHead><TableHead>Photo</TableHead><TableHead>Name</TableHead><TableHead>Heading</TableHead><TableHead>Rating</TableHead><TableHead>Status</TableHead><TableHead className="w-24"></TableHead></TableRow></TableHeader>
               <TableBody>
-                {items.map((i) => (
+                {items.map((i, idx) => (
                   <TableRow key={i.id}>
+                    <TableCell>
+                      <div className="flex flex-col gap-0.5">
+                        <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === 0} onClick={() => move(idx, -1)} aria-label="Move up"><ArrowUp className="h-3.5 w-3.5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-6 w-6" disabled={idx === items.length - 1} onClick={() => move(idx, 1)} aria-label="Move down"><ArrowDown className="h-3.5 w-3.5" /></Button>
+                      </div>
+                    </TableCell>
                     <TableCell><SignedImage src={i.image_url} alt="" className="w-14 h-14 object-cover rounded-md" /></TableCell>
                     <TableCell className="font-medium">{i.name}{i.age ? `, ${i.age}` : ""}</TableCell>
                     <TableCell>{i.heading}</TableCell>
