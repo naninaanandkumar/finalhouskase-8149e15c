@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SignedImage } from "@/components/common/SignedImage";
@@ -73,7 +73,10 @@ export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
       <div className="container mx-auto px-3 sm:px-4">
         {/* Mobile: smooth continuous right-to-left marquee */}
         <div className="sm:hidden relative overflow-hidden py-1 [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
-          <div className="flex gap-3 w-max animate-marquee hover:[animation-play-state:paused]">
+          <div
+            className="flex gap-3 w-max animate-marquee hover:[animation-play-state:paused]"
+            style={{ animationDuration: `${Math.max(14, banners.length * 3)}s` }}
+          >
             {marqueeItems.map((banner, i) => (
               <CircleLink
                 key={`${banner.id}-${i}`}
