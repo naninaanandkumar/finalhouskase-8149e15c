@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Admins manage product images" ON storage.objects;
