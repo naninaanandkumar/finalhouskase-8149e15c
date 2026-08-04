@@ -96,39 +96,40 @@ export function TaggedProductSection({
     return (
       <section className={`py-8 sm:py-10 ${className}`}>
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="rounded-2xl bg-primary p-3 sm:p-4">
+          <div className="rounded-2xl bg-primary p-3 sm:p-4 flex gap-3 sm:gap-4">
+            {/* Fixed sunburst label panel — never scrolls */}
+            <div
+              className="relative shrink-0 w-[38%] sm:w-[26%] lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+              aria-hidden="true"
+            >
+              <div
+                className="absolute inset-0 opacity-70"
+                style={{
+                  background:
+                    "repeating-conic-gradient(from 0deg at 50% 50%, hsl(var(--primary-foreground) / 0.14) 0deg 9deg, transparent 9deg 18deg)",
+                }}
+              />
+              <div className="relative text-center px-3 py-10">
+                <p className="font-display font-extrabold leading-none tracking-tight text-primary-foreground text-2xl sm:text-4xl lg:text-5xl animate-[pulse_2.6s_ease-in-out_infinite]">
+                  {panelLabelTop}
+                </p>
+                <p className="font-display font-bold italic text-primary-foreground/90 text-lg sm:text-2xl lg:text-3xl -mt-1 animate-[bounce_2.6s_ease-in-out_infinite]">
+                  {panelLabelBottom}
+                </p>
+              </div>
+            </div>
+
+            {/* Only the product cards slide */}
             <div
               ref={railRef}
               onScroll={handleScroll}
-              className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              className="flex-1 min-w-0 flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             >
-              {/* Sunburst label panel */}
-              <div
-                className="relative shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
-                aria-hidden="true"
-              >
-                <div
-                  className="absolute inset-0 opacity-70"
-                  style={{
-                    background:
-                      "repeating-conic-gradient(from 0deg at 50% 50%, hsl(var(--primary-foreground) / 0.14) 0deg 9deg, transparent 9deg 18deg)",
-                  }}
-                />
-                <div className="relative text-center px-3 py-10">
-                  <p className="font-display font-extrabold leading-none tracking-tight text-primary-foreground text-3xl sm:text-4xl lg:text-5xl animate-[pulse_2.6s_ease-in-out_infinite]">
-                    {panelLabelTop}
-                  </p>
-                  <p className="font-display font-bold italic text-primary-foreground/90 text-xl sm:text-2xl lg:text-3xl -mt-1 animate-[bounce_2.6s_ease-in-out_infinite]">
-                    {panelLabelBottom}
-                  </p>
-                </div>
-              </div>
-
               {loading
                 ? [...Array(4)].map((_, i) => (
                     <div
                       key={i}
-                      className="shrink-0 w-[45%] sm:w-[30%] lg:w-[18.5%] rounded-xl bg-card p-2 space-y-2"
+                      className="shrink-0 w-[70%] sm:w-[40%] lg:w-[24%] rounded-xl bg-card p-2 space-y-2"
                     >
                       <Skeleton className="aspect-square rounded-lg" />
                       <Skeleton className="h-4 w-3/4" />
@@ -141,11 +142,12 @@ export function TaggedProductSection({
                       key={product.id}
                       product={product}
                       index={idx}
-                      className="shrink-0 snap-start w-[45%] sm:w-[30%] lg:w-[18.5%] bg-card rounded-xl"
+                      className="shrink-0 snap-start w-[70%] sm:w-[40%] lg:w-[24%] bg-card rounded-xl"
                     />
                   ))}
             </div>
           </div>
+
 
           <div className="mt-3 flex items-center justify-center gap-2">
             {[0, 1, 2].map((i) => (
