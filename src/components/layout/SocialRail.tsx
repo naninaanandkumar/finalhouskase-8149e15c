@@ -31,25 +31,34 @@ export function SocialRail() {
   }, []);
 
   const items = [
-    { key: "Instagram", icon: Instagram, url: social.instagram },
-    { key: "Facebook", icon: Facebook, url: social.facebook },
-    { key: "YouTube", icon: Youtube, url: social.youtube },
-    { key: "LinkedIn", icon: Linkedin, url: social.linkedin },
-    { key: "WhatsApp", icon: MessageCircle, url: social.whatsapp },
+    {
+      key: "Instagram",
+      icon: Instagram,
+      url: social.instagram,
+      style: {
+        background: "linear-gradient(45deg,#F58529 0%,#DD2A7B 45%,#8134AF 75%,#515BD4 100%)",
+        color: "#fff",
+      } as React.CSSProperties,
+    },
+    { key: "Facebook", icon: Facebook, url: social.facebook, style: { background: "#1877F2", color: "#fff" } },
+    { key: "YouTube", icon: Youtube, url: social.youtube, style: { background: "#FF0000", color: "#fff" } },
+    { key: "LinkedIn", icon: Linkedin, url: social.linkedin, style: { background: "#0A66C2", color: "#fff" } },
+    { key: "WhatsApp", icon: MessageCircle, url: social.whatsapp, style: { background: "#25D366", color: "#fff" } },
   ].filter((i) => i.url && i.url !== "#");
 
   if (items.length === 0) return null;
 
   return (
     <div className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-40 flex-col gap-px rounded-l-lg overflow-hidden shadow-lg">
-      {items.map(({ key, icon: Icon, url }) => (
+      {items.map(({ key, icon: Icon, url, style }) => (
         <a
           key={key}
           href={url as string}
           target="_blank"
           rel="noopener noreferrer"
           aria-label={key}
-          className="bg-card border border-border border-r-0 p-2.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+          style={style}
+          className="p-2.5 transition-transform hover:scale-105"
         >
           <Icon className="h-4 w-4" />
         </a>
@@ -57,3 +66,4 @@ export function SocialRail() {
     </div>
   );
 }
+
