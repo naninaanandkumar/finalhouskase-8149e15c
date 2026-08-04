@@ -65,7 +65,7 @@ export function AboutUsSection() {
           </div>
         </div>
 
-        <div className="mt-6 sm:mt-8 container mx-auto px-3 sm:px-4">
+        <div className="my-[5px]">
           <picture>
             <source
               media="(min-width: 768px)"

@@ -9,6 +9,8 @@ import { FeaturedProducts } from "@/components/home/FeaturedProducts";
 import { TaggedProductSection } from "@/components/home/TaggedProductSection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { AboutUsSection } from "@/components/home/AboutUsSection";
+import { BlogSection } from "@/components/home/BlogSection";
+import { TrustedFamilies } from "@/components/home/TrustedFamilies";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { DynamicProductSections } from "@/components/home/DynamicProductSections";
 import { TrustSection } from "@/components/home/TrustSection";
@@ -55,6 +57,8 @@ const Index = () => {
         <ReelsSection title="Products Reels" />
         <TestimonialsSection />
         <AboutUsSection />
+        <BlogSection />
+        <TrustedFamilies />
         <DynamicProductSections onFetchStatus={noop} />
       </main>
       <TrustSection />

@@ -37,6 +37,8 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
   const [isBuying, setIsBuying] = useState(false);
   const [imgIdx, setImgIdx] = useState(0);
   const [reviewStats, setReviewStats] = useState<{ avg: number; count: number } | null>(null);
+  const [sizes, setSizes] = useState<{ id: string; size: string }[]>([]);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
   const images = (product.images && product.images.length > 0 ? product.images : ["/placeholder.svg"]) as string[];
 
@@ -56,6 +58,26 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
       });
     return () => { cancelled = true; };
   }, [product.id]);
+
+  useEffect(() => {
+    if (!product.has_variations) return;
+    let cancelled = false;
+    supabase
+      .from("product_variations")
+      .select("id, size")
+      .eq("product_id", product.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: true })
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const rows = (data as { id: string; size: string | null }[])
+          .filter((v) => v.size && v.size.trim())
+          .map((v) => ({ id: v.id, size: v.size as string }));
+        setSizes(rows);
+        if (rows.length > 0) setSelectedSize(rows[0].id);
+      });
+    return () => { cancelled = true; };
+  }, [product.id, product.has_variations]);
 
 
 
@@ -79,7 +101,7 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
     e.stopPropagation();
     if (isAdding || isBuying) return;
     setIsAdding(true);
-    try { await addToCart(product.id, 1); } finally { setIsAdding(false); }
+    try { await addToCart(product.id, 1, selectedSize); } finally { setIsAdding(false); }
   };
 
   const handleBuyNow = async (e: React.MouseEvent) => {
@@ -88,7 +110,7 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
     if (isAdding || isBuying) return;
     setIsBuying(true);
     try {
-      const added = await addToCart(product.id, 1);
+      const added = await addToCart(product.id, 1, selectedSize);
       if (added) navigate("/checkout");
     } finally { setIsBuying(false); }
   };
@@ -122,40 +144,62 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
 
           <div className="px-2.5 sm:px-3 pb-3 pt-2 flex flex-col flex-grow min-w-0">
             {reviewStats && reviewStats.count > 0 && (
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className="inline-flex items-center gap-0.5 bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-[2px] rounded-sm shadow-sm">
-                  {reviewStats.avg.toFixed(1)} <Star className="h-2.5 w-2.5 fill-current" />
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="flex items-center gap-[1px]">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star
+                      key={n}
+                      className={`h-3 w-3 ${n <= Math.round(reviewStats.avg) ? "fill-accent text-accent" : "text-muted-foreground/40"}`}
+                    />
+                  ))}
                 </span>
-                <span className="text-[11px] text-muted-foreground">
-                  ({reviewStats.count} {reviewStats.count === 1 ? "Review" : "Reviews"})
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {reviewStats.count} {reviewStats.count === 1 ? "review" : "reviews"}
                 </span>
               </div>
             )}
 
-
-            <h3 className="text-foreground text-[12.5px] sm:text-sm line-clamp-2 mb-1.5 leading-snug font-normal break-words">
+            <h3 className="text-foreground text-[13px] sm:text-[15px] font-semibold line-clamp-2 min-h-[2.4em] mb-1.5 leading-snug break-words">
               {product.name}
             </h3>
 
-            <div className="mt-auto">
-              <div className="flex items-baseline gap-2">
-                <span className="text-base sm:text-lg font-bold text-foreground">
-                  {product.has_variations ? "From " : ""}₹{price.toLocaleString("en-IN")}
-                </span>
-              </div>
+            <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+              <span className="text-base sm:text-xl font-extrabold text-foreground">
+                {product.has_variations ? "From " : ""}₹{price.toLocaleString("en-IN")}
+              </span>
               {discount > 0 && (
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs text-muted-foreground line-through">
+                <>
+                  <span className="text-xs sm:text-sm text-muted-foreground line-through">
                     ₹{mrp.toLocaleString("en-IN")}
                   </span>
-                  <span className="text-xs font-semibold text-[#388e3c]">
-                    {discount}% OFF
-                  </span>
-                </div>
+                  <span className="text-xs sm:text-sm font-bold text-[#388e3c]">{discount}% off</span>
+                </>
               )}
             </div>
 
-            <div className="mt-3 flex gap-2">
+            {sizes.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {sizes.slice(0, 4).map((v) => (
+                  <button
+                    key={v.id}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedSize(v.id);
+                    }}
+                    className={`px-2 py-1 rounded-md border text-[11px] font-medium transition-colors ${
+                      selectedSize === v.id
+                        ? "border-accent bg-accent text-accent-foreground"
+                        : "border-border bg-background text-foreground hover:border-accent"
+                    }`}
+                  >
+                    {v.size}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="mt-auto pt-3 flex gap-2">
               <button
                 onClick={handleAddToCart}
                 disabled={isAdding || isBuying}

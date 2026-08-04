@@ -323,6 +323,9 @@
   .animate-marquee-fast {
     animation: marquee-scroll 50s linear infinite;
   }
+  .animate-marquee-slow {
+    animation: marquee-scroll 35s linear infinite;
+  }
   .marquee-track:hover .animate-marquee,
   .marquee-track:hover .animate-marquee-fast {
     animation-play-state: paused;
