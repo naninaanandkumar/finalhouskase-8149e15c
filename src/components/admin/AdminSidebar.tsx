@@ -28,6 +28,8 @@ import {
   Mail,
   Bot,
   Inbox,
+  Newspaper,
+  HeartHandshake,
 } from "lucide-react";
 
 
@@ -47,6 +49,8 @@ const menuItems = [
   { icon: MapPin, label: "Delivery Pincodes", href: "/admin/pincodes" },
   { icon: Tag, label: "Offers", href: "/admin/offers" },
   { icon: Star, label: "Reviews", href: "/admin/reviews" },
+  { icon: Newspaper, label: "Blog", href: "/admin/blog" },
+  { icon: HeartHandshake, label: "Trusted by Families", href: "/admin/family-testimonials" },
   { icon: PanelTop, label: "Custom Tabs", href: "/admin/custom-tabs" },
   { icon: MessageSquare, label: "Chat", href: "/admin/chat" },
   { icon: Inbox, label: "Contact Inquiries", href: "/admin/contact-inquiries" },
