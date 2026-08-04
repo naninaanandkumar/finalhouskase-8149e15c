@@ -121,51 +121,41 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
           </div>
 
           <div className="px-2.5 sm:px-3 pb-3 pt-2 flex flex-col flex-grow min-w-0">
-            <h3 className="text-foreground text-[12.5px] sm:text-sm line-clamp-2 mb-1.5 leading-snug font-normal break-words min-h-[2.4em]">
+            {reviewStats && reviewStats.count > 0 && (
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="inline-flex items-center gap-0.5 bg-[#388e3c] text-white text-[11px] font-bold px-1.5 py-[2px] rounded-sm shadow-sm">
+                  {reviewStats.avg.toFixed(1)} <Star className="h-2.5 w-2.5 fill-current" />
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  ({reviewStats.count} {reviewStats.count === 1 ? "Review" : "Reviews"})
+                </span>
+              </div>
+            )}
+
+
+            <h3 className="text-foreground text-[12.5px] sm:text-sm line-clamp-2 mb-1.5 leading-snug font-normal break-words">
               {product.name}
             </h3>
 
             <div className="mt-auto">
-              {/* Compact rating summary — fixed height to avoid layout shift */}
-              <div className="h-[18px] flex items-center gap-1.5 mb-1">
-                {reviewStats === null ? (
-                  <span className="h-3 w-24 rounded bg-muted animate-pulse" />
-                ) : reviewStats.count > 0 ? (
-                  <>
-                    <span className="flex items-center gap-[1px]">
-                      {[1, 2, 3, 4, 5].map((s) => (
-                        <Star
-                          key={s}
-                          className={`h-3 w-3 ${s <= Math.round(reviewStats.avg) ? "fill-[#f6a723] text-[#f6a723]" : "text-muted-foreground/40"}`}
-                        />
-                      ))}
-                    </span>
-                    <span className="text-[11px] font-semibold text-foreground">{reviewStats.avg.toFixed(1)}</span>
-                    <span className="text-[11px] text-muted-foreground">({reviewStats.count})</span>
-                  </>
-                ) : null}
-              </div>
-
               <div className="flex items-baseline gap-2">
                 <span className="text-base sm:text-lg font-bold text-foreground">
                   {product.has_variations ? "From " : ""}₹{price.toLocaleString("en-IN")}
                 </span>
               </div>
-              <div className="h-[18px] flex items-center gap-2 mt-0.5">
-                {discount > 0 && (
-                  <>
-                    <span className="text-xs text-muted-foreground line-through">
-                      ₹{mrp.toLocaleString("en-IN")}
-                    </span>
-                    <span className="text-xs font-semibold text-[#388e3c]">
-                      {discount}% OFF
-                    </span>
-                  </>
-                )}
-              </div>
+              {discount > 0 && (
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-xs text-muted-foreground line-through">
+                    ₹{mrp.toLocaleString("en-IN")}
+                  </span>
+                  <span className="text-xs font-semibold text-[#388e3c]">
+                    {discount}% OFF
+                  </span>
+                </div>
+              )}
             </div>
 
-            <div className="mt-2.5 flex items-stretch gap-2">
+            <div className="mt-3 flex gap-2">
               <button
                 onClick={handleAddToCart}
                 disabled={isAdding || isBuying}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { SignedImage } from "@/components/common/SignedImage";
@@ -46,6 +46,7 @@ function CircleLink({
 
 export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
   const [banners, setBanners] = useState<PromoBanner[]>([]);
+  const scrollerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -64,39 +65,55 @@ export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
     })();
   }, [onFetchStatus]);
 
-  if (banners.length === 0) return null;
+  useEffect(() => {
+    if (banners.length <= 4) return;
+    const el = scrollerRef.current;
+    if (!el) return;
+    const itemWidth = el.scrollWidth / banners.length;
+    let idx = 0;
+    const id = setInterval(() => {
+      idx = (idx + 1) % banners.length;
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      const target = idx * itemWidth;
+      if (target > maxScroll + 4) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+        idx = 0;
+      } else {
+        el.scrollTo({ left: target, behavior: "smooth" });
+      }
+    }, 2500);
+    return () => clearInterval(id);
+  }, [banners.length]);
 
-  const marqueeItems = [...banners, ...banners];
+  if (banners.length === 0) return null;
 
   return (
     <section className="w-full py-4 sm:py-6 bg-background">
       <div className="container mx-auto px-3 sm:px-4">
-        {/* Mobile: smooth continuous right-to-left marquee */}
-        <div className="sm:hidden relative overflow-hidden py-1 [mask-image:linear-gradient(to_right,transparent,black_5%,black_95%,transparent)]">
-          <div
-            className="flex gap-3 w-max animate-marquee hover:[animation-play-state:paused]"
-            style={{ animationDuration: `${Math.max(14, banners.length * 3)}s` }}
-          >
-            {marqueeItems.map((banner, i) => (
-              <CircleLink
-                key={`${banner.id}-${i}`}
-                to={banner.link}
-                ariaLabel={banner.title}
-                className="flex-shrink-0 w-[22vw] flex flex-col items-center gap-1.5"
-              >
-                <div className="relative w-full aspect-square rounded-full overflow-hidden ring-2 ring-accent/30 bg-secondary">
-                  <SignedImage
-                    src={banner.mobile_image_url || banner.image_url}
-                    alt={banner.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <p className="text-[10px] font-semibold text-foreground leading-tight text-center line-clamp-2 w-full">
-                  {banner.title}
-                </p>
-              </CircleLink>
-            ))}
-          </div>
+        {/* Mobile: auto-scrolling circles */}
+        <div
+          ref={scrollerRef}
+          className="sm:hidden flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 py-1 [&::-webkit-scrollbar]:hidden"
+        >
+          {banners.map((banner) => (
+            <CircleLink
+              key={banner.id}
+              to={banner.link}
+              ariaLabel={banner.title}
+              className="flex-shrink-0 w-[calc(25%-9px)] snap-start flex flex-col items-center gap-1.5"
+            >
+              <div className="relative w-full aspect-square rounded-full overflow-hidden ring-2 ring-accent/30 bg-secondary">
+                <SignedImage
+                  src={banner.mobile_image_url || banner.image_url}
+                  alt={banner.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <p className="text-[10px] font-semibold text-foreground leading-tight text-center line-clamp-2 w-full">
+                {banner.title}
+              </p>
+            </CircleLink>
+          ))}
         </div>
 
         {/* Tablet + Desktop: identical circle grid, 15px gap */}

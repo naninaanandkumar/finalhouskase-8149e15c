@@ -109,7 +109,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
     if (heroSlides.length < 2) return;
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 4000);
+    }, 2800);
     return () => clearInterval(timer);
   }, [heroSlides.length]);
 
@@ -125,13 +125,13 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
       <div
         className="relative w-full overflow-hidden h-[500px] md:h-auto md:aspect-[2171/724]"
       >
-        <AnimatePresence mode="popLayout" initial={false}>
+        <AnimatePresence mode="popLayout">
           <motion.div
             key={heroSlides[currentSlide]?.id || currentSlide}
-            initial={{ x: "100%" }}
-            animate={{ x: "0%" }}
-            exit={{ x: "-100%" }}
-            transition={{ duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
             className="absolute inset-0"
           >
             {activeSlide?.mobile_image_url && (
