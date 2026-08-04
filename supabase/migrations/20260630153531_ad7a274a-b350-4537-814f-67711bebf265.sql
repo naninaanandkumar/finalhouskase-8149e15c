@@ -1,1 +1,0 @@
-ALTER TABLE public.products ADD COLUMN IF NOT EXISTS description_blocks JSONB NOT NULL DEFAULT '[]'::jsonb;

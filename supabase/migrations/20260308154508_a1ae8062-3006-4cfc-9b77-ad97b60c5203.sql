@@ -1,1 +1,0 @@
-ALTER TABLE public.coupons ADD COLUMN category_id uuid REFERENCES public.categories(id) ON DELETE SET NULL DEFAULT NULL;
