@@ -47,6 +47,54 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          author: string | null
+          content: string
+          cover_image: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          is_published: boolean
+          published_at: string
+          slug: string
+          sort_order: number
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          is_published?: boolean
+          published_at?: string
+          slug: string
+          sort_order?: number
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          content?: string
+          cover_image?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          is_published?: boolean
+          published_at?: string
+          slug?: string
+          sort_order?: number
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       brands: {
         Row: {
           created_at: string
@@ -489,6 +537,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      family_testimonials: {
+        Row: {
+          age: string | null
+          created_at: string
+          heading: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          message: string
+          name: string
+          rating: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          age?: string | null
+          created_at?: string
+          heading: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          message: string
+          name: string
+          rating?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          age?: string | null
+          created_at?: string
+          heading?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          message?: string
+          name?: string
+          rating?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       hero_slides: {
         Row: {
