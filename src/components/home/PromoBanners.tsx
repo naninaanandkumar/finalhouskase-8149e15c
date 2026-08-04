@@ -90,10 +90,10 @@ export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
   return (
     <section className="w-full py-4 sm:py-6 bg-background">
       <div className="container mx-auto px-3 sm:px-4">
-        {/* Mobile / tablet: auto-scrolling circles */}
+        {/* Mobile: auto-scrolling circles */}
         <div
           ref={scrollerRef}
-          className="md:hidden flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 py-1 [&::-webkit-scrollbar]:hidden"
+          className="sm:hidden flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory px-1 py-1 [&::-webkit-scrollbar]:hidden"
         >
           {banners.map((banner) => (
             <CircleLink
@@ -116,8 +116,8 @@ export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
           ))}
         </div>
 
-        {/* Desktop: circles row */}
-        <div className="hidden md:flex flex-wrap items-start justify-center gap-6 lg:gap-10">
+        {/* Tablet + Desktop: identical circle grid, 15px gap */}
+        <div className="hidden sm:flex flex-wrap items-start justify-center gap-[15px]">
           {banners.map((banner) => (
             <CircleLink
               key={banner.id}
@@ -143,6 +143,7 @@ export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
             </CircleLink>
           ))}
         </div>
+
       </div>
     </section>
   );
