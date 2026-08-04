@@ -888,7 +888,8 @@ export default function ProductDetail() {
               <div className="space-y-3">
                 {/* Price & Buy Box */}
                 <div className="bg-card rounded-lg border border-border p-4 space-y-3">
-                  <div>
+                  {/* Price hidden on phones — single price shows under the heading */}
+                  <div className="hidden md:block">
                     {getPriceLabel() && (
                       <span className="text-[10px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded mb-1 inline-block">
                         {getPriceLabel()}

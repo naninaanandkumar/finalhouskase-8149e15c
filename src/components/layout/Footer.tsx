@@ -89,7 +89,7 @@ export function Footer() {
     <footer className="bg-black text-white">
       <div className="container mx-auto px-4 pt-10 md:pt-14 pb-[5px]">
         {/* Company col is wider (2fr); remaining 4 cols equal */}
-        <div className="grid grid-cols-2 md:[grid-template-columns:2fr_1fr_1fr_1fr_1fr] gap-8 md:gap-10">
+        <div className="grid grid-cols-2 md:[grid-template-columns:2fr_1fr_1fr_1fr_1fr] gap-8 md:gap-0 md:divide-x md:divide-white/10">
           {/* Company column — wider */}
           <div className="col-span-2 md:col-span-1 space-y-4 md:pr-6">
             <div className="flex flex-col gap-1.5">
@@ -112,7 +112,7 @@ export function Footer() {
           </div>
 
           {/* Categories */}
-          <div>
+          <div className="md:px-6">
             <h4 className="font-display font-semibold text-base md:text-lg mb-4">Categories</h4>
             <ul className="space-y-2.5">
               {categoryLinks.map((link) => (
@@ -126,7 +126,7 @@ export function Footer() {
           </div>
 
           {/* Policy */}
-          <div>
+          <div className="md:px-6">
             <h4 className="font-display font-semibold text-base md:text-lg mb-4">Policy</h4>
             <ul className="space-y-2.5">
               {policyLinks.map((link) => (
@@ -140,7 +140,7 @@ export function Footer() {
           </div>
 
           {/* Support */}
-          <div>
+          <div className="md:px-6">
             <h4 className="font-display font-semibold text-base md:text-lg mb-4">Support</h4>
             <ul className="space-y-2.5">
               {supportLinks.map(({ label, href }) => (
@@ -154,7 +154,7 @@ export function Footer() {
           </div>
 
           {/* Connect — icon + name */}
-          <div>
+          <div className="md:px-6">
             <h4 className="font-display font-semibold text-base md:text-lg mb-4">Connect</h4>
             <ul className="space-y-2.5">
               {socialItems.map(({ key, icon: Icon, url }) => (
@@ -180,7 +180,7 @@ export function Footer() {
 
       {/* Bottom Bar — centered copyright */}
       <div className="border-t border-white/10 mt-[5px]">
-        <div className="container mx-auto px-4 py-[5px]">
+        <div className="container mx-auto px-4 py-[10px]">
           <p className="text-white/70 text-xs text-center">
             © 2026 Housekase International Private Limited Industrial Supplies. All rights reserved.
           </p>

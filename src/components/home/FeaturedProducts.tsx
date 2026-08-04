@@ -38,7 +38,7 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
             .select("id, name, slug, images, guest_price, retail_price, shop_price, regular_price, has_variations")
             .eq("is_active", true)
             .order("created_at", { ascending: false })
-            .limit(6);
+            .limit(5);
 
           if (!isMounted) return;
 
@@ -87,8 +87,8 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
 
         {loading ? (
           <div className="flex gap-3 overflow-hidden">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex-shrink-0 w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] md:w-[calc(16.666%-10px)] space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex-shrink-0 w-[calc(50%-6px)] sm:w-[calc(33.333%-8px)] md:w-[calc(20%-10px)] space-y-2">
                 <Skeleton className="aspect-square rounded" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
@@ -96,7 +96,7 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
             ))}
           </div>
         ) : products.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory sm:pb-2 lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
+          <div className="grid grid-cols-2 gap-3 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory sm:pb-2 lg:grid lg:grid-cols-5 lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
             {products.map((product, idx) => (
               <ProductCard
                 key={product.id}
