@@ -56,11 +56,12 @@ export function AboutUsSection() {
               ))}
             </div>
 
-            <Link to="/about-us" className="inline-block mt-5">
-              <Button className="bg-accent hover:bg-accent-hover text-sm">
+            <Link to="/about-us" className="block w-full mt-5">
+              <Button className="w-full bg-accent hover:bg-accent-hover text-sm">
                 Know More <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </Link>
+
           </div>
         </div>
       </div>
