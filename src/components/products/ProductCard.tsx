@@ -156,7 +156,7 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
             </div>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-border px-2 sm:px-3 py-2.5 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-full group-hover:translate-y-0">
+          <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-border px-2 sm:px-3 py-2.5 flex gap-2 transition-all duration-200">
             <button
               onClick={handleAddToCart}
               disabled={isAdding || isBuying}
