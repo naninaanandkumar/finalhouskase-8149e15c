@@ -30,6 +30,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import AboutUs from "./pages/AboutUs";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import PWADiagnosticsPage from "./pages/PWADiagnostics";
 import SEOChecklist from "./pages/SEOChecklist";
 import { RouteCanonical } from "./components/RouteCanonical";
@@ -67,6 +69,8 @@ import AdminDiagnostics from "./pages/admin/Diagnostics";
 import AdminContactInquiries from "./pages/admin/ContactInquiries";
 import AdminEkartLogs from "./pages/admin/EkartLogs";
 import AdminEkartSettings from "./pages/admin/EkartSettings";
+import AdminBlog from "./pages/admin/Blog";
+import AdminFamilyTestimonials from "./pages/admin/FamilyTestimonials";
 import InvoicePreview from "./pages/dev/InvoicePreview";
 
 
@@ -115,6 +119,8 @@ const App = () => (
               <Route path="/help" element={<Help />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/about-us" element={<AboutUs />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPost />} />
               <Route path="/pwa-diagnostics" element={<PWADiagnosticsPage />} />
               <Route path="/seo-checklist" element={<SEOChecklist />} />
               <Route path="/guides/bamboo-towels-benefits" element={<Navigate to="/guides/bamboo-vs-cotton-towels" replace />} />
@@ -160,6 +166,8 @@ const App = () => (
                 <Route path="contact-inquiries" element={<AdminContactInquiries />} />
                 <Route path="ekart-logs" element={<AdminEkartLogs />} />
                 <Route path="ekart-settings" element={<AdminEkartSettings />} />
+                <Route path="blog" element={<AdminBlog />} />
+                <Route path="family-testimonials" element={<AdminFamilyTestimonials />} />
               </Route>
 
               {/* Catch-all */}
