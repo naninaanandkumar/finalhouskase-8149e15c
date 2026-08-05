@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -21,7 +21,7 @@ import { ReviewsSummary } from "@/components/products/ReviewsSummary";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { ProductOffers } from "@/components/products/ProductOffers";
 import { ProductCoupons } from "@/components/products/ProductCoupons";
-import { CustomerReviews } from "@/components/products/CustomerReviews";
+import { CustomerReviews, type ReviewStats } from "@/components/products/CustomerReviews";
 import { Input } from "@/components/ui/input";
 import { SEOHead, SchemaGenerators } from "@/components/SEOHead";
 import { SignedImage } from "@/components/common/SignedImage";
@@ -219,6 +219,8 @@ export default function ProductDetail() {
   const [isAddingToRFQ, setIsAddingToRFQ] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
+  const handleReviewStats = useCallback((s: ReviewStats) => setReviewStats(s), []);
   const [zoomIndex, setZoomIndex] = useState(0);
 
   const getRolePrice = (p: Product | null, v: ProductVariation | null | undefined) => {
@@ -507,17 +509,39 @@ export default function ProductDetail() {
         ogType="product"
         ogImage={productImages[0] !== "/placeholder.svg" ? productImages[0] : undefined}
         jsonLd={[
-          SchemaGenerators.product({
-            name: product.name,
-            description: product.short_description || product.description?.substring(0, 300) || undefined,
-            image: productImages[0] !== "/placeholder.svg" ? productImages[0] : undefined,
-            price: currentPrice,
-            sku: product.sku || undefined,
-            brand: product.brand?.name || undefined,
-            category: product.category?.name || undefined,
-            url: `${window.location.origin}/product/${product.slug}`,
-            inStock: (currentStock ?? 0) > 0,
-          }),
+          {
+            ...SchemaGenerators.product({
+              name: product.name,
+              description: product.short_description || product.description?.substring(0, 300) || undefined,
+              image: productImages[0] !== "/placeholder.svg" ? productImages[0] : undefined,
+              price: currentPrice,
+              sku: product.sku || undefined,
+              brand: product.brand?.name || undefined,
+              category: product.category?.name || undefined,
+              url: `${window.location.origin}/product/${product.slug}`,
+              inStock: (currentStock ?? 0) > 0,
+            }),
+            "@id": `${window.location.origin}/product/${product.slug}#product`,
+            ...(reviewStats && reviewStats.total > 0
+              ? {
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: Number(reviewStats.avg.toFixed(2)),
+                    reviewCount: reviewStats.total,
+                    bestRating: 5,
+                    worstRating: 1,
+                  },
+                  review: reviewStats.items.map((r) => ({
+                    "@type": "Review",
+                    author: { "@type": "Person", name: r.author },
+                    datePublished: r.date,
+                    ...(r.title ? { name: r.title } : {}),
+                    ...(r.body ? { reviewBody: r.body } : {}),
+                    reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+                  })),
+                }
+              : {}),
+          },
           SchemaGenerators.breadcrumb([
             { name: "Home", url: window.location.origin },
             { name: "Products", url: `${window.location.origin}/products` },
@@ -626,7 +650,7 @@ export default function ProductDetail() {
             <div className="space-y-5 min-w-0">
               {/* Title & Meta */}
               <div>
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground leading-snug mb-2">
+                <h1 className="text-lg sm:text-xl md:text-lg lg:text-xl md:font-semibold font-bold text-foreground leading-snug mb-2">
                   {product.name}
                 </h1>
                 
@@ -1021,8 +1045,14 @@ export default function ProductDetail() {
 
           {/* Related products → Trending reels → Reviews */}
           <RelatedProducts currentProductId={product.id} categoryId={product.category_id} />
-          <ReelsSection title="Trending Reels" placement="product" />
-          <CustomerReviews productId={product.id} productName={product.name} />
+          <div className="mt-[30px]">
+            <ReelsSection title="Trending Reels" placement="product" />
+          </div>
+          <CustomerReviews
+            productId={product.id}
+            productName={product.name}
+            onStats={handleReviewStats}
+          />
         </div>
       </main>
 

@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { Helmet } from "react-helmet-async";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Star, Pencil, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, ImagePlus, X, MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SignedImage } from "@/components/common/SignedImage";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -43,12 +43,41 @@ function Stars({ value, size = "h-4 w-4" }: { value: number; size?: string }) {
   );
 }
 
-export function CustomerReviews({ productId, productName }: { productId: string; productName?: string }) {
+export interface ReviewStats {
+  avg: number;
+  total: number;
+  items: { author: string; rating: number; title?: string | null; body?: string | null; date: string }[];
+}
+
+export function CustomerReviews({
+  productId,
+  productName,
+  onStats,
+}: {
+  productId: string;
+  productName?: string;
+  productUrl?: string;
+  onStats?: (stats: ReviewStats) => void;
+}) {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [sort, setSort] = useState("recent");
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sort = searchParams.get("reviewSort") || "recent";
+  const page = Math.max(1, parseInt(searchParams.get("reviewPage") || "1", 10) || 1);
+  const setSort = (v: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("reviewSort", v);
+    next.delete("reviewPage");
+    setSearchParams(next, { replace: true });
+  };
+  const setPage = (v: number | ((p: number) => number)) => {
+    const value = typeof v === "function" ? v(page) : v;
+    const next = new URLSearchParams(searchParams);
+    if (value <= 1) next.delete("reviewPage");
+    else next.set("reviewPage", String(value));
+    setSearchParams(next, { replace: true });
+  };
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
@@ -219,43 +248,39 @@ export function CustomerReviews({ productId, productName }: { productId: string;
     }
   };
 
-  const reviewJsonLd = useMemo(() => {
-    if (!total) return null;
-    return {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      name: productName || "Product",
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: Number(avg.toFixed(2)),
-        reviewCount: total,
-        bestRating: 5,
-        worstRating: 1,
-      },
-      review: sorted.slice(0, 20).map((r) => ({
-        "@type": "Review",
-        author: { "@type": "Person", name: r.reviewer_name },
-        datePublished: r.created_at,
-        name: r.review_title || undefined,
-        reviewBody: r.review_text || undefined,
-        reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
-      })),
-    };
-  }, [sorted, total, avg, productName]);
+  // Report aggregate stats upward so the page can embed them inside the single
+  // Product JSON-LD node (avoids duplicate Product entities in rich results).
+  const statsRef = useRef("");
+  useEffect(() => {
+    if (!onStats) return;
+    const items = [...reviews]
+      .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))
+      .slice(0, 20)
+      .map((r) => ({
+        author: r.reviewer_name,
+        rating: r.rating,
+        title: r.review_title,
+        body: r.review_text,
+        date: r.created_at,
+      }));
+    const payload: ReviewStats = { avg, total, items };
+    const key = JSON.stringify(payload);
+    if (key === statsRef.current) return;
+    statsRef.current = key;
+    onStats(payload);
+  }, [reviews, avg, total, onStats]);
 
   return (
-    <section className="mt-10">
-      {reviewJsonLd && (
-        <Helmet>
-          <script type="application/ld+json">{JSON.stringify(reviewJsonLd)}</script>
-        </Helmet>
-      )}
+    <section className="mt-10" aria-labelledby="customer-reviews-heading">
       {/* Summary card */}
       <div className="rounded-lg border border-border bg-card px-4 py-6 sm:px-8">
-        <h2 className="text-center text-xl font-bold text-foreground">Customer Reviews</h2>
+        <h2 id="customer-reviews-heading" className="text-center text-xl font-bold text-foreground">
+          Customer Reviews
+        </h2>
         <div className="mt-6 grid grid-cols-1 items-center gap-6 md:grid-cols-[1fr_auto_1.2fr_auto_1fr]">
           <div className="flex flex-col items-center gap-1">
             <Stars value={avg} />
+            <span className="sr-only">{`Average rating ${avg ? avg.toFixed(2) : "0.00"} out of 5 from ${total} reviews`}</span>
             <span className="text-sm font-medium text-accent underline underline-offset-2">
               {avg ? avg.toFixed(2) : "0.00"} out of 5
             </span>
@@ -294,18 +319,41 @@ export function CustomerReviews({ productId, productName }: { productId: string;
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit your review" : "Write a review"}</DialogTitle>
+            <DialogDescription>
+              Share your rating, an optional title, a description and up to {MAX_PHOTOS} photos.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <p className="mb-1.5 text-sm font-medium text-foreground">Your rating</p>
-              <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(0)}>
+              <p id="review-rating-label" className="mb-1.5 text-sm font-medium text-foreground">
+                Your rating
+              </p>
+              <div
+                role="radiogroup"
+                aria-labelledby="review-rating-label"
+                aria-required="true"
+                className="flex items-center gap-1"
+                onMouseLeave={() => setHoverRating(0)}
+              >
                 {[1, 2, 3, 4, 5].map((s) => (
                   <button
                     key={s}
                     type="button"
+                    role="radio"
+                    aria-checked={rating === s}
                     onClick={() => setRating(s)}
                     onMouseEnter={() => setHoverRating(s)}
-                    aria-label={`Rate ${s} stars`}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setRating((r) => Math.min(5, (r || 0) + 1));
+                      } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setRating((r) => Math.max(1, (r || 1) - 1));
+                      }
+                    }}
+                    aria-label={`${s} ${s === 1 ? "star" : "stars"}`}
+                    className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Star
                       className={`h-7 w-7 transition-colors ${
@@ -318,11 +366,12 @@ export function CustomerReviews({ productId, productName }: { productId: string;
             </div>
             <div>
               <p className="mb-1.5 text-sm font-medium text-foreground">Your name</p>
-              <Input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} className="h-9 text-sm" />
+              <Input aria-label="Your name" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} className="h-9 text-sm" />
             </div>
             <div>
               <p className="mb-1.5 text-sm font-medium text-foreground">Review title</p>
               <Input
+                aria-label="Review title"
                 placeholder="Summarise your experience"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -333,6 +382,7 @@ export function CustomerReviews({ productId, productName }: { productId: string;
             <div>
               <p className="mb-1.5 text-sm font-medium text-foreground">Description</p>
               <Textarea
+                aria-label="Review description"
                 placeholder="What did you like or dislike?"
                 value={text}
                 onChange={(e) => setText(e.target.value)}

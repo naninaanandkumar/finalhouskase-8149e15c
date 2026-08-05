@@ -35,7 +35,7 @@ export function RelatedProducts({ currentProductId, categoryId }: RelatedProduct
         .select("id, name, slug, images, guest_price, retail_price, shop_price, regular_price, has_variations")
         .eq("is_active", true)
         .neq("id", currentProductId)
-        .limit(6);
+        .limit(5);
 
       if (categoryId) {
         query = query.eq("category_id", categoryId);
@@ -43,7 +43,7 @@ export function RelatedProducts({ currentProductId, categoryId }: RelatedProduct
 
       const { data } = await query.order("created_at", { ascending: false });
 
-      if (!data || data.length < 6) {
+      if (!data || data.length < 5) {
         const existing = data?.map(p => p.id) || [];
         const { data: moreData } = await supabase
           .from("products")
@@ -51,7 +51,7 @@ export function RelatedProducts({ currentProductId, categoryId }: RelatedProduct
           .eq("is_active", true)
           .not("id", "in", `(${[currentProductId, ...existing].join(",")})`)
           .order("created_at", { ascending: false })
-          .limit(6 - (data?.length || 0));
+          .limit(5 - (data?.length || 0));
 
         setProducts([...(data || []), ...(moreData || [])] as unknown as Product[]);
       } else {
@@ -68,8 +68,8 @@ export function RelatedProducts({ currentProductId, categoryId }: RelatedProduct
     return (
       <div className="mt-8">
         <Skeleton className="h-8 w-48 mb-6" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
-          {[...Array(6)].map((_, i) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+          {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="aspect-[3/4] rounded" />
           ))}
         </div>
@@ -91,7 +91,7 @@ export function RelatedProducts({ currentProductId, categoryId }: RelatedProduct
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {products.map((product, idx) => (
           <ProductCard key={product.id} product={product} index={idx} />
         ))}
