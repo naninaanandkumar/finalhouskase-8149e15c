@@ -33,7 +33,7 @@ const SR: any =
     ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     : null;
 
-export function InstantSearch({ className, placeholder = "Search products...", onClose, autoFocus = true }: InstantSearchProps) {
+export function InstantSearch({ className, placeholder = "Search products...", onClose, autoFocus = false }: InstantSearchProps) {
   const [query, setQuery] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -175,9 +175,8 @@ export function InstantSearch({ className, placeholder = "Search products...", o
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length > 0 && setShowResults(true)}
           placeholder={placeholder}
-          className="pl-10 pr-20 h-11 bg-background border-border"
+          className="pl-10 pr-20 h-11 bg-background border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring"
           autoFocus={autoFocus}
-          tabIndex={autoFocus ? 0 : -1}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {query && (
