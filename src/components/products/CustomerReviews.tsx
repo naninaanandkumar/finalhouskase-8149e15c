@@ -1,11 +1,13 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import { Star, Pencil, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Star, Pencil, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, ImagePlus, X, MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { SignedImage } from "@/components/common/SignedImage";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -19,12 +21,16 @@ interface Review {
   reviewer_name: string;
   rating: number;
   review_text: string | null;
+  review_title?: string | null;
+  photos?: string[] | null;
   created_at: string;
   is_verified: boolean;
   user_id?: string | null;
 }
 
 const PER_PAGE = 6;
+const MAX_PHOTOS = 4;
+const MAX_PHOTO_MB = 5;
 
 function Stars({ value, size = "h-4 w-4" }: { value: number; size?: string }) {
   return (
@@ -45,10 +51,13 @@ export function CustomerReviews({ productId }: { productId: string }) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [name, setName] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const formRef = useRef<HTMLDivElement | null>(null);
 
   const fetchReviews = async () => {
     const { data } = await supabase.rpc("get_public_product_reviews", { _product_id: productId });
@@ -56,7 +65,7 @@ export function CustomerReviews({ productId }: { productId: string }) {
     if (user?.id) {
       const { data: mine } = await supabase
         .from("product_reviews")
-        .select("id, reviewer_name, rating, review_text, created_at, is_verified, user_id")
+        .select("id, reviewer_name, rating, review_text, review_title, photos, created_at, is_verified, user_id")
         .eq("product_id", productId)
         .eq("user_id", user.id);
       const mineArr = (mine as Review[]) || [];
@@ -106,7 +115,10 @@ export function CustomerReviews({ productId }: { productId: string }) {
     setShowForm(false);
     setEditingId(null);
     setRating(0);
+    setHoverRating(0);
+    setTitle("");
     setText("");
+    setPhotos([]);
   };
 
   const openNew = () => {
@@ -116,19 +128,49 @@ export function CustomerReviews({ productId }: { productId: string }) {
     }
     setEditingId(null);
     setName(profile?.full_name || "");
+    setTitle("");
     setText("");
+    setPhotos([]);
     setRating(0);
     setShowForm(true);
-    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
   };
 
   const openEdit = (r: Review) => {
     setEditingId(r.id);
     setName(r.reviewer_name);
+    setTitle(r.review_title || "");
     setText(r.review_text || "");
+    setPhotos(r.photos || []);
     setRating(r.rating);
     setShowForm(true);
-    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+  };
+
+  const handlePhotoSelect = async (files: FileList | null) => {
+    if (!files?.length || !user) return;
+    const picked = Array.from(files).slice(0, MAX_PHOTOS - photos.length);
+    setUploading(true);
+    const uploaded: string[] = [];
+    for (const file of picked) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "Only image files are allowed", variant: "destructive" });
+        continue;
+      }
+      if (file.size > MAX_PHOTO_MB * 1024 * 1024) {
+        toast({ title: `Each image must be under ${MAX_PHOTO_MB}MB`, variant: "destructive" });
+        continue;
+      }
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `reviews/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      if (error) {
+        toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+        continue;
+      }
+      const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+      uploaded.push(data.publicUrl);
+    }
+    setPhotos((p) => [...p, ...uploaded].slice(0, MAX_PHOTOS));
+    setUploading(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -152,7 +194,13 @@ export function CustomerReviews({ productId }: { productId: string }) {
       return;
     }
     setSubmitting(true);
-    const payload = { reviewer_name: name.trim(), rating, review_text: text.trim() || null };
+    const payload = {
+      reviewer_name: name.trim(),
+      rating,
+      review_title: title.trim() || null,
+      review_text: text.trim() || null,
+      photos,
+    };
     const { error } = editingId
       ? await supabase.from("product_reviews").update(payload).eq("id", editingId)
       : await supabase.from("product_reviews").insert({
@@ -211,35 +259,108 @@ export function CustomerReviews({ productId }: { productId: string }) {
         </div>
       </div>
 
-      {showForm && (
-        <div ref={formRef} className="mt-3 space-y-3 rounded-lg border border-border bg-card p-4">
-          <Input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="h-9 text-sm" />
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <button key={s} type="button" onClick={() => setRating(s)} aria-label={`Rate ${s} stars`}>
-                <Star className={`h-6 w-6 ${s <= rating ? "fill-accent text-accent" : "text-muted-foreground/30"}`} />
-              </button>
-            ))}
+      {/* Write / edit review modal */}
+      <Dialog open={showForm} onOpenChange={(o) => (o ? setShowForm(true) : resetForm())}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Edit your review" : "Write a review"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="mb-1.5 text-sm font-medium text-foreground">Your rating</p>
+              <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(0)}>
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setRating(s)}
+                    onMouseEnter={() => setHoverRating(s)}
+                    aria-label={`Rate ${s} stars`}
+                  >
+                    <Star
+                      className={`h-7 w-7 transition-colors ${
+                        s <= (hoverRating || rating) ? "fill-accent text-accent" : "text-muted-foreground/30"
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="mb-1.5 text-sm font-medium text-foreground">Your name</p>
+              <Input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} className="h-9 text-sm" />
+            </div>
+            <div>
+              <p className="mb-1.5 text-sm font-medium text-foreground">Review title</p>
+              <Input
+                placeholder="Summarise your experience"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                maxLength={100}
+                className="h-9 text-sm"
+              />
+            </div>
+            <div>
+              <p className="mb-1.5 text-sm font-medium text-foreground">Description</p>
+              <Textarea
+                placeholder="What did you like or dislike?"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                rows={4}
+                maxLength={1000}
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <p className="mb-1.5 text-sm font-medium text-foreground">
+                Photos <span className="font-normal text-muted-foreground">(optional, up to {MAX_PHOTOS})</span>
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {photos.map((p) => (
+                  <div key={p} className="relative h-16 w-16 overflow-hidden rounded border border-border">
+                    <SignedImage src={p} alt="Review photo" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setPhotos((prev) => prev.filter((x) => x !== p))}
+                      aria-label="Remove photo"
+                      className="absolute right-0 top-0 rounded-bl bg-background/90 p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+                {photos.length < MAX_PHOTOS && (
+                  <label className="flex h-16 w-16 cursor-pointer flex-col items-center justify-center gap-1 rounded border border-dashed border-border text-muted-foreground hover:bg-secondary">
+                    <ImagePlus className="h-4 w-4" />
+                    <span className="text-[10px]">{uploading ? "..." : "Add"}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        handlePhotoSelect(e.target.files);
+                        e.currentTarget.value = "";
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+            </div>
           </div>
-          <Textarea
-            placeholder="Write your review (optional)"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={3}
-            className="text-sm"
-          />
-          <div className="flex gap-2">
-            <Button size="sm" onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Saving..." : editingId ? "Update Review" : "Submit Review"}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={resetForm}>
+          <DialogFooter className="gap-2 sm:gap-2">
+            <Button variant="ghost" onClick={resetForm}>
               Cancel
             </Button>
-          </div>
-        </div>
-      )}
+            <Button onClick={handleSubmit} disabled={submitting || uploading}>
+              {submitting ? "Saving..." : editingId ? "Update Review" : "Submit Review"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Sort bar */}
+      {total > 0 && (
       <div className="mt-3 rounded-lg border border-border bg-card px-4 py-3">
         <Select
           value={sort}
@@ -259,18 +380,26 @@ export function CustomerReviews({ productId }: { productId: string }) {
           </SelectContent>
         </Select>
       </div>
+      )}
 
       {/* Review cards */}
       {total === 0 ? (
-        <p className="py-10 text-center text-sm text-muted-foreground">
-          No reviews yet. Be the first to review this product!
-        </p>
+        <div className="mt-3 flex flex-col items-center gap-3 rounded-lg border border-dashed border-border bg-card px-4 py-12 text-center">
+          <MessageSquarePlus className="h-8 w-8 text-muted-foreground/60" />
+          <p className="text-sm font-medium text-foreground">No reviews yet</p>
+          <p className="max-w-sm text-sm text-muted-foreground">
+            Be the first to share your experience with this product and help other shoppers decide.
+          </p>
+          <Button className="mt-1 px-8" onClick={openNew}>
+            Write a review
+          </Button>
+        </div>
       ) : (
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-3 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {current.map((r) => {
             const isOwner = !!user && r.user_id === user.id;
             return (
-              <div key={r.id} className="rounded-lg border border-border bg-card p-4">
+              <div key={r.id} className="flex h-full flex-col rounded-lg border border-border bg-card p-4">
                 <div className="flex items-start justify-between gap-2">
                   <Stars value={r.rating} size="h-3.5 w-3.5" />
                   <span className="text-xs text-muted-foreground">
@@ -296,8 +425,20 @@ export function CustomerReviews({ productId }: { productId: string }) {
                     </span>
                   )}
                 </div>
+                {r.review_title && (
+                  <p className="mt-2 text-sm font-semibold text-foreground">{r.review_title}</p>
+                )}
                 {r.review_text && (
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{r.review_text}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{r.review_text}</p>
+                )}
+                {!!r.photos?.length && (
+                  <div className="mt-auto flex flex-wrap gap-2 pt-3">
+                    {r.photos.map((p) => (
+                      <a key={p} href={p} target="_blank" rel="noreferrer" className="h-14 w-14 overflow-hidden rounded border border-border">
+                        <SignedImage src={p} alt={`Photo from ${r.reviewer_name}`} className="h-full w-full object-cover" loading="lazy" />
+                      </a>
+                    ))}
+                  </div>
                 )}
               </div>
             );
@@ -307,7 +448,7 @@ export function CustomerReviews({ productId }: { productId: string }) {
 
       {/* Pagination */}
       {pageCount > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-2 text-sm">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-1.5 text-sm sm:gap-2">
           <button onClick={() => setPage(1)} disabled={page === 1} aria-label="First page" className="p-1 disabled:opacity-30">
             <ChevronsLeft className="h-4 w-4" />
           </button>
