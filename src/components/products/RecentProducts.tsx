@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Clock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard } from "@/components/products/ProductCard";
@@ -17,52 +17,30 @@ interface Product {
   has_variations: boolean | null;
 }
 
-interface RelatedProductsProps {
+interface RecentProductsProps {
   currentProductId: string;
-  categoryId?: string | null;
 }
 
-export function RelatedProducts({ currentProductId, categoryId }: RelatedProductsProps) {
+export function RecentProducts({ currentProductId }: RecentProductsProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchRelatedProducts = async () => {
+    const fetchRecentProducts = async () => {
       setLoading(true);
-      
-      let query = supabase
+      const { data } = await supabase
         .from("products")
         .select("id, name, slug, images, guest_price, retail_price, shop_price, regular_price, has_variations")
         .eq("is_active", true)
         .neq("id", currentProductId)
+        .order("created_at", { ascending: false })
         .limit(6);
 
-      if (categoryId) {
-        query = query.eq("category_id", categoryId);
-      }
-
-      const { data } = await query.order("created_at", { ascending: false });
-
-      if (!data || data.length < 6) {
-        const existing = data?.map(p => p.id) || [];
-        const { data: moreData } = await supabase
-          .from("products")
-          .select("id, name, slug, images, guest_price, retail_price, shop_price, regular_price, has_variations")
-          .eq("is_active", true)
-          .not("id", "in", `(${[currentProductId, ...existing].join(",")})`)
-          .order("created_at", { ascending: false })
-          .limit(6 - (data?.length || 0));
-
-        setProducts([...(data || []), ...(moreData || [])] as unknown as Product[]);
-      } else {
-        setProducts(data as unknown as Product[]);
-      }
-      
+      setProducts((data || []) as unknown as Product[]);
       setLoading(false);
     };
-
-    fetchRelatedProducts();
-  }, [currentProductId, categoryId]);
+    fetchRecentProducts();
+  }, [currentProductId]);
 
   if (loading) {
     return (
@@ -82,8 +60,9 @@ export function RelatedProducts({ currentProductId, categoryId }: RelatedProduct
   return (
     <div className="mt-8">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg sm:text-xl font-display font-bold text-foreground">
-          Related Products
+        <h2 className="text-lg sm:text-xl font-display font-bold text-foreground flex items-center gap-2">
+          <Clock className="h-5 w-5 text-accent" />
+          Recent Products
         </h2>
         <Link to="/products" className="text-accent font-medium flex items-center gap-1 text-sm hover:gap-2 transition-all">
           View All

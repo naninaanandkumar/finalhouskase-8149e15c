@@ -321,7 +321,7 @@ export default function AdminReels() {
                 </label>
                 <label className="flex items-center gap-2 text-sm">
                   <Switch checked={form.show_on_product} onCheckedChange={(v) => setForm((f) => ({ ...f, show_on_product: v }))} />
-                  Product pages — under Related Products
+                  Product pages — under Recent Products
                 </label>
               </div>
             </div>
