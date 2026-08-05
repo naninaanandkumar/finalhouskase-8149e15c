@@ -248,37 +248,30 @@ export function CustomerReviews({
     }
   };
 
-  const reviewJsonLd = useMemo(() => {
-    if (!total) return null;
-    return {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      name: productName || "Product",
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: Number(avg.toFixed(2)),
-        reviewCount: total,
-        bestRating: 5,
-        worstRating: 1,
-      },
-      review: sorted.slice(0, 20).map((r) => ({
-        "@type": "Review",
-        author: { "@type": "Person", name: r.reviewer_name },
-        datePublished: r.created_at,
-        name: r.review_title || undefined,
-        reviewBody: r.review_text || undefined,
-        reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
-      })),
-    };
-  }, [sorted, total, avg, productName]);
+  // Report aggregate stats upward so the page can embed them inside the single
+  // Product JSON-LD node (avoids duplicate Product entities in rich results).
+  const statsRef = useRef("");
+  useEffect(() => {
+    if (!onStats) return;
+    const items = [...reviews]
+      .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))
+      .slice(0, 20)
+      .map((r) => ({
+        author: r.reviewer_name,
+        rating: r.rating,
+        title: r.review_title,
+        body: r.review_text,
+        date: r.created_at,
+      }));
+    const payload: ReviewStats = { avg, total, items };
+    const key = JSON.stringify(payload);
+    if (key === statsRef.current) return;
+    statsRef.current = key;
+    onStats(payload);
+  }, [reviews, avg, total, onStats]);
 
   return (
-    <section className="mt-10">
-      {reviewJsonLd && (
-        <Helmet>
-          <script type="application/ld+json">{JSON.stringify(reviewJsonLd)}</script>
-        </Helmet>
-      )}
+    <section className="mt-10" aria-labelledby="customer-reviews-heading">
       {/* Summary card */}
       <div className="rounded-lg border border-border bg-card px-4 py-6 sm:px-8">
         <h2 className="text-center text-xl font-bold text-foreground">Customer Reviews</h2>
