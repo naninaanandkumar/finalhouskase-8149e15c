@@ -630,14 +630,22 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Right: Product Info + Buy Box in one column */}
-            <div className="space-y-5 min-w-0">
+            {/* Right: Product Info + Buy Box in one white card */}
+            <div className="min-w-0 space-y-5 bg-card rounded-xl border border-border p-4 sm:p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
               {/* Title & Meta */}
               <div>
-                <h1 className="text-lg sm:text-xl md:text-lg lg:text-xl md:font-semibold font-bold text-foreground leading-snug mb-2">
+                <ReviewsSummary productId={product.id} />
+
+                <h1 className="mt-2 text-lg sm:text-xl md:text-lg lg:text-xl md:font-semibold font-bold text-foreground leading-snug mb-2">
                   {product.name}
                 </h1>
-                
+
+                {product.short_description && (
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-2">
+                    {product.short_description}
+                  </p>
+                )}
+
                 <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
                   {product.sku && <span>SKU: {product.sku}</span>}
                   {product.brand && (
@@ -647,8 +655,6 @@ export default function ProductDetail() {
                     </>
                   )}
                 </div>
-
-                <ReviewsSummary productId={product.id} />
 
                 {/* Price */}
                 <div className="mt-3">
