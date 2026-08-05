@@ -274,10 +274,13 @@ export function CustomerReviews({
     <section className="mt-10" aria-labelledby="customer-reviews-heading">
       {/* Summary card */}
       <div className="rounded-lg border border-border bg-card px-4 py-6 sm:px-8">
-        <h2 className="text-center text-xl font-bold text-foreground">Customer Reviews</h2>
+        <h2 id="customer-reviews-heading" className="text-center text-xl font-bold text-foreground">
+          Customer Reviews
+        </h2>
         <div className="mt-6 grid grid-cols-1 items-center gap-6 md:grid-cols-[1fr_auto_1.2fr_auto_1fr]">
           <div className="flex flex-col items-center gap-1">
             <Stars value={avg} />
+            <span className="sr-only">{`Average rating ${avg ? avg.toFixed(2) : "0.00"} out of 5 from ${total} reviews`}</span>
             <span className="text-sm font-medium text-accent underline underline-offset-2">
               {avg ? avg.toFixed(2) : "0.00"} out of 5
             </span>
@@ -319,15 +322,35 @@ export function CustomerReviews({
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <p className="mb-1.5 text-sm font-medium text-foreground">Your rating</p>
-              <div className="flex items-center gap-1" onMouseLeave={() => setHoverRating(0)}>
+              <p id="review-rating-label" className="mb-1.5 text-sm font-medium text-foreground">
+                Your rating
+              </p>
+              <div
+                role="radiogroup"
+                aria-labelledby="review-rating-label"
+                aria-required="true"
+                className="flex items-center gap-1"
+                onMouseLeave={() => setHoverRating(0)}
+              >
                 {[1, 2, 3, 4, 5].map((s) => (
                   <button
                     key={s}
                     type="button"
+                    role="radio"
+                    aria-checked={rating === s}
                     onClick={() => setRating(s)}
                     onMouseEnter={() => setHoverRating(s)}
-                    aria-label={`Rate ${s} stars`}
+                    onKeyDown={(e) => {
+                      if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setRating((r) => Math.min(5, (r || 0) + 1));
+                      } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setRating((r) => Math.max(1, (r || 1) - 1));
+                      }
+                    }}
+                    aria-label={`${s} ${s === 1 ? "star" : "stars"}`}
+                    className="rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     <Star
                       className={`h-7 w-7 transition-colors ${
