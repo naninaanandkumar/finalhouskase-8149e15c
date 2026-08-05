@@ -89,7 +89,7 @@ export function Footer() {
     <footer className="bg-black text-white">
       <div className="container mx-auto px-4 pt-10 md:pt-14 pb-[5px]">
         {/* Company col is wider (2fr); remaining 4 cols equal */}
-        <div className="grid grid-cols-2 md:[grid-template-columns:2fr_1fr_1fr_1fr_1fr] gap-8 md:gap-0 md:divide-x md:divide-white/40">
+        <div className="grid grid-cols-2 md:[grid-template-columns:2fr_1fr_1fr_1fr_1fr] gap-8 md:gap-0 md:divide-x md:divide-white/20">
           {/* Company column — wider */}
           <div className="col-span-2 md:col-span-1 space-y-4 md:pr-6">
             <div className="flex flex-col gap-1.5">
@@ -179,7 +179,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Bar — centered copyright */}
-      <div className="border-t border-white/40 mt-[5px]">
+      <div className="border-t border-white/20 mt-[5px]">
         <div className="container mx-auto px-4 py-[10px]">
           <p className="text-white/70 text-xs text-center">
             © 2026 Housekase International Private Limited Industrial Supplies. All rights reserved.

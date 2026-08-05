@@ -14,6 +14,7 @@ import { TrustedFamilies } from "@/components/home/TrustedFamilies";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { DynamicProductSections } from "@/components/home/DynamicProductSections";
 import { TrustSection } from "@/components/home/TrustSection";
+import { AvailableOnBanner } from "@/components/home/AvailableOnBanner";
 import { SEOHead, SchemaGenerators } from "@/components/SEOHead";
 
 const Index = () => {
@@ -55,13 +56,14 @@ const Index = () => {
         />
 
         <ReelsSection title="Products Reels" />
-        <TestimonialsSection />
         <AboutUsSection />
+        <TestimonialsSection />
         <BlogSection />
         <TrustedFamilies />
         <DynamicProductSections onFetchStatus={noop} />
       </main>
       <TrustSection />
+      <AvailableOnBanner />
       <Footer />
     </div>
   );

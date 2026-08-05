@@ -165,6 +165,11 @@ export function BlogContent({ content }: { content: string }) {
       para.push(lines[i].trim());
       i++;
     }
+    if (para.length === 0) {
+      // Unmatched marker line (e.g. a stray ":::"), skip it so the loop always advances.
+      i++;
+      continue;
+    }
     push(<p className="my-4 text-sm sm:text-base leading-relaxed text-foreground/90">{inline(para.join(" "), `p${key}`)}</p>);
   }
 

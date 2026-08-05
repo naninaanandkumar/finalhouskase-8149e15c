@@ -22,8 +22,11 @@ export function SEOHead({
   ogType = "website",
 }: SEOHeadProps) {
   const fullTitle = title.includes("Houskase") ? title : `${title} | Houskase`;
-  const siteUrl = window.location.origin;
-  const currentUrl = canonical || window.location.href;
+  const CANONICAL_HOST = "https://houskase.com";
+  const path = `${window.location.pathname}${window.location.search}`;
+  const absolute = (u: string) =>
+    /^https?:/i.test(u) ? u.replace(/^https?:\/\/(localhost|.*\.lovable\.app)(:\d+)?/i, CANONICAL_HOST) : `${CANONICAL_HOST}${u.startsWith("/") ? "" : "/"}${u}`;
+  const currentUrl = canonical ? absolute(canonical) : `${CANONICAL_HOST}${path === "/" ? "/" : path.replace(/\/$/, "")}`;
 
   const schemas = jsonLd
     ? Array.isArray(jsonLd) ? jsonLd : [jsonLd]
