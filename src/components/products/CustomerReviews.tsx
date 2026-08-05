@@ -495,8 +495,8 @@ export function CustomerReviews({ productId }: { productId: string }) {
                   </span>
                 </div>
                 {isPending && (
-                  <span className="mt-2 w-fit rounded bg-warning/10 px-1.5 py-0.5 text-[10px] font-medium text-warning">
-                    Pending approval — only visible to you
+                  <span className={`mt-2 w-fit rounded px-1.5 py-0.5 text-[10px] font-medium ${r.is_approved === false ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"}`}>
+                    {r.is_approved === false ? "Not approved — only visible to you" : "Pending approval — only visible to you"}
                   </span>
                 )}
                 <div className="mt-3 flex items-center gap-2">
