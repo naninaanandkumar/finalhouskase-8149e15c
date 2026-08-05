@@ -986,10 +986,10 @@ export default function ProductDetail() {
                 </div>
               )}
 
-              {/* Short Description */}
-              {product.short_description && (
+              {/* Overview */}
+              {(product.short_description || product.description) && (
                 <div>
-                  <p className="text-sm font-semibold text-foreground mb-2">ABOUT THE PRODUCT</p>
+                  <p className="text-sm font-semibold text-foreground mb-2">OVERVIEW</p>
                   <div 
                     className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap
                       [&_h1]:text-sm [&_h1]:font-bold [&_h1]:text-foreground [&_h1]:mb-2
@@ -1000,7 +1000,7 @@ export default function ProductDetail() {
                       [&_strong]:text-foreground [&_strong]:font-semibold
                       [&_em]:italic [&_br]:block"
                   >
-                    <FormattedProductText text={product.short_description} />
+                    <FormattedProductText text={product.short_description || product.description} />
                   </div>
                 </div>
               )}
@@ -1020,11 +1020,7 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Everything below scrolls with the page */}
-          <ReelsSection title="Trending Reels" placement="product" />
-          <RelatedProducts currentProductId={product.id} categoryId={product.category_id} />
-
-          {/* Specifications, Description, Reviews & Custom Tabs */}
+          {/* Description, Specifications, Reviews & Custom Tabs — directly below product info */}
           <ProductTabs
             product={product}
             selectedSize={selectedSize}
@@ -1033,6 +1029,10 @@ export default function ProductDetail() {
             hasExplicitMoq={hasExplicitMoq}
             attributes={productAttributes}
           />
+
+          {/* Everything below scrolls with the page */}
+          <ReelsSection title="Trending Reels" placement="product" />
+          <RelatedProducts currentProductId={product.id} categoryId={product.category_id} />
 
           {/* Recent Products */}
           <RecentProducts currentProductId={product.id} />
