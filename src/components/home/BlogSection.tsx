@@ -48,7 +48,7 @@ export function BlogSection() {
     <section className="py-8 sm:py-10 bg-background">
       <div className="container mx-auto px-3 sm:px-4">
         <SectionHeading title="From Our Blog" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
           {posts.map((post) => (
             <Link
               key={post.id}
