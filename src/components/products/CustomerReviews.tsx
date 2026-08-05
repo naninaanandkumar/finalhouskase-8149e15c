@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { Helmet } from "react-helmet-async";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Star, Pencil, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, ImagePlus, X, MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -43,12 +43,41 @@ function Stars({ value, size = "h-4 w-4" }: { value: number; size?: string }) {
   );
 }
 
-export function CustomerReviews({ productId, productName }: { productId: string; productName?: string }) {
+export interface ReviewStats {
+  avg: number;
+  total: number;
+  items: { author: string; rating: number; title?: string | null; body?: string | null; date: string }[];
+}
+
+export function CustomerReviews({
+  productId,
+  productName,
+  onStats,
+}: {
+  productId: string;
+  productName?: string;
+  productUrl?: string;
+  onStats?: (stats: ReviewStats) => void;
+}) {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [sort, setSort] = useState("recent");
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sort = searchParams.get("reviewSort") || "recent";
+  const page = Math.max(1, parseInt(searchParams.get("reviewPage") || "1", 10) || 1);
+  const setSort = (v: string) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("reviewSort", v);
+    next.delete("reviewPage");
+    setSearchParams(next, { replace: true });
+  };
+  const setPage = (v: number | ((p: number) => number)) => {
+    const value = typeof v === "function" ? v(page) : v;
+    const next = new URLSearchParams(searchParams);
+    if (value <= 1) next.delete("reviewPage");
+    else next.set("reviewPage", String(value));
+    setSearchParams(next, { replace: true });
+  };
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
