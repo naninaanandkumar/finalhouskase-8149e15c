@@ -1,11 +1,13 @@
-import { useState, useEffect, useMemo, useRef } from "react";
-import { Star, Pencil, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { Star, Pencil, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, ImagePlus, X, MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { SignedImage } from "@/components/common/SignedImage";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -19,12 +21,16 @@ interface Review {
   reviewer_name: string;
   rating: number;
   review_text: string | null;
+  review_title?: string | null;
+  photos?: string[] | null;
   created_at: string;
   is_verified: boolean;
   user_id?: string | null;
 }
 
 const PER_PAGE = 6;
+const MAX_PHOTOS = 4;
+const MAX_PHOTO_MB = 5;
 
 function Stars({ value, size = "h-4 w-4" }: { value: number; size?: string }) {
   return (
@@ -45,10 +51,13 @@ export function CustomerReviews({ productId }: { productId: string }) {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [name, setName] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const formRef = useRef<HTMLDivElement | null>(null);
 
   const fetchReviews = async () => {
     const { data } = await supabase.rpc("get_public_product_reviews", { _product_id: productId });
@@ -56,7 +65,7 @@ export function CustomerReviews({ productId }: { productId: string }) {
     if (user?.id) {
       const { data: mine } = await supabase
         .from("product_reviews")
-        .select("id, reviewer_name, rating, review_text, created_at, is_verified, user_id")
+        .select("id, reviewer_name, rating, review_text, review_title, photos, created_at, is_verified, user_id")
         .eq("product_id", productId)
         .eq("user_id", user.id);
       const mineArr = (mine as Review[]) || [];
@@ -106,7 +115,10 @@ export function CustomerReviews({ productId }: { productId: string }) {
     setShowForm(false);
     setEditingId(null);
     setRating(0);
+    setHoverRating(0);
+    setTitle("");
     setText("");
+    setPhotos([]);
   };
 
   const openNew = () => {
@@ -116,19 +128,49 @@ export function CustomerReviews({ productId }: { productId: string }) {
     }
     setEditingId(null);
     setName(profile?.full_name || "");
+    setTitle("");
     setText("");
+    setPhotos([]);
     setRating(0);
     setShowForm(true);
-    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
   };
 
   const openEdit = (r: Review) => {
     setEditingId(r.id);
     setName(r.reviewer_name);
+    setTitle(r.review_title || "");
     setText(r.review_text || "");
+    setPhotos(r.photos || []);
     setRating(r.rating);
     setShowForm(true);
-    setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 50);
+  };
+
+  const handlePhotoSelect = async (files: FileList | null) => {
+    if (!files?.length || !user) return;
+    const picked = Array.from(files).slice(0, MAX_PHOTOS - photos.length);
+    setUploading(true);
+    const uploaded: string[] = [];
+    for (const file of picked) {
+      if (!file.type.startsWith("image/")) {
+        toast({ title: "Only image files are allowed", variant: "destructive" });
+        continue;
+      }
+      if (file.size > MAX_PHOTO_MB * 1024 * 1024) {
+        toast({ title: `Each image must be under ${MAX_PHOTO_MB}MB`, variant: "destructive" });
+        continue;
+      }
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `reviews/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
+      if (error) {
+        toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+        continue;
+      }
+      const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+      uploaded.push(data.publicUrl);
+    }
+    setPhotos((p) => [...p, ...uploaded].slice(0, MAX_PHOTOS));
+    setUploading(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -152,7 +194,13 @@ export function CustomerReviews({ productId }: { productId: string }) {
       return;
     }
     setSubmitting(true);
-    const payload = { reviewer_name: name.trim(), rating, review_text: text.trim() || null };
+    const payload = {
+      reviewer_name: name.trim(),
+      rating,
+      review_title: title.trim() || null,
+      review_text: text.trim() || null,
+      photos,
+    };
     const { error } = editingId
       ? await supabase.from("product_reviews").update(payload).eq("id", editingId)
       : await supabase.from("product_reviews").insert({
