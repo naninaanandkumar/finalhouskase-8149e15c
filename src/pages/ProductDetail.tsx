@@ -623,11 +623,11 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Middle: Product Info - flows naturally, NO internal scroll */}
-            <div className="space-y-4 min-w-0">
+            {/* Right: Product Info + Buy Box in one column */}
+            <div className="space-y-5 min-w-0">
               {/* Title & Meta */}
               <div>
-                <h1 className="text-base sm:text-lg md:text-xl font-bold text-foreground leading-tight mb-2">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground leading-snug mb-2">
                   {product.name}
                 </h1>
                 
@@ -641,27 +641,41 @@ export default function ProductDetail() {
                   )}
                 </div>
 
-                {/* Price + Rating */}
-                <div className="flex items-center gap-4 mt-2 flex-wrap">
-                  <div>
-                    {getPriceLabel() && (
-                      <span className="text-[10px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded mb-1 inline-block">
-                        {getPriceLabel()}
-                      </span>
+                <ReviewsSummary productId={product.id} />
+
+                {/* Price */}
+                <div className="mt-3">
+                  {getPriceLabel() && (
+                    <span className="text-[10px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded mb-1.5 inline-block">
+                      {getPriceLabel()}
+                    </span>
+                  )}
+                  <div className="flex items-baseline gap-2.5 flex-wrap">
+                    <span className="text-2xl sm:text-3xl font-bold text-foreground">₹{currentPrice.toLocaleString("en-IN")}</span>
+                    {currentMrp > currentPrice && (
+                      <>
+                        <span className="text-base text-muted-foreground line-through">₹{currentMrp.toLocaleString("en-IN")}</span>
+                        <span className="text-sm font-semibold text-success">
+                          {Math.round(((currentMrp - currentPrice) / currentMrp) * 100)}% OFF
+                        </span>
+                      </>
                     )}
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-bold text-foreground">₹{currentPrice.toLocaleString("en-IN")}</span>
-                      {currentMrp > currentPrice && (
-                        <>
-                          <span className="text-sm text-muted-foreground line-through">₹{currentMrp.toLocaleString("en-IN")}</span>
-                          <span className="text-sm font-semibold text-success">
-                            {Math.round(((currentMrp - currentPrice) / currentMrp) * 100)}% OFF
-                          </span>
-                        </>
-                      )}
-                    </div>
                   </div>
-                  <ReviewsSummary productId={product.id} />
+                  <div className="mt-1 space-y-0.5">
+                    {gstEnabled && (
+                      <p className="text-xs text-muted-foreground">
+                        ₹{displayInclPrice.toLocaleString("en-IN")} (Incl. of all taxes) ·{" "}
+                        <span className="text-success font-medium">
+                          {gstInclusive ? `GST included (${gstPercent}%)` : `+${gstPercent}% GST`}
+                        </span>
+                      </p>
+                    )}
+                    {currentMrp > currentPrice && (
+                      <p className="text-xs text-success font-medium">
+                        You save ₹{(currentMrp - currentPrice).toLocaleString("en-IN")}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
