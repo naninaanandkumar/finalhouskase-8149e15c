@@ -394,7 +394,7 @@ export default function Products() {
             <div className="mb-6">
               <h2 className="text-base font-semibold text-foreground mb-3">ALL CATEGORIES ({subCategories.length})</h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-3">
                 {subCategories.map(sub => (
                   <Link
                     key={sub.id}
@@ -528,7 +528,7 @@ export default function Products() {
 
               {/* Products Grid */}
               {isLoading ? (
-                <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 min-w-0">
+                <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 min-w-0">
                   {[...Array(10)].map((_, i) => (
                     <div key={i} className="bg-card rounded-xl overflow-hidden shadow-card border border-border">
                       <div className="aspect-square bg-muted animate-pulse" />
@@ -550,7 +550,7 @@ export default function Products() {
                   </Button>
                 </div>
               ) : (
-                <div className={`grid gap-3 sm:gap-4 min-w-0 ${viewMode === "grid" ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5" : "grid-cols-1"}`}>
+                <div className={`grid gap-3 sm:gap-4 min-w-0 ${viewMode === "grid" ? "grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5" : "grid-cols-1"}`}>
                   {sortedProducts.map((product, index) => (
                     <ProductCard key={product.id} product={product} index={index} />
                   ))}
