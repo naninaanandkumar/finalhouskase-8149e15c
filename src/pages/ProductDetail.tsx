@@ -18,7 +18,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { RelatedProducts } from "@/components/products/RelatedProducts";
 import { ReviewsSummary } from "@/components/products/ReviewsSummary";
-import { RecentProducts } from "@/components/products/RecentProducts";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { ProductOffers } from "@/components/products/ProductOffers";
 import { ProductCoupons } from "@/components/products/ProductCoupons";
@@ -519,6 +518,7 @@ export default function ProductDetail() {
             url: `${window.location.origin}/product/${product.slug}`,
             inStock: (currentStock ?? 0) > 0,
           }),
+          SchemaGenerators.website("Houskase", window.location.origin),
           SchemaGenerators.breadcrumb([
             { name: "Home", url: window.location.origin },
             { name: "Products", url: `${window.location.origin}/products` },
@@ -1020,15 +1020,12 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Customer reviews */}
-          <CustomerReviews productId={product.id} />
-
           {/* Everything below scrolls with the page */}
           <ReelsSection title="Trending Reels" placement="product" />
           <RelatedProducts currentProductId={product.id} categoryId={product.category_id} />
 
-          {/* Recent Products */}
-          <RecentProducts currentProductId={product.id} />
+          {/* Customer reviews */}
+          <CustomerReviews productId={product.id} />
         </div>
       </main>
 
