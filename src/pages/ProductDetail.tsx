@@ -18,7 +18,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { RelatedProducts } from "@/components/products/RelatedProducts";
 import { ReviewsSummary } from "@/components/products/ReviewsSummary";
-import { RecentProducts } from "@/components/products/RecentProducts";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { ProductOffers } from "@/components/products/ProductOffers";
 import { ProductCoupons } from "@/components/products/ProductCoupons";
@@ -1020,15 +1019,10 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Customer reviews */}
-          <CustomerReviews productId={product.id} />
-
-          {/* Everything below scrolls with the page */}
-          <ReelsSection title="Trending Reels" placement="product" />
+          {/* Related products → Trending reels → Reviews */}
           <RelatedProducts currentProductId={product.id} categoryId={product.category_id} />
-
-          {/* Recent Products */}
-          <RecentProducts currentProductId={product.id} />
+          <ReelsSection title="Trending Reels" placement="product" />
+          <CustomerReviews productId={product.id} productName={product.name} />
         </div>
       </main>
 
