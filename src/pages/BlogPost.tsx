@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { SEOHead } from "@/components/SEOHead";
@@ -77,27 +77,24 @@ export default function BlogPost() {
         }
       />
       <Header />
-      <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to="/blog" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4" /> Back to blog
-        </Link>
-
+      <main className="w-full">
         {loading ? (
           <div className="py-20 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-accent" /></div>
         ) : !post ? (
           <p className="py-20 text-center text-sm text-muted-foreground">This post could not be found.</p>
         ) : (
-          <article className="mt-4">
+          <article>
+            {post.cover_image && (
+              <div className="w-full h-[500px] overflow-hidden bg-secondary">
+                <SignedImage src={post.cover_image} alt={post.title} className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <h1 className="text-2xl sm:text-3xl font-display font-bold text-foreground">{post.title}</h1>
             <p className="mt-1.5 text-xs text-muted-foreground">
               {new Date(post.published_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
               {post.author ? ` · ${post.author}` : ""}
             </p>
-            {post.cover_image && (
-              <div className="mt-4 rounded-xl overflow-hidden border border-border">
-                <SignedImage src={post.cover_image} alt={post.title} className="w-full object-cover" />
-              </div>
-            )}
             <div className="mt-5">
               <BlogContent content={post.content} />
             </div>
@@ -108,6 +105,7 @@ export default function BlogPost() {
                 ))}
               </div>
             )}
+            </div>
           </article>
         )}
       </main>
