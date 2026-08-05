@@ -626,7 +626,7 @@ export default function ProductDetail() {
             <div className="space-y-5 min-w-0">
               {/* Title & Meta */}
               <div>
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground leading-snug mb-2">
+                <h1 className="text-lg sm:text-xl md:text-lg lg:text-xl md:font-semibold font-bold text-foreground leading-snug mb-2">
                   {product.name}
                 </h1>
                 
@@ -1021,8 +1021,14 @@ export default function ProductDetail() {
 
           {/* Related products → Trending reels → Reviews */}
           <RelatedProducts currentProductId={product.id} categoryId={product.category_id} />
-          <ReelsSection title="Trending Reels" placement="product" />
-          <CustomerReviews productId={product.id} productName={product.name} />
+          <div className="mt-[30px]">
+            <ReelsSection title="Trending Reels" placement="product" />
+          </div>
+          <CustomerReviews
+            productId={product.id}
+            productName={product.name}
+            productUrl={`${window.location.origin}/product/${product.slug}`}
+          />
         </div>
       </main>
 
