@@ -96,7 +96,7 @@ export function CustomerReviews({ productId }: { productId: string }) {
   }, [productId, user?.id]);
 
   // Ratings summary is based on published (approved) reviews only.
-  const published = useMemo(() => reviews.filter((r) => r.is_approved !== false), [reviews]);
+  const published = useMemo(() => reviews.filter((r) => r.is_approved === true), [reviews]);
   const total = published.length;
   const avg = total ? published.reduce((s, r) => s + r.rating, 0) / total : 0;
   const buckets = [5, 4, 3, 2, 1].map((star) => ({
@@ -233,7 +233,7 @@ export function CustomerReviews({ productId }: { productId: string }) {
       review_text: text.trim() || null,
       photos,
       // Any new or edited review goes back into moderation.
-      is_approved: false,
+      is_approved: null as boolean | null,
     };
     const { error } = editingId
       ? await supabase.from("product_reviews").update(payload).eq("id", editingId)
@@ -485,7 +485,7 @@ export function CustomerReviews({ productId }: { productId: string }) {
         <div className="mt-3 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {current.map((r) => {
             const isOwner = !!user && r.user_id === user.id;
-            const isPending = r.is_approved === false;
+            const isPending = r.is_approved !== true;
             return (
               <article key={r.id} className="flex h-full flex-col rounded-lg border border-border bg-card p-4">
                 <div className="flex items-start justify-between gap-2">
