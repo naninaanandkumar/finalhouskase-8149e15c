@@ -797,7 +797,7 @@ export default function ProductDetail() {
               )}
 
               {/* Buy Box */}
-              <div className="bg-card rounded-xl border border-border p-4 space-y-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+              <div className="space-y-3 pt-4 border-t border-border">
                 {/* Quantity Selector */}
                 <div className="flex items-center gap-3">
                   <div className="flex items-center border border-border rounded-full">
@@ -847,6 +847,22 @@ export default function ProductDetail() {
                     {isBuyingNow ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
                     {isBuyingNow ? "PROCESSING..." : "BUY NOW"}
                   </Button>
+                </div>
+
+                {/* Payment methods + secure payment badges */}
+                <div className="space-y-2">
+                  <img
+                    src="https://ik.imagekit.io/houskase/PAYMENT-GETWAY-2%20(1).avif"
+                    alt="Accepted payment methods: Visa, Mastercard, UPI, RuPay and more"
+                    loading="lazy"
+                    className="w-full h-auto rounded-lg"
+                  />
+                  <img
+                    src="https://ik.imagekit.io/houskase/Secure-Payment%20(2).avif"
+                    alt="100% secure payment"
+                    loading="lazy"
+                    className="w-full h-auto rounded-lg"
+                  />
                 </div>
 
                 {/* Quick Actions Row */}
