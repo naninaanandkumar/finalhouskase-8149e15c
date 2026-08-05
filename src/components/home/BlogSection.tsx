@@ -28,7 +28,7 @@ export function BlogSection() {
         .eq("is_published", true)
         .order("sort_order", { ascending: true })
         .order("published_at", { ascending: false })
-        .limit(3);
+        .limit(4);
       if (!cancelled) setPosts((data as BlogPost[]) || []);
     };
     fetchPosts();
@@ -48,7 +48,7 @@ export function BlogSection() {
     <section className="py-8 sm:py-10 bg-background">
       <div className="container mx-auto px-3 sm:px-4">
         <SectionHeading title="From Our Blog" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {posts.map((post) => (
             <Link
               key={post.id}
