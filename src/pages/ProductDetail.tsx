@@ -783,6 +783,116 @@ export default function ProductDetail() {
                 </div>
               )}
 
+              {/* Buy Box */}
+              <div className="bg-card rounded-xl border border-border p-4 space-y-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                {/* Quantity Selector */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center border border-border rounded-full">
+                    <button
+                      aria-label="Decrease quantity"
+                      onClick={() => handleQuantityChange(-1)}
+                      disabled={quantity <= currentMoq}
+                      className="p-2 hover:bg-secondary rounded-l-full transition-colors disabled:opacity-40"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <span className="w-10 text-center text-sm font-semibold">{quantity}</span>
+                    <button
+                      aria-label="Increase quantity"
+                      onClick={() => handleQuantityChange(1)}
+                      className="p-2 hover:bg-secondary rounded-r-full transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {hasExplicitMoq ? <>Minimum Order Quantity- {currentMoq}</> : "Quantity"}
+                  </p>
+                </div>
+
+                {hasExplicitMoq && !moqValid && (
+                  <p className="text-xs text-destructive font-medium">
+                    Minimum order quantity for this product is {currentMoq} units
+                  </p>
+                )}
+
+                {/* CTA Buttons */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Button
+                    className="bg-accent hover:bg-accent-hover text-xs sm:text-sm font-bold h-11 uppercase tracking-wide rounded-lg px-2 inline-flex items-center justify-center gap-1.5"
+                    onClick={handleAddToCartClick}
+                    disabled={isAddingToCart || isBuyingNow || !moqValid}
+                  >
+                    {isAddingToCart ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                    {isAddingToCart ? "Adding..." : "ADD TO CART"}
+                  </Button>
+                  <Button
+                    className="bg-primary hover:bg-primary/90 text-xs sm:text-sm font-bold h-11 uppercase tracking-wide rounded-lg px-2 inline-flex items-center justify-center gap-1.5"
+                    onClick={handleBuyNow}
+                    disabled={isAddingToCart || isBuyingNow || !moqValid}
+                  >
+                    {isBuyingNow ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                    {isBuyingNow ? "PROCESSING..." : "BUY NOW"}
+                  </Button>
+                </div>
+
+                {/* Quick Actions Row */}
+                <div className="grid grid-cols-3 divide-x divide-border border border-border rounded-lg">
+                  <button
+                    onClick={() => window.open("tel:+919266129195")}
+                    className="flex flex-col items-center gap-1.5 py-3 hover:bg-secondary/50 transition-colors"
+                  >
+                    <Phone className="h-5 w-5 text-primary" />
+                    <span className="text-[10px] text-center text-muted-foreground leading-tight">
+                      Call us at<br />+91 92661 29195
+                    </span>
+                  </button>
+                  <button
+                    onClick={handleWhatsAppClick}
+                    className="flex flex-col items-center gap-1.5 py-3 hover:bg-secondary/50 transition-colors"
+                  >
+                    <MessageCircle className="h-5 w-5 text-success" />
+                    <span className="text-[10px] text-center text-muted-foreground leading-tight">
+                      Buy on<br />Chat
+                    </span>
+                  </button>
+                  <button
+                    onClick={handleAddToRFQ}
+                    className="flex flex-col items-center gap-1.5 py-3 hover:bg-secondary/50 transition-colors"
+                  >
+                    <FileText className="h-5 w-5 text-accent" />
+                    <span className="text-[10px] text-center text-muted-foreground leading-tight">
+                      Ask for Bulk<br />Qty Quote
+                    </span>
+                  </button>
+                </div>
+
+                {/* Delivery Pincode Check */}
+                <DeliveryChecker />
+
+                {/* Returns + Shipping */}
+                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border">
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border border-border bg-secondary/20">
+                    <div className="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                      <Shield className="h-4 w-4 text-success" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground leading-tight">Returns</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">As per Brand / 7 days</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border border-border bg-secondary/20">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Truck className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground leading-tight">Shipping</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">Free for bulk orders</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Available Offers */}
               <ProductOffers categoryId={product.category_id} />
 
