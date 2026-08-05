@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { RelatedProducts } from "@/components/products/RelatedProducts";
 import { ReviewsSummary } from "@/components/products/ReviewsSummary";
+import { TrustImage } from "@/components/products/TrustImage";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { ProductOffers } from "@/components/products/ProductOffers";
 import { ProductCoupons } from "@/components/products/ProductCoupons";
