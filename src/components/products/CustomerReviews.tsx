@@ -514,7 +514,19 @@ export function CustomerReviews({
       )}
 
       {/* Review cards */}
-      {total === 0 ? (
+      {loading || pending ? (
+        <div className="mt-3 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true" aria-label="Loading reviews">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex h-full flex-col gap-3 rounded-lg border border-border bg-card p-4">
+              <div className="h-3.5 w-24 animate-pulse rounded bg-muted" />
+              <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-full animate-pulse rounded bg-muted" />
+              <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+            </div>
+          ))}
+        </div>
+      ) : total === 0 ? (
         <div className="mt-3 flex flex-col items-center gap-3 rounded-lg border border-dashed border-border bg-card px-4 py-12 text-center">
           <MessageSquarePlus className="h-8 w-8 text-muted-foreground/60" />
           <p className="text-sm font-medium text-foreground">No reviews yet</p>
