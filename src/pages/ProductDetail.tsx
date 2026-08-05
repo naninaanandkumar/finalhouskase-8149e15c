@@ -549,8 +549,8 @@ export default function ProductDetail() {
             <span className="text-foreground truncate">{product.name}</span>
           </nav>
 
-          {/* Main Product Section - CSS Grid with sticky sides */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr_1fr] gap-4 lg:gap-6 items-start min-w-0">
+          {/* Main Product Section - modern 2-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-5 lg:gap-10 items-start min-w-0">
             {/* Left: Image Gallery - STICKY */}
             <div className="md:sticky md:top-5 min-w-0">
               <div className="space-y-3">
@@ -589,14 +589,13 @@ export default function ProductDetail() {
                   <div
                     id="thumb-scroll"
                     className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide max-w-full"
-                    style={{ maxWidth: "min(100%, 376px)" }}
                   >
                     {productImages.map((img, idx) => (
                       <button
                         key={idx}
                         onClick={() => setSelectedImage(img)}
                         className={cn(
-                          "flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all",
+                          "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all",
                           selectedImage === img 
                             ? "border-accent" 
                             : "border-border hover:border-accent/50"
@@ -624,11 +623,11 @@ export default function ProductDetail() {
               </div>
             </div>
 
-            {/* Middle: Product Info - flows naturally, NO internal scroll */}
-            <div className="space-y-4 min-w-0">
+            {/* Right: Product Info + Buy Box in one column */}
+            <div className="space-y-5 min-w-0">
               {/* Title & Meta */}
               <div>
-                <h1 className="text-base sm:text-lg md:text-xl font-bold text-foreground leading-tight mb-2">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground leading-snug mb-2">
                   {product.name}
                 </h1>
                 
@@ -642,27 +641,41 @@ export default function ProductDetail() {
                   )}
                 </div>
 
-                {/* Price + Rating */}
-                <div className="flex items-center gap-4 mt-2 flex-wrap">
-                  <div>
-                    {getPriceLabel() && (
-                      <span className="text-[10px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded mb-1 inline-block">
-                        {getPriceLabel()}
-                      </span>
+                <ReviewsSummary productId={product.id} />
+
+                {/* Price */}
+                <div className="mt-3">
+                  {getPriceLabel() && (
+                    <span className="text-[10px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded mb-1.5 inline-block">
+                      {getPriceLabel()}
+                    </span>
+                  )}
+                  <div className="flex items-baseline gap-2.5 flex-wrap">
+                    <span className="text-2xl sm:text-3xl font-bold text-foreground">₹{currentPrice.toLocaleString("en-IN")}</span>
+                    {currentMrp > currentPrice && (
+                      <>
+                        <span className="text-base text-muted-foreground line-through">₹{currentMrp.toLocaleString("en-IN")}</span>
+                        <span className="text-sm font-semibold text-success">
+                          {Math.round(((currentMrp - currentPrice) / currentMrp) * 100)}% OFF
+                        </span>
+                      </>
                     )}
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xl font-bold text-foreground">₹{currentPrice.toLocaleString("en-IN")}</span>
-                      {currentMrp > currentPrice && (
-                        <>
-                          <span className="text-sm text-muted-foreground line-through">₹{currentMrp.toLocaleString("en-IN")}</span>
-                          <span className="text-sm font-semibold text-success">
-                            {Math.round(((currentMrp - currentPrice) / currentMrp) * 100)}% OFF
-                          </span>
-                        </>
-                      )}
-                    </div>
                   </div>
-                  <ReviewsSummary productId={product.id} />
+                  <div className="mt-1 space-y-0.5">
+                    {gstEnabled && (
+                      <p className="text-xs text-muted-foreground">
+                        ₹{displayInclPrice.toLocaleString("en-IN")} (Incl. of all taxes) ·{" "}
+                        <span className="text-success font-medium">
+                          {gstInclusive ? `GST included (${gstPercent}%)` : `+${gstPercent}% GST`}
+                        </span>
+                      </p>
+                    )}
+                    {currentMrp > currentPrice && (
+                      <p className="text-xs text-success font-medium">
+                        You save ₹{(currentMrp - currentPrice).toLocaleString("en-IN")}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -769,6 +782,116 @@ export default function ProductDetail() {
                   )}
                 </div>
               )}
+
+              {/* Buy Box */}
+              <div className="bg-card rounded-xl border border-border p-4 space-y-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                {/* Quantity Selector */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center border border-border rounded-full">
+                    <button
+                      aria-label="Decrease quantity"
+                      onClick={() => handleQuantityChange(-1)}
+                      disabled={quantity <= currentMoq}
+                      className="p-2 hover:bg-secondary rounded-l-full transition-colors disabled:opacity-40"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <span className="w-10 text-center text-sm font-semibold">{quantity}</span>
+                    <button
+                      aria-label="Increase quantity"
+                      onClick={() => handleQuantityChange(1)}
+                      className="p-2 hover:bg-secondary rounded-r-full transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {hasExplicitMoq ? <>Minimum Order Quantity- {currentMoq}</> : "Quantity"}
+                  </p>
+                </div>
+
+                {hasExplicitMoq && !moqValid && (
+                  <p className="text-xs text-destructive font-medium">
+                    Minimum order quantity for this product is {currentMoq} units
+                  </p>
+                )}
+
+                {/* CTA Buttons */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Button
+                    className="bg-accent hover:bg-accent-hover text-xs sm:text-sm font-bold h-11 uppercase tracking-wide rounded-lg px-2 inline-flex items-center justify-center gap-1.5"
+                    onClick={handleAddToCartClick}
+                    disabled={isAddingToCart || isBuyingNow || !moqValid}
+                  >
+                    {isAddingToCart ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShoppingCart className="h-4 w-4" />}
+                    {isAddingToCart ? "Adding..." : "ADD TO CART"}
+                  </Button>
+                  <Button
+                    className="bg-primary hover:bg-primary/90 text-xs sm:text-sm font-bold h-11 uppercase tracking-wide rounded-lg px-2 inline-flex items-center justify-center gap-1.5"
+                    onClick={handleBuyNow}
+                    disabled={isAddingToCart || isBuyingNow || !moqValid}
+                  >
+                    {isBuyingNow ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                    {isBuyingNow ? "PROCESSING..." : "BUY NOW"}
+                  </Button>
+                </div>
+
+                {/* Quick Actions Row */}
+                <div className="grid grid-cols-3 divide-x divide-border border border-border rounded-lg">
+                  <button
+                    onClick={() => window.open("tel:+919266129195")}
+                    className="flex flex-col items-center gap-1.5 py-3 hover:bg-secondary/50 transition-colors"
+                  >
+                    <Phone className="h-5 w-5 text-primary" />
+                    <span className="text-[10px] text-center text-muted-foreground leading-tight">
+                      Call us at<br />+91 92661 29195
+                    </span>
+                  </button>
+                  <button
+                    onClick={handleWhatsAppClick}
+                    className="flex flex-col items-center gap-1.5 py-3 hover:bg-secondary/50 transition-colors"
+                  >
+                    <MessageCircle className="h-5 w-5 text-success" />
+                    <span className="text-[10px] text-center text-muted-foreground leading-tight">
+                      Buy on<br />Chat
+                    </span>
+                  </button>
+                  <button
+                    onClick={handleAddToRFQ}
+                    className="flex flex-col items-center gap-1.5 py-3 hover:bg-secondary/50 transition-colors"
+                  >
+                    <FileText className="h-5 w-5 text-accent" />
+                    <span className="text-[10px] text-center text-muted-foreground leading-tight">
+                      Ask for Bulk<br />Qty Quote
+                    </span>
+                  </button>
+                </div>
+
+                {/* Delivery Pincode Check */}
+                <DeliveryChecker />
+
+                {/* Returns + Shipping */}
+                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border">
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border border-border bg-secondary/20">
+                    <div className="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
+                      <Shield className="h-4 w-4 text-success" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground leading-tight">Returns</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">As per Brand / 7 days</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2.5 p-2.5 rounded-lg border border-border bg-secondary/20">
+                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Truck className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground leading-tight">Shipping</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">Free for bulk orders</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Available Offers */}
               <ProductOffers categoryId={product.category_id} />
@@ -883,153 +1006,6 @@ export default function ProductDetail() {
               )}
             </div>
 
-            {/* Right: Buy Box - STICKY */}
-            <div className="md:sticky md:top-5 min-w-0">
-              <div className="space-y-3">
-                {/* Price & Buy Box */}
-                <div className="bg-card rounded-lg border border-border p-4 space-y-3">
-                  {/* Price hidden on phones — single price shows under the heading */}
-                  <div className="hidden md:block">
-                    {getPriceLabel() && (
-                      <span className="text-[10px] font-medium text-accent bg-accent/10 px-1.5 py-0.5 rounded mb-1 inline-block">
-                        {getPriceLabel()}
-                      </span>
-                    )}
-                    {gstEnabled && (
-                      <p className="text-sm text-muted-foreground">
-                        ₹{displayInclPrice.toLocaleString("en-IN")} <span className="text-xs">(Incl. of all taxes)</span>
-                      </p>
-                    )}
-                    <div className="flex items-baseline gap-2">
-                      <p className="text-2xl font-bold text-foreground">
-                        ₹{currentPrice.toLocaleString("en-IN")}
-                      </p>
-                      {gstEnabled && (
-                        <span className="text-sm text-success font-medium">
-                          {gstInclusive ? `GST included (${gstPercent}%)` : `+${gstPercent}% GST`}
-                        </span>
-                      )}
-                    </div>
-                    {currentMrp > currentPrice && (
-                      <p className="text-xs text-success font-medium mt-0.5">
-                        You save ₹{(currentMrp - currentPrice).toLocaleString("en-IN")} ({Math.round(((currentMrp - currentPrice) / currentMrp) * 100)}% off)
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Quantity Selector */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center border border-border rounded-full">
-                      <button
-                        aria-label="Decrease quantity"
-                        onClick={() => handleQuantityChange(-1)}
-                        disabled={quantity <= currentMoq}
-                        className="p-2 hover:bg-secondary rounded-l-full transition-colors disabled:opacity-40"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </button>
-                      <span className="w-10 text-center text-sm font-semibold">{quantity}</span>
-                      <button
-                        aria-label="Increase quantity"
-                        onClick={() => handleQuantityChange(1)}
-                        className="p-2 hover:bg-secondary rounded-r-full transition-colors"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {hasExplicitMoq ? (
-                        <>Minimum Order<br />Quantity- {currentMoq}</>
-                      ) : (
-                        "Quantity"
-                      )}
-                    </p>
-                  </div>
-
-                  {hasExplicitMoq && !moqValid && (
-                    <p className="text-xs text-destructive font-medium">
-                      Minimum order quantity for this product is {currentMoq} units
-                    </p>
-                  )}
-
-                  {/* CTA Buttons */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      className="bg-accent hover:bg-accent-hover text-[10px] sm:text-xs font-bold h-8 sm:h-9 uppercase tracking-wide rounded-md px-2 inline-flex items-center justify-center gap-1.5"
-                      onClick={handleAddToCartClick}
-                      disabled={isAddingToCart || isBuyingNow || !moqValid}
-                    >
-                      {isAddingToCart && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                      {isAddingToCart ? "Adding..." : "ADD TO CART"}
-                    </Button>
-                    <Button
-                      className="bg-primary hover:bg-primary/90 text-[10px] sm:text-xs font-bold h-8 sm:h-9 uppercase tracking-wide rounded-md px-2 inline-flex items-center justify-center gap-1.5"
-                      onClick={handleBuyNow}
-                      disabled={isAddingToCart || isBuyingNow || !moqValid}
-                    >
-                      {isBuyingNow && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                      {isBuyingNow ? "PROCESSING..." : "BUY NOW"}
-                    </Button>
-                  </div>
-
-                  {/* Quick Actions Row */}
-                  <div className="grid grid-cols-3 divide-x divide-border border border-border rounded-lg">
-                    <button
-                      onClick={() => window.open("tel:+919266129195")}
-                      className="flex flex-col items-center gap-1.5 py-3 hover:bg-secondary/50 transition-colors"
-                    >
-                      <Phone className="h-5 w-5 text-primary" />
-                      <span className="text-[10px] text-center text-muted-foreground leading-tight">
-                        Call us at<br />+91 92661 29195
-                      </span>
-                    </button>
-                    <button
-                      onClick={handleWhatsAppClick}
-                      className="flex flex-col items-center gap-1.5 py-3 hover:bg-secondary/50 transition-colors"
-                    >
-                      <MessageCircle className="h-5 w-5 text-success" />
-                      <span className="text-[10px] text-center text-muted-foreground leading-tight">
-                        Buy on<br />Chat
-                      </span>
-                    </button>
-                    <button
-                      onClick={handleAddToRFQ}
-                      className="flex flex-col items-center gap-1.5 py-3 hover:bg-secondary/50 transition-colors"
-                    >
-                      <FileText className="h-5 w-5 text-accent" />
-                      <span className="text-[10px] text-center text-muted-foreground leading-tight">
-                        Ask for Bulk<br />Qty Quote
-                      </span>
-                    </button>
-                  </div>
-
-                  {/* Delivery Pincode Check */}
-                  <DeliveryChecker />
-
-                  {/* Returns + Shipping */}
-                  <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border">
-                    <div className="flex md:flex-row flex-col md:items-center items-center md:text-left text-center gap-1.5 md:gap-2.5 p-2.5 rounded-lg border border-border bg-secondary/20">
-                      <div className="w-9 h-9 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
-                        <Shield className="h-4 w-4 text-success" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-foreground leading-tight">Returns</p>
-                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">As per Brand / 7 days</p>
-                      </div>
-                    </div>
-                    <div className="flex md:flex-row flex-col md:items-center items-center md:text-left text-center gap-1.5 md:gap-2.5 p-2.5 rounded-lg border border-border bg-secondary/20">
-                      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                        <Truck className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-foreground leading-tight">Shipping</p>
-                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">Free for bulk orders</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
 
