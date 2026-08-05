@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { SignedImage } from "@/components/common/SignedImage";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -319,6 +319,9 @@ export function CustomerReviews({
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit your review" : "Write a review"}</DialogTitle>
+            <DialogDescription>
+              Share your rating, an optional title, a description and up to {MAX_PHOTOS} photos.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -363,11 +366,12 @@ export function CustomerReviews({
             </div>
             <div>
               <p className="mb-1.5 text-sm font-medium text-foreground">Your name</p>
-              <Input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} className="h-9 text-sm" />
+              <Input aria-label="Your name" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} className="h-9 text-sm" />
             </div>
             <div>
               <p className="mb-1.5 text-sm font-medium text-foreground">Review title</p>
               <Input
+                aria-label="Review title"
                 placeholder="Summarise your experience"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -378,6 +382,7 @@ export function CustomerReviews({
             <div>
               <p className="mb-1.5 text-sm font-medium text-foreground">Description</p>
               <Textarea
+                aria-label="Review description"
                 placeholder="What did you like or dislike?"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
