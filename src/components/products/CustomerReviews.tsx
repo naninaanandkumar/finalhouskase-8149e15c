@@ -399,7 +399,7 @@ export function CustomerReviews({ productId }: { productId: string }) {
           {current.map((r) => {
             const isOwner = !!user && r.user_id === user.id;
             return (
-              <div key={r.id} className="rounded-lg border border-border bg-card p-4">
+              <div key={r.id} className="flex h-full flex-col rounded-lg border border-border bg-card p-4">
                 <div className="flex items-start justify-between gap-2">
                   <Stars value={r.rating} size="h-3.5 w-3.5" />
                   <span className="text-xs text-muted-foreground">
@@ -425,8 +425,20 @@ export function CustomerReviews({ productId }: { productId: string }) {
                     </span>
                   )}
                 </div>
+                {r.review_title && (
+                  <p className="mt-2 text-sm font-semibold text-foreground">{r.review_title}</p>
+                )}
                 {r.review_text && (
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{r.review_text}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{r.review_text}</p>
+                )}
+                {!!r.photos?.length && (
+                  <div className="mt-auto flex flex-wrap gap-2 pt-3">
+                    {r.photos.map((p) => (
+                      <a key={p} href={p} target="_blank" rel="noreferrer" className="h-14 w-14 overflow-hidden rounded border border-border">
+                        <SignedImage src={p} alt={`Photo from ${r.reviewer_name}`} className="h-full w-full object-cover" loading="lazy" />
+                      </a>
+                    ))}
+                  </div>
                 )}
               </div>
             );
@@ -436,7 +448,7 @@ export function CustomerReviews({ productId }: { productId: string }) {
 
       {/* Pagination */}
       {pageCount > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-2 text-sm">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-1.5 text-sm sm:gap-2">
           <button onClick={() => setPage(1)} disabled={page === 1} aria-label="First page" className="p-1 disabled:opacity-30">
             <ChevronsLeft className="h-4 w-4" />
           </button>
