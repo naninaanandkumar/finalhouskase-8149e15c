@@ -22,7 +22,7 @@ import { RecentProducts } from "@/components/products/RecentProducts";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { ProductOffers } from "@/components/products/ProductOffers";
 import { ProductCoupons } from "@/components/products/ProductCoupons";
-import { ProductTabs } from "@/components/products/ProductTabs";
+import { CustomerReviews } from "@/components/products/CustomerReviews";
 import { Input } from "@/components/ui/input";
 import { SEOHead, SchemaGenerators } from "@/components/SEOHead";
 import { SignedImage } from "@/components/common/SignedImage";
