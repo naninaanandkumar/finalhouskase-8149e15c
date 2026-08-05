@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { RelatedProducts } from "@/components/products/RelatedProducts";
 import { ReviewsSummary } from "@/components/products/ReviewsSummary";
+import { TrustImage } from "@/components/products/TrustImage";
 import { ReelsSection } from "@/components/reels/ReelsSection";
 import { ProductOffers } from "@/components/products/ProductOffers";
 import { ProductCoupons } from "@/components/products/ProductCoupons";
@@ -634,9 +635,7 @@ export default function ProductDetail() {
             <div className="min-w-0 space-y-5 bg-card rounded-xl border border-border p-4 sm:p-5 shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
               {/* Title & Meta */}
               <div>
-                <ReviewsSummary productId={product.id} />
-
-                <h1 className="mt-2 text-lg sm:text-xl md:text-lg lg:text-xl md:font-semibold font-bold text-foreground leading-snug mb-2">
+                <h1 className="text-lg sm:text-xl md:text-lg lg:text-xl md:font-semibold font-bold text-foreground leading-snug mb-2">
                   {product.name}
                 </h1>
 
@@ -678,10 +677,11 @@ export default function ProductDetail() {
                       </p>
                     )}
                     {currentMrp > currentPrice && (
-                      <p className="text-xs text-success font-medium">
+                      <p className="text-sm text-success font-medium">
                         You save ₹{(currentMrp - currentPrice).toLocaleString("en-IN")}
                       </p>
                     )}
+                    <ReviewsSummary productId={product.id} />
                   </div>
                 </div>
               </div>
@@ -845,17 +845,15 @@ export default function ProductDetail() {
 
                 {/* Payment methods + secure payment badges */}
                 <div className="space-y-2">
-                  <img
+                  <TrustImage
                     src="https://ik.imagekit.io/houskase/PAYMENT-GETWAY-2%20(1).avif"
-                    alt="Accepted payment methods: Visa, Mastercard, UPI, RuPay and more"
-                    loading="lazy"
-                    className="w-full h-auto rounded-lg"
+                    alt="Accepted payment methods: Visa, Mastercard, UPI, RuPay, net banking and wallets"
+                    ratio="1200 / 140"
                   />
-                  <img
+                  <TrustImage
                     src="https://ik.imagekit.io/houskase/Secure-Payment%20(2).avif"
-                    alt="100% secure payment"
-                    loading="lazy"
-                    className="w-full h-auto rounded-lg"
+                    alt="100% secure payment, protected checkout"
+                    ratio="1200 / 120"
                   />
                 </div>
 
