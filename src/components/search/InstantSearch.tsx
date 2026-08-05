@@ -40,6 +40,8 @@ export function InstantSearch({ className, placeholder = "Search products...", o
   const [isLoading, setIsLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [listening, setListening] = useState(false);
+  // -1 = nothing highlighted (default, before an actual search)
+  const [activeIndex, setActiveIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -90,6 +92,7 @@ export function InstantSearch({ className, placeholder = "Search products...", o
       setProducts([]);
       setCategories([]);
       setShowResults(false);
+      setActiveIndex(-1);
       return;
     }
 
@@ -116,6 +119,8 @@ export function InstantSearch({ className, placeholder = "Search products...", o
 
         setProducts((productData as unknown as Product[]) || []);
         setCategories(categoryData || []);
+        // Reflect the active search: first matching option becomes the selected one.
+        setActiveIndex((categoryData?.length || 0) + (productData?.length || 0) > 0 ? 0 : -1);
       } catch (error) {
         console.error("Search error:", error);
       }
@@ -162,7 +167,34 @@ export function InstantSearch({ className, placeholder = "Search products...", o
   const handleClear = () => {
     setQuery("");
     setShowResults(false);
+    setActiveIndex(-1);
     inputRef.current?.focus();
+  };
+
+  // Flattened option list drives keyboard selection + aria-activedescendant.
+  const options = [
+    ...categories.map((c) => ({ kind: "category" as const, id: `opt-cat-${c.id}`, slug: c.slug })),
+    ...products.map((p) => ({ kind: "product" as const, id: `opt-prod-${p.id}`, slug: p.slug })),
+  ];
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showResults || options.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => (i + 1) % options.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => (i <= 0 ? options.length - 1 : i - 1));
+    } else if (e.key === "Enter") {
+      const opt = options[activeIndex];
+      if (!opt) return;
+      e.preventDefault();
+      if (opt.kind === "category") handleCategoryClick(opt.slug);
+      else handleProductClick(opt.slug);
+    } else if (e.key === "Escape") {
+      setShowResults(false);
+      setActiveIndex(-1);
+    }
   };
 
   return (
@@ -174,7 +206,13 @@ export function InstantSearch({ className, placeholder = "Search products...", o
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length > 0 && setShowResults(true)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          role="combobox"
+          aria-expanded={showResults}
+          aria-controls="instant-search-listbox"
+          aria-autocomplete="list"
+          aria-activedescendant={activeIndex >= 0 ? options[activeIndex]?.id : undefined}
           className="pl-10 pr-20 h-11 bg-background border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring"
           autoFocus={autoFocus}
         />
@@ -207,7 +245,7 @@ export function InstantSearch({ className, placeholder = "Search products...", o
 
       {/* Search Results Dropdown */}
       {showResults && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden max-h-[70vh] overflow-y-auto">
+        <div id="instant-search-listbox" role="listbox" className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden max-h-[70vh] overflow-y-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -221,11 +259,18 @@ export function InstantSearch({ className, placeholder = "Search products...", o
                     Categories
                   </p>
                   <div className="space-y-1">
-                    {categories.map((category) => (
+                    {categories.map((category, i) => (
                       <button
                         key={category.id}
+                        id={`opt-cat-${category.id}`}
+                        role="option"
+                        aria-selected={activeIndex === i}
+                        onMouseEnter={() => setActiveIndex(i)}
                         onClick={() => handleCategoryClick(category.slug)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors text-left"
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left",
+                          activeIndex === i ? "bg-secondary" : "hover:bg-secondary"
+                        )}
                       >
                         <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
                           <Layers className="h-4 w-4 text-accent" />
@@ -244,11 +289,18 @@ export function InstantSearch({ className, placeholder = "Search products...", o
                     Products
                   </p>
                   <div className="space-y-1">
-                    {products.map((product) => (
+                    {products.map((product, i) => (
                       <button
                         key={product.id}
+                        id={`opt-prod-${product.id}`}
+                        role="option"
+                        aria-selected={activeIndex === categories.length + i}
+                        onMouseEnter={() => setActiveIndex(categories.length + i)}
                         onClick={() => handleProductClick(product.slug)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors text-left"
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left",
+                          activeIndex === categories.length + i ? "bg-secondary" : "hover:bg-secondary"
+                        )}
                       >
                         <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 overflow-hidden">
                           {product.images?.[0] ? (
