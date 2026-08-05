@@ -640,12 +640,6 @@ export default function ProductDetail() {
                   {product.name}
                 </h1>
 
-                {product.short_description && (
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-2">
-                    {product.short_description}
-                  </p>
-                )}
-
                 <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
                   {product.sku && <span>SKU: {product.sku}</span>}
                   {product.brand && (
