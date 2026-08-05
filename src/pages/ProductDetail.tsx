@@ -661,8 +661,8 @@ export default function ProductDetail() {
                     <span className="text-2xl sm:text-3xl font-bold text-foreground">₹{currentPrice.toLocaleString("en-IN")}</span>
                     {currentMrp > currentPrice && (
                       <>
-                        <span className="text-base text-muted-foreground line-through">₹{currentMrp.toLocaleString("en-IN")}</span>
-                        <span className="text-sm font-semibold text-success">
+                        <span className="text-lg sm:text-xl text-muted-foreground line-through">₹{currentMrp.toLocaleString("en-IN")}</span>
+                        <span className="text-lg sm:text-xl font-semibold text-success">
                           {Math.round(((currentMrp - currentPrice) / currentMrp) * 100)}% OFF
                         </span>
                       </>
@@ -675,11 +675,6 @@ export default function ProductDetail() {
                         <span className="text-success font-medium">
                           {gstInclusive ? `GST included (${gstPercent}%)` : `+${gstPercent}% GST`}
                         </span>
-                      </p>
-                    )}
-                    {currentMrp > currentPrice && (
-                      <p className="text-xs text-success font-medium">
-                        You save ₹{(currentMrp - currentPrice).toLocaleString("en-IN")}
                       </p>
                     )}
                   </div>
