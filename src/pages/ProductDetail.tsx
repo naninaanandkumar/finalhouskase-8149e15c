@@ -555,22 +555,6 @@ export default function ProductDetail() {
       <main className="pt-0">
         <div className="container mx-auto px-3 sm:px-4 py-2 max-w-full">
 
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-1.5 text-xs text-muted-foreground mb-4 overflow-hidden whitespace-nowrap">
-            <Link to="/" className="hover:text-accent transition-colors flex-shrink-0">Home</Link>
-            <ChevronRight className="h-3 w-3 flex-shrink-0" />
-            <Link to="/products" className="hover:text-accent transition-colors flex-shrink-0">Products</Link>
-            {product.category && (
-              <>
-                <ChevronRight className="h-3 w-3 flex-shrink-0" />
-                <Link to={`/products?category=${product.category.name.toLowerCase()}`} className="hover:text-accent transition-colors flex-shrink-0">
-                  {product.category.name}
-                </Link>
-              </>
-            )}
-            <ChevronRight className="h-3 w-3 flex-shrink-0" />
-            <span className="text-foreground truncate">{product.name}</span>
-          </nav>
 
           {/* Main Product Section - modern 2-column layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-5 lg:gap-10 items-start min-w-0">

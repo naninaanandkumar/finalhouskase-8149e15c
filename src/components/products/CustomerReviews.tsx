@@ -32,6 +32,8 @@ interface Review {
 const PER_PAGE = 6;
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_MB = 5;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
+const ALLOWED_LABEL = "JPG, PNG, WEBP, AVIF or GIF";
 
 function Stars({ value, size = "h-4 w-4" }: { value: number; size?: string }) {
   return (
@@ -88,6 +90,9 @@ export function CustomerReviews({
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [pending, setPending] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchReviews = async () => {
     const { data } = await supabase.rpc("get_public_product_reviews", { _product_id: productId });
@@ -104,23 +109,43 @@ export function CustomerReviews({
     } else {
       setReviews(approved as Review[]);
     }
+    setLoading(false);
+  };
+
+  // Debounced refetch — collapses realtime bursts into a single request.
+  const scheduleFetch = (delay = 300) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      void fetchReviews();
+    }, delay);
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchReviews();
     const channel = supabase
       .channel(`customer_reviews:${productId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "product_reviews", filter: `product_id=eq.${productId}` },
-        () => fetchReviews()
+        () => scheduleFetch()
       )
       .subscribe();
     return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId, user?.id]);
+
+  // Brief skeleton while sort/page (URL params) change, so the list swap isn't jarring.
+  useEffect(() => {
+    if (loading) return;
+    setPending(true);
+    const t = setTimeout(() => setPending(false), 150);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort, page]);
 
   const total = reviews.length;
   const avg = total ? reviews.reduce((s, r) => s + r.rating, 0) / total : 0;
@@ -177,23 +202,40 @@ export function CustomerReviews({
 
   const handlePhotoSelect = async (files: FileList | null) => {
     if (!files?.length || !user) return;
-    const picked = Array.from(files).slice(0, MAX_PHOTOS - photos.length);
+    const all = Array.from(files);
+    const remaining = MAX_PHOTOS - photos.length;
+    if (all.length > remaining) {
+      toast({
+        title: `You can add ${remaining} more photo${remaining === 1 ? "" : "s"}`,
+        description: `A review can include up to ${MAX_PHOTOS} photos.`,
+        variant: "destructive",
+      });
+    }
+    const picked = all.slice(0, Math.max(0, remaining));
     setUploading(true);
     const uploaded: string[] = [];
     for (const file of picked) {
-      if (!file.type.startsWith("image/")) {
-        toast({ title: "Only image files are allowed", variant: "destructive" });
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        toast({
+          title: `"${file.name}" is not a supported image`,
+          description: `Allowed formats: ${ALLOWED_LABEL}.`,
+          variant: "destructive",
+        });
         continue;
       }
       if (file.size > MAX_PHOTO_MB * 1024 * 1024) {
-        toast({ title: `Each image must be under ${MAX_PHOTO_MB}MB`, variant: "destructive" });
+        toast({
+          title: `"${file.name}" is too large`,
+          description: `Each image must be under ${MAX_PHOTO_MB}MB (this one is ${(file.size / (1024 * 1024)).toFixed(1)}MB).`,
+          variant: "destructive",
+        });
         continue;
       }
       const ext = file.name.split(".").pop() || "jpg";
       const path = `reviews/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
       if (error) {
-        toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+        toast({ title: `Could not upload "${file.name}"`, description: error.message, variant: "destructive" });
         continue;
       }
       const { data } = supabase.storage.from("product-images").getPublicUrl(path);
@@ -205,11 +247,15 @@ export function CustomerReviews({
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this review?")) return;
+    const prev = reviews;
+    setReviews((rs) => rs.filter((r) => r.id !== id)); // optimistic
     const { error } = await supabase.from("product_reviews").delete().eq("id", id);
-    if (error) toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
-    else {
+    if (error) {
+      setReviews(prev);
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
+    } else {
       toast({ title: "Review deleted" });
-      fetchReviews();
+      scheduleFetch(600);
     }
   };
 
@@ -242,9 +288,14 @@ export function CustomerReviews({
     setSubmitting(false);
     if (error) toast({ title: "Failed to save review", description: error.message, variant: "destructive" });
     else {
+      // Optimistic UI so the change is visible before the refetch lands.
+      if (editingId) {
+        const id = editingId;
+        setReviews((rs) => rs.map((r) => (r.id === id ? { ...r, ...payload } : r)));
+      }
       toast({ title: editingId ? "Review updated!" : "Review submitted!" });
       resetForm();
-      fetchReviews();
+      await fetchReviews();
     }
   };
 
@@ -463,7 +514,19 @@ export function CustomerReviews({
       )}
 
       {/* Review cards */}
-      {total === 0 ? (
+      {loading || pending ? (
+        <div className="mt-3 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true" aria-label="Loading reviews">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex h-full flex-col gap-3 rounded-lg border border-border bg-card p-4">
+              <div className="h-3.5 w-24 animate-pulse rounded bg-muted" />
+              <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-full animate-pulse rounded bg-muted" />
+              <div className="h-3 w-4/5 animate-pulse rounded bg-muted" />
+              <div className="h-3 w-2/3 animate-pulse rounded bg-muted" />
+            </div>
+          ))}
+        </div>
+      ) : total === 0 ? (
         <div className="mt-3 flex flex-col items-center gap-3 rounded-lg border border-dashed border-border bg-card px-4 py-12 text-center">
           <MessageSquarePlus className="h-8 w-8 text-muted-foreground/60" />
           <p className="text-sm font-medium text-foreground">No reviews yet</p>
