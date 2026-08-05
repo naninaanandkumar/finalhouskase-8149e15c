@@ -202,23 +202,40 @@ export function CustomerReviews({
 
   const handlePhotoSelect = async (files: FileList | null) => {
     if (!files?.length || !user) return;
-    const picked = Array.from(files).slice(0, MAX_PHOTOS - photos.length);
+    const all = Array.from(files);
+    const remaining = MAX_PHOTOS - photos.length;
+    if (all.length > remaining) {
+      toast({
+        title: `You can add ${remaining} more photo${remaining === 1 ? "" : "s"}`,
+        description: `A review can include up to ${MAX_PHOTOS} photos.`,
+        variant: "destructive",
+      });
+    }
+    const picked = all.slice(0, Math.max(0, remaining));
     setUploading(true);
     const uploaded: string[] = [];
     for (const file of picked) {
-      if (!file.type.startsWith("image/")) {
-        toast({ title: "Only image files are allowed", variant: "destructive" });
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        toast({
+          title: `"${file.name}" is not a supported image`,
+          description: `Allowed formats: ${ALLOWED_LABEL}.`,
+          variant: "destructive",
+        });
         continue;
       }
       if (file.size > MAX_PHOTO_MB * 1024 * 1024) {
-        toast({ title: `Each image must be under ${MAX_PHOTO_MB}MB`, variant: "destructive" });
+        toast({
+          title: `"${file.name}" is too large`,
+          description: `Each image must be under ${MAX_PHOTO_MB}MB (this one is ${(file.size / (1024 * 1024)).toFixed(1)}MB).`,
+          variant: "destructive",
+        });
         continue;
       }
       const ext = file.name.split(".").pop() || "jpg";
       const path = `reviews/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false });
       if (error) {
-        toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+        toast({ title: `Could not upload "${file.name}"`, description: error.message, variant: "destructive" });
         continue;
       }
       const { data } = supabase.storage.from("product-images").getPublicUrl(path);
@@ -230,11 +247,15 @@ export function CustomerReviews({
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this review?")) return;
+    const prev = reviews;
+    setReviews((rs) => rs.filter((r) => r.id !== id)); // optimistic
     const { error } = await supabase.from("product_reviews").delete().eq("id", id);
-    if (error) toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
-    else {
+    if (error) {
+      setReviews(prev);
+      toast({ title: "Failed to delete", description: error.message, variant: "destructive" });
+    } else {
       toast({ title: "Review deleted" });
-      fetchReviews();
+      scheduleFetch(600);
     }
   };
 
@@ -267,9 +288,14 @@ export function CustomerReviews({
     setSubmitting(false);
     if (error) toast({ title: "Failed to save review", description: error.message, variant: "destructive" });
     else {
+      // Optimistic UI so the change is visible before the refetch lands.
+      if (editingId) {
+        const id = editingId;
+        setReviews((rs) => rs.map((r) => (r.id === id ? { ...r, ...payload } : r)));
+      }
       toast({ title: editingId ? "Review updated!" : "Review submitted!" });
       resetForm();
-      fetchReviews();
+      await fetchReviews();
     }
   };
 
