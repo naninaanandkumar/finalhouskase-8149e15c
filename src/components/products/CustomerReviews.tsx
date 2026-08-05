@@ -32,6 +32,8 @@ interface Review {
 const PER_PAGE = 6;
 const MAX_PHOTOS = 4;
 const MAX_PHOTO_MB = 5;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
+const ALLOWED_LABEL = "JPG, PNG, WEBP, AVIF or GIF";
 
 function Stars({ value, size = "h-4 w-4" }: { value: number; size?: string }) {
   return (
@@ -88,6 +90,9 @@ export function CustomerReviews({
   const [photos, setPhotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [pending, setPending] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchReviews = async () => {
     const { data } = await supabase.rpc("get_public_product_reviews", { _product_id: productId });
@@ -104,23 +109,43 @@ export function CustomerReviews({
     } else {
       setReviews(approved as Review[]);
     }
+    setLoading(false);
+  };
+
+  // Debounced refetch — collapses realtime bursts into a single request.
+  const scheduleFetch = (delay = 300) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      void fetchReviews();
+    }, delay);
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchReviews();
     const channel = supabase
       .channel(`customer_reviews:${productId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "product_reviews", filter: `product_id=eq.${productId}` },
-        () => fetchReviews()
+        () => scheduleFetch()
       )
       .subscribe();
     return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId, user?.id]);
+
+  // Brief skeleton while sort/page (URL params) change, so the list swap isn't jarring.
+  useEffect(() => {
+    if (loading) return;
+    setPending(true);
+    const t = setTimeout(() => setPending(false), 150);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sort, page]);
 
   const total = reviews.length;
   const avg = total ? reviews.reduce((s, r) => s + r.rating, 0) / total : 0;
