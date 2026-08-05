@@ -1020,15 +1020,8 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Description, Specifications, Reviews & Custom Tabs — directly below product info */}
-          <ProductTabs
-            product={product}
-            selectedSize={selectedSize}
-            selectedColor={selectedColor}
-            currentMoq={currentMoq}
-            hasExplicitMoq={hasExplicitMoq}
-            attributes={productAttributes}
-          />
+          {/* Customer reviews */}
+          <CustomerReviews productId={product.id} />
 
           {/* Everything below scrolls with the page */}
           <ReelsSection title="Trending Reels" placement="product" />
