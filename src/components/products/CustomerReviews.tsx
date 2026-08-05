@@ -27,6 +27,7 @@ interface Review {
   created_at: string;
   is_verified: boolean;
   user_id?: string | null;
+  is_approved?: boolean | null;
 }
 
 const PER_PAGE = 6;
@@ -96,11 +97,11 @@ export function CustomerReviews({
 
   const fetchReviews = async () => {
     const { data } = await supabase.rpc("get_public_product_reviews", { _product_id: productId });
-    const approved = ((data as any[]) || []).map((r) => ({ ...r, user_id: null as string | null }));
+    const approved = ((data as any[]) || []).map((r) => ({ ...r, user_id: null as string | null, is_approved: true }));
     if (user?.id) {
       const { data: mine } = await supabase
         .from("product_reviews")
-        .select("id, reviewer_name, rating, review_text, review_title, photos, created_at, is_verified, user_id")
+        .select("id, reviewer_name, rating, review_text, review_title, photos, created_at, is_verified, user_id, is_approved")
         .eq("product_id", productId)
         .eq("user_id", user.id);
       const mineArr = (mine as Review[]) || [];
@@ -147,11 +148,13 @@ export function CustomerReviews({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sort, page]);
 
-  const total = reviews.length;
-  const avg = total ? reviews.reduce((s, r) => s + r.rating, 0) / total : 0;
+  // Aggregates (and SEO output) only count admin-approved reviews.
+  const approvedReviews = useMemo(() => reviews.filter((r) => r.is_approved !== false), [reviews]);
+  const total = approvedReviews.length;
+  const avg = total ? approvedReviews.reduce((s, r) => s + r.rating, 0) / total : 0;
   const buckets = [5, 4, 3, 2, 1].map((star) => ({
     star,
-    count: reviews.filter((r) => r.rating === star).length,
+    count: approvedReviews.filter((r) => r.rating === star).length,
   }));
 
   const sorted = useMemo(() => {
@@ -282,7 +285,6 @@ export function CustomerReviews({
       : await supabase.from("product_reviews").insert({
           product_id: productId,
           user_id: user.id,
-          is_approved: true,
           ...payload,
         });
     setSubmitting(false);
@@ -291,9 +293,12 @@ export function CustomerReviews({
       // Optimistic UI so the change is visible before the refetch lands.
       if (editingId) {
         const id = editingId;
-        setReviews((rs) => rs.map((r) => (r.id === id ? { ...r, ...payload } : r)));
+        setReviews((rs) => rs.map((r) => (r.id === id ? { ...r, ...payload, is_approved: false } : r)));
       }
-      toast({ title: editingId ? "Review updated!" : "Review submitted!" });
+      toast({
+        title: editingId ? "Review updated!" : "Review submitted!",
+        description: "It will appear publicly once an admin approves it.",
+      });
       resetForm();
       await fetchReviews();
     }
@@ -304,7 +309,7 @@ export function CustomerReviews({
   const statsRef = useRef("");
   useEffect(() => {
     if (!onStats) return;
-    const items = [...reviews]
+    const items = [...approvedReviews]
       .sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""))
       .slice(0, 20)
       .map((r) => ({
@@ -319,7 +324,7 @@ export function CustomerReviews({
     if (key === statsRef.current) return;
     statsRef.current = key;
     onStats(payload);
-  }, [reviews, avg, total, onStats]);
+  }, [approvedReviews, avg, total, onStats]);
 
   return (
     <section className="mt-10" aria-labelledby="customer-reviews-heading">
@@ -553,6 +558,9 @@ export function CustomerReviews({
                   <span className="text-sm font-medium text-accent">{r.reviewer_name}</span>
                   {r.is_verified && (
                     <span className="rounded bg-success/10 px-1.5 py-0.5 text-[10px] text-success">Verified</span>
+                  )}
+                  {isOwner && r.is_approved === false && (
+                    <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">Pending approval</span>
                   )}
                   {isOwner && (
                     <span className="ml-auto flex items-center gap-1">
