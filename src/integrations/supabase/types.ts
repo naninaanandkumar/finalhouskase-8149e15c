@@ -1237,9 +1237,11 @@ export type Database = {
           id: string
           is_approved: boolean | null
           is_verified: boolean | null
+          photos: string[]
           product_id: string
           rating: number
           review_text: string | null
+          review_title: string | null
           reviewer_name: string
           updated_at: string
           user_id: string | null
@@ -1249,9 +1251,11 @@ export type Database = {
           id?: string
           is_approved?: boolean | null
           is_verified?: boolean | null
+          photos?: string[]
           product_id: string
           rating: number
           review_text?: string | null
+          review_title?: string | null
           reviewer_name: string
           updated_at?: string
           user_id?: string | null
@@ -1261,9 +1265,11 @@ export type Database = {
           id?: string
           is_approved?: boolean | null
           is_verified?: boolean | null
+          photos?: string[]
           product_id?: string
           rating?: number
           review_text?: string | null
+          review_title?: string | null
           reviewer_name?: string
           updated_at?: string
           user_id?: string | null
@@ -2099,9 +2105,11 @@ export type Database = {
           created_at: string
           id: string
           is_verified: boolean
+          photos: string[]
           product_id: string
           rating: number
           review_text: string
+          review_title: string
           reviewer_name: string
         }[]
       }
