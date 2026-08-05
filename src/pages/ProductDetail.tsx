@@ -549,8 +549,8 @@ export default function ProductDetail() {
             <span className="text-foreground truncate">{product.name}</span>
           </nav>
 
-          {/* Main Product Section - CSS Grid with sticky sides */}
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr_1fr] gap-4 lg:gap-6 items-start min-w-0">
+          {/* Main Product Section - modern 2-column layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)] gap-5 lg:gap-10 items-start min-w-0">
             {/* Left: Image Gallery - STICKY */}
             <div className="md:sticky md:top-5 min-w-0">
               <div className="space-y-3">
@@ -589,14 +589,13 @@ export default function ProductDetail() {
                   <div
                     id="thumb-scroll"
                     className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide max-w-full"
-                    style={{ maxWidth: "min(100%, 376px)" }}
                   >
                     {productImages.map((img, idx) => (
                       <button
                         key={idx}
                         onClick={() => setSelectedImage(img)}
                         className={cn(
-                          "flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all",
+                          "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all",
                           selectedImage === img 
                             ? "border-accent" 
                             : "border-border hover:border-accent/50"
