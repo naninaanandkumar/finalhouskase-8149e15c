@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import { Star, Pencil, Trash2, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, ImagePlus, X, MessageSquarePlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,7 +43,7 @@ function Stars({ value, size = "h-4 w-4" }: { value: number; size?: string }) {
   );
 }
 
-export function CustomerReviews({ productId }: { productId: string }) {
+export function CustomerReviews({ productId, productName }: { productId: string; productName?: string }) {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -218,8 +219,37 @@ export function CustomerReviews({ productId }: { productId: string }) {
     }
   };
 
+  const reviewJsonLd = useMemo(() => {
+    if (!total) return null;
+    return {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: productName || "Product",
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: Number(avg.toFixed(2)),
+        reviewCount: total,
+        bestRating: 5,
+        worstRating: 1,
+      },
+      review: sorted.slice(0, 20).map((r) => ({
+        "@type": "Review",
+        author: { "@type": "Person", name: r.reviewer_name },
+        datePublished: r.created_at,
+        name: r.review_title || undefined,
+        reviewBody: r.review_text || undefined,
+        reviewRating: { "@type": "Rating", ratingValue: r.rating, bestRating: 5, worstRating: 1 },
+      })),
+    };
+  }, [sorted, total, avg, productName]);
+
   return (
     <section className="mt-10">
+      {reviewJsonLd && (
+        <Helmet>
+          <script type="application/ld+json">{JSON.stringify(reviewJsonLd)}</script>
+        </Helmet>
+      )}
       {/* Summary card */}
       <div className="rounded-lg border border-border bg-card px-4 py-6 sm:px-8">
         <h2 className="text-center text-xl font-bold text-foreground">Customer Reviews</h2>
@@ -390,9 +420,6 @@ export function CustomerReviews({ productId }: { productId: string }) {
           <p className="max-w-sm text-sm text-muted-foreground">
             Be the first to share your experience with this product and help other shoppers decide.
           </p>
-          <Button className="mt-1 px-8" onClick={openNew}>
-            Write a review
-          </Button>
         </div>
       ) : (
         <div className="mt-3 grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-3">
