@@ -51,6 +51,7 @@ import AdminProducts from "./pages/admin/Products";
 import AdminOrders from "./pages/admin/Orders";
 import AdminRFQ from "./pages/admin/RFQ";
 import AdminCategories from "./pages/admin/Categories";
+import AdminBrands from "./pages/admin/Brands";
 import AdminChat from "./pages/admin/Chat";
 import AdminNotifications from "./pages/admin/Notifications";
 import AdminSettings from "./pages/admin/Settings";
@@ -148,6 +149,7 @@ const App = () => (
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="rfq" element={<AdminRFQ />} />
                 <Route path="categories" element={<AdminCategories />} />
+                <Route path="brands" element={<AdminBrands />} />
                 <Route path="hero-slides" element={<AdminHeroSlides />} />
                 <Route path="promo-banners" element={<AdminPromoBanners />} />
                 <Route path="coupons" element={<AdminCoupons />} />

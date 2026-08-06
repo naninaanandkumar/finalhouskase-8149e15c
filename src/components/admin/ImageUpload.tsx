@@ -1,7 +1,9 @@
 import { useState, useRef, forwardRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, X, Upload, Loader2, Plus, Link } from "lucide-react";
+import { ImagePlus, X, Upload, Loader2, Plus, Link, Images } from "lucide-react";
+import { ImageLibraryDialog } from "@/components/admin/ImageLibraryDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SignedImage } from "@/components/common/SignedImage";
@@ -50,6 +52,7 @@ interface ImageUploadProps {
 export const ImageUpload = forwardRef<HTMLDivElement, ImageUploadProps>(function ImageUpload({ value, onChange, bucket = "product-images", compact = false }, ref) {
   const [isUploading, setIsUploading] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -155,6 +158,7 @@ export const ImageUpload = forwardRef<HTMLDivElement, ImageUploadProps>(function
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
               className="flex-1 h-8"
+              title="Upload image"
             >
               {isUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
             </Button>
@@ -162,27 +166,47 @@ export const ImageUpload = forwardRef<HTMLDivElement, ImageUploadProps>(function
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => setShowUrlInput(!showUrlInput)}
+              onClick={() => setShowUrlInput(true)}
               className="h-8"
+              title="Add image by URL"
             >
               <Link className="h-3 w-3" />
             </Button>
-          </div>
-        )}
-        {showUrlInput && !value && (
-          <div className="flex gap-1">
-            <Input
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="Image URL"
-              className="h-8 text-xs"
-              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleUrlSubmit())}
-            />
-            <Button type="button" variant="outline" size="sm" onClick={handleUrlSubmit} className="h-8 px-2">
-              <Plus className="h-3 w-3" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setLibraryOpen(true)}
+              className="h-8"
+              title="Choose from image library"
+            >
+              <Images className="h-3 w-3" />
             </Button>
           </div>
         )}
+        <Dialog open={showUrlInput} onOpenChange={setShowUrlInput}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Add image by URL</DialogTitle>
+            </DialogHeader>
+            <div className="flex gap-2">
+              <Input
+                autoFocus
+                value={urlInput}
+                onChange={(e) => setUrlInput(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+                className="flex-1 h-10"
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleUrlSubmit())}
+              />
+              <Button type="button" onClick={handleUrlSubmit}>Add</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <ImageLibraryDialog
+          open={libraryOpen}
+          onOpenChange={setLibraryOpen}
+          onSelect={(urls) => urls[0] && onChange(urls[0])}
+        />
         <input
           ref={fileInputRef}
           type="file"
@@ -250,6 +274,16 @@ export const ImageUpload = forwardRef<HTMLDivElement, ImageUploadProps>(function
           <Link className="h-4 w-4 mr-2" />
           URL
         </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setLibraryOpen(true)}
+          className="flex-1"
+        >
+          <Images className="h-4 w-4 mr-2" />
+          Library
+        </Button>
       </div>
 
       {showUrlInput && (
@@ -258,7 +292,7 @@ export const ImageUpload = forwardRef<HTMLDivElement, ImageUploadProps>(function
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             placeholder="Enter image URL"
-            className="text-sm"
+            className="flex-1 h-10 text-sm"
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleUrlSubmit())}
           />
           <Button type="button" variant="outline" size="icon" onClick={handleUrlSubmit}>
@@ -266,6 +300,12 @@ export const ImageUpload = forwardRef<HTMLDivElement, ImageUploadProps>(function
           </Button>
         </div>
       )}
+
+      <ImageLibraryDialog
+        open={libraryOpen}
+        onOpenChange={setLibraryOpen}
+        onSelect={(urls) => urls[0] && onChange(urls[0])}
+      />
 
       <input
         ref={fileInputRef}
@@ -287,6 +327,7 @@ interface GalleryUploadProps {
 
 export function GalleryUpload({ value, onChange, bucket = "product-images", maxImages = 10 }: GalleryUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
   const [urlInput, setUrlInput] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -409,7 +450,26 @@ export function GalleryUpload({ value, onChange, bucket = "product-images", maxI
           <Link className="h-4 w-4 mr-2" />
           URL
         </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setLibraryOpen(true)}
+          disabled={value.length >= maxImages}
+          className="flex-1"
+        >
+          <Images className="h-4 w-4 mr-2" />
+          Library
+        </Button>
       </div>
+
+      <ImageLibraryDialog
+        open={libraryOpen}
+        onOpenChange={setLibraryOpen}
+        multiple
+        maxSelect={maxImages - value.length}
+        onSelect={(urls) => onChange([...value, ...urls].slice(0, maxImages))}
+      />
 
       {showUrlInput && (
         <div className="flex gap-2">
@@ -417,7 +477,7 @@ export function GalleryUpload({ value, onChange, bucket = "product-images", maxI
             value={urlInput}
             onChange={(e) => setUrlInput(e.target.value)}
             placeholder="Gallery image URL"
-            className="text-sm"
+            className="flex-1 h-10 text-sm"
             onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleUrlAdd())}
           />
           <Button type="button" variant="outline" size="icon" onClick={handleUrlAdd}>

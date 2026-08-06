@@ -211,6 +211,7 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
   const [newAttributeValue, setNewAttributeValue] = useState<{ [key: string]: string }>({});
   const [newAttributeName, setNewAttributeName] = useState("");
   const [dbAttributes, setDbAttributes] = useState<DbAttribute[]>([]);
+  const [openAttribute, setOpenAttribute] = useState<string | null>(null);
   const [dbAttributeValues, setDbAttributeValues] = useState<DbAttributeValue[]>([]);
   const [selectedDbAttribute, setSelectedDbAttribute] = useState("");
 
@@ -358,6 +359,7 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
         usedForVariations: false,
         visibleOnProduct: true 
       }]);
+      setOpenAttribute(newAttributeName.trim());
       setNewAttributeName("");
     }
   };
@@ -373,6 +375,7 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
       visibleOnProduct: true,
       existingAttributeId: attrId,
     }]);
+    setOpenAttribute(dbAttr.name);
     setSelectedDbAttribute("");
   };
 
@@ -1056,31 +1059,12 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
                               Define attributes like Size, Color etc. Check "Used for variations" to make this a variable product with variants.
                             </p>
 
-                            {/* Reuse existing attribute from DB */}
-                            {dbAttributes.filter(da => !attributes.find(a => a.name.toLowerCase() === da.name.toLowerCase())).length > 0 && (
-                              <div className="flex gap-2 items-end bg-muted/30 p-3 rounded-lg">
-                                <div className="flex-1 space-y-1">
-                                  <Label className="text-xs font-medium">Select existing attribute</Label>
-                                  <Select value={selectedDbAttribute} onValueChange={(v) => addDbAttribute(v)}>
-                                    <SelectTrigger className="h-9">
-                                      <SelectValue placeholder="Choose from existing attributes..." />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {dbAttributes
-                                        .filter(da => !attributes.find(a => a.name.toLowerCase() === da.name.toLowerCase()))
-                                        .map(da => (
-                                          <SelectItem key={da.id} value={da.id}>
-                                            {da.name} ({dbAttributeValues.filter(v => v.attribute_id === da.id).length} values)
-                                          </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                            )}
-
                             {attributes.map((attr, attrIndex) => (
-                              <Collapsible key={attr.name} defaultOpen={true}>
+                              <Collapsible
+                                key={attr.name}
+                                open={openAttribute === attr.name}
+                                onOpenChange={(o) => setOpenAttribute(o ? attr.name : null)}
+                              >
                                 <div className="border rounded-lg overflow-hidden">
                                   <CollapsibleTrigger className="w-full flex items-center justify-between p-3 hover:bg-muted/30">
                                     <h4 className="font-semibold text-sm">{attr.name}</h4>
@@ -1167,6 +1151,29 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
                                 </div>
                               </Collapsible>
                             ))}
+
+                            {/* Reuse existing attribute from DB */}
+                            {dbAttributes.filter(da => !attributes.find(a => a.name.toLowerCase() === da.name.toLowerCase())).length > 0 && (
+                              <div className="flex gap-2 items-end bg-muted/30 p-3 rounded-lg">
+                                <div className="flex-1 space-y-1">
+                                  <Label className="text-xs font-medium">Select existing attribute</Label>
+                                  <Select value={selectedDbAttribute} onValueChange={(v) => addDbAttribute(v)}>
+                                    <SelectTrigger className="h-9">
+                                      <SelectValue placeholder="Choose from existing attributes..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {dbAttributes
+                                        .filter(da => !attributes.find(a => a.name.toLowerCase() === da.name.toLowerCase()))
+                                        .map(da => (
+                                          <SelectItem key={da.id} value={da.id}>
+                                            {da.name} ({dbAttributeValues.filter(v => v.attribute_id === da.id).length} values)
+                                          </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                            )}
 
                             {/* Add New Attribute */}
                             <div className="flex gap-2 pt-2">

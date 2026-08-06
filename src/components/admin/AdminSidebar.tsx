@@ -36,6 +36,7 @@ import {
 const productSubItems = [
   { icon: Package, label: "All Products", href: "/admin/products" },
   { icon: Layers, label: "Categories", href: "/admin/categories" },
+  { icon: Tag, label: "Brands", href: "/admin/brands" },
 ];
 
 const menuItems = [
@@ -86,7 +87,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ collapsed, onToggle }: AdminSidebarProps) {
   const location = useLocation();
-  const isProductSection = location.pathname === "/admin/products" || location.pathname === "/admin/categories";
+  const isProductSection = location.pathname === "/admin/products" || location.pathname === "/admin/categories" || location.pathname === "/admin/brands";
   const [productsOpen, setProductsOpen] = useState(isProductSection);
 
   return (
