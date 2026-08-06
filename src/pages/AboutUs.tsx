@@ -402,14 +402,14 @@ export default function AboutUs() {
           <img
             src="https://ik.imagekit.io/houskase/Banner_rxFiE4NWw.png?updatedAt=1785301567142"
             alt="Houskase product collection"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover object-[75%_top]"
             loading="lazy"
           />
           <div
             className="absolute inset-0"
             style={{ background: "linear-gradient(to right, rgba(173,30,42,0.86) 0%, rgba(173,30,42,0.44) 40%, rgba(173,30,42,0) 70%)" }}
           />
-          <div className="container relative mx-auto flex min-h-[170px] flex-col items-start justify-center gap-4 px-4 text-left">
+          <div className="container relative mx-auto flex min-h-[210px] md:min-h-[260px] flex-col items-start justify-center gap-4 px-4 text-left">
             <div className="max-w-xl">
               <p className="font-display font-bold text-2xl md:text-3xl">
                 HOUSKASE<sup className="text-lg">™</sup> <span className="italic font-normal opacity-90">— Wipe Away Worries.</span>

@@ -314,17 +314,26 @@
   }
 
   @keyframes marquee-scroll {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+    0%   { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
   }
   .animate-marquee {
     animation: marquee-scroll 60s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
   .animate-marquee-fast {
     animation: marquee-scroll 50s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
   .animate-marquee-slow {
     animation: marquee-scroll 35s linear infinite;
+    will-change: transform;
+    backface-visibility: hidden;
+    transform: translateZ(0);
   }
   .marquee-track:hover .animate-marquee,
   .marquee-track:hover .animate-marquee-fast {
