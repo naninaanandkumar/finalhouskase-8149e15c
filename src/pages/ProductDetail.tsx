@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -222,6 +222,22 @@ export default function ProductDetail() {
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   const handleReviewStats = useCallback((s: ReviewStats) => setReviewStats(s), []);
   const [zoomIndex, setZoomIndex] = useState(0);
+  const galleryRef = useRef<string[]>([]);
+  const [galleryPaused, setGalleryPaused] = useState(false);
+
+  // Auto-slide the main feature image
+  useEffect(() => {
+    if (galleryPaused) return;
+    const timer = window.setInterval(() => {
+      const imgs = galleryRef.current;
+      if (!imgs || imgs.length <= 1) return;
+      setSelectedImage((prev) => {
+        const i = imgs.indexOf(prev || imgs[0]);
+        return imgs[(i + 1) % imgs.length];
+      });
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [galleryPaused]);
 
   const getRolePrice = (p: Product | null, v: ProductVariation | null | undefined) => {
     const guestPrice = v?.guest_price ?? p?.guest_price ?? 0;
@@ -499,6 +515,7 @@ export default function ProductDetail() {
     ...variationGallery.filter(img => !variationFeatureImage.includes(img)),
     ...baseImages.filter(img => !variationFeatureImage.includes(img) && !variationGallery.includes(img)),
   ];
+  galleryRef.current = productImages;
 
   return (
     <div className="min-h-screen bg-background">
@@ -564,6 +581,8 @@ export default function ProductDetail() {
                 {/* Main Image */}
                 <div
                   className="relative bg-card rounded-lg overflow-hidden border border-border cursor-zoom-in aspect-square"
+                  onMouseEnter={() => setGalleryPaused(true)}
+                  onMouseLeave={() => setGalleryPaused(false)}
                   onClick={() => {
                     const idx = productImages.indexOf(selectedImage || productImages[0]);
                     setZoomIndex(idx >= 0 ? idx : 0);
@@ -785,32 +804,17 @@ export default function ProductDetail() {
                 </div>
               )}
 
+              {/* Available Offers */}
+              <ProductOffers categoryId={product.category_id} />
+
+              {/* Available Coupons */}
+              <ProductCoupons categoryId={product.category_id} />
+
               {/* Buy Box */}
               <div className="space-y-3 pt-4 border-t border-border">
-                {/* Quantity Selector */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center border border-border rounded-full">
-                    <button
-                      aria-label="Decrease quantity"
-                      onClick={() => handleQuantityChange(-1)}
-                      disabled={quantity <= currentMoq}
-                      className="p-2 hover:bg-secondary rounded-l-full transition-colors disabled:opacity-40"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </button>
-                    <span className="w-10 text-center text-sm font-semibold">{quantity}</span>
-                    <button
-                      aria-label="Increase quantity"
-                      onClick={() => handleQuantityChange(1)}
-                      className="p-2 hover:bg-secondary rounded-r-full transition-colors"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {hasExplicitMoq ? <>Minimum Order Quantity- {currentMoq}</> : "Quantity"}
-                  </p>
-                </div>
+                {hasExplicitMoq && (
+                  <p className="text-xs text-muted-foreground">Minimum Order Quantity- {currentMoq}</p>
+                )}
 
                 {hasExplicitMoq && !moqValid && (
                   <p className="text-xs text-destructive font-medium">
@@ -818,10 +822,28 @@ export default function ProductDetail() {
                   </p>
                 )}
 
-                {/* CTA Buttons */}
-                <div className="grid grid-cols-2 gap-2.5">
+                {/* Quantity + CTA Buttons in one row */}
+                <div className="flex items-stretch gap-2.5">
+                  <div className="flex items-center border border-border rounded-lg shrink-0 h-11">
+                    <button
+                      aria-label="Decrease quantity"
+                      onClick={() => handleQuantityChange(-1)}
+                      disabled={quantity <= currentMoq}
+                      className="px-2.5 h-full hover:bg-secondary rounded-l-lg transition-colors disabled:opacity-40"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </button>
+                    <span className="w-8 text-center text-sm font-semibold">{quantity}</span>
+                    <button
+                      aria-label="Increase quantity"
+                      onClick={() => handleQuantityChange(1)}
+                      className="px-2.5 h-full hover:bg-secondary rounded-r-lg transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
                   <Button
-                    className="bg-accent hover:bg-accent-hover text-xs sm:text-sm font-bold h-11 uppercase tracking-wide rounded-lg px-2 inline-flex items-center justify-center gap-1.5"
+                    className="flex-1 min-w-0 bg-accent hover:bg-accent-hover text-xs sm:text-sm font-bold h-11 uppercase tracking-wide rounded-lg px-2 inline-flex items-center justify-center gap-1.5"
                     onClick={handleAddToCartClick}
                     disabled={isAddingToCart || isBuyingNow || !moqValid}
                   >
@@ -829,7 +851,19 @@ export default function ProductDetail() {
                     {isAddingToCart ? "Adding..." : "ADD TO CART"}
                   </Button>
                   <Button
-                    className="bg-primary hover:bg-primary/90 text-xs sm:text-sm font-bold h-11 uppercase tracking-wide rounded-lg px-2 inline-flex items-center justify-center gap-1.5"
+                    className="hidden sm:inline-flex flex-1 min-w-0 bg-primary hover:bg-primary/90 text-xs sm:text-sm font-bold h-11 uppercase tracking-wide rounded-lg px-2 items-center justify-center gap-1.5"
+                    onClick={handleBuyNow}
+                    disabled={isAddingToCart || isBuyingNow || !moqValid}
+                  >
+                    {isBuyingNow ? <Loader2 className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                    {isBuyingNow ? "PROCESSING..." : "BUY NOW"}
+                  </Button>
+                </div>
+
+                {/* Mobile: Buy Now fixed above bottom navigation */}
+                <div className="sm:hidden fixed left-0 right-0 bottom-[60px] z-40 px-3 py-2 bg-card/95 backdrop-blur border-t border-border">
+                  <Button
+                    className="w-full bg-primary hover:bg-primary/90 text-sm font-bold h-11 uppercase tracking-wide rounded-lg inline-flex items-center justify-center gap-1.5"
                     onClick={handleBuyNow}
                     disabled={isAddingToCart || isBuyingNow || !moqValid}
                   >
@@ -910,12 +944,6 @@ export default function ProductDetail() {
                   </div>
                 </div>
               </div>
-
-              {/* Available Offers */}
-              <ProductOffers categoryId={product.category_id} />
-
-              {/* Available Coupons */}
-              <ProductCoupons categoryId={product.category_id} />
 
               {/* Features Table */}
               {productAttributes.length > 0 && (
