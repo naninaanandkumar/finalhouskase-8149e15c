@@ -402,7 +402,7 @@ export default function AboutUs() {
           <img
             src="https://ik.imagekit.io/houskase/Banner_rxFiE4NWw.png?updatedAt=1785301567142"
             alt="Houskase product collection"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-cover object-[75%_top]"
             loading="lazy"
           />
           <div
