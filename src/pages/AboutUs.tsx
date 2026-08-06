@@ -24,7 +24,6 @@ import aboutHappyCustomer from "@/assets/about-happy-customer.png.asset.json";
 import aboutCitiesServed from "@/assets/about-cities-served.png.asset.json";
 import aboutPremiumProducts from "@/assets/about-premium-products.png.asset.json";
 import aboutQualityTested from "@/assets/about-quality-tested.png.asset.json";
-import aboutCtaBanner from "@/assets/about-cta-banner.png.asset.json";
 
 interface ProductLite {
   id: string;
