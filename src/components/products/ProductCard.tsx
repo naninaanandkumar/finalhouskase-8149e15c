@@ -170,7 +170,7 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
 
             <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
               <span className="text-base sm:text-xl font-extrabold text-foreground">
-                {product.has_variations ? "From " : ""}₹{price.toLocaleString("en-IN")}
+                ₹{price.toLocaleString("en-IN")}
               </span>
               {discount > 0 && (
                 <>
@@ -192,7 +192,7 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
                       e.stopPropagation();
                       setSelectedSize(v.id);
                     }}
-                    className={`px-2 py-1 rounded-md border text-[11px] font-medium transition-colors ${
+                    className={`px-2 py-1 rounded-[5px] border text-[11px] font-medium transition-colors ${
                       selectedSize === v.id
                         ? "border-accent bg-accent text-accent-foreground"
                         : "border-border bg-background text-foreground hover:border-accent"
