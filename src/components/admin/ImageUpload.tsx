@@ -443,11 +443,18 @@ export function GalleryUpload({ value, onChange, bucket = "product-images", maxI
     setIsUploading(false);
   };
 
-  const handleUrlAdd = () => {
-    if (urlInput.trim() && value.length < maxImages) {
-      onChange([...value, urlInput.trim()]);
-      setUrlInput("");
+  const handleUrlAdd = async () => {
+    const url = urlInput.trim();
+    if (!url || value.length >= maxImages) return;
+    setIsUploading(true);
+    const problem = await checkImageUrl(url);
+    setIsUploading(false);
+    if (problem) {
+      toast({ title: "Invalid image URL", description: problem, variant: "destructive" });
+      return;
     }
+    onChange([...value, url]);
+    setUrlInput("");
   };
 
   const handleRemove = (index: number) => {
