@@ -35,6 +35,28 @@ function validateFile(file: File): string | null {
   return null;
 }
 
+// Verifies a pasted URL is a well-formed http(s) link that actually loads as an image.
+function checkImageUrl(url: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      return resolve("Enter a full URL starting with https://");
+    }
+    if (!/^https?:$/.test(parsed.protocol)) return resolve("Only http(s) image links are allowed.");
+    const img = new Image();
+    const timer = window.setTimeout(() => {
+      img.src = "";
+      resolve("Image link could not be loaded (timed out).");
+    }, 8000);
+    img.onload = () => { window.clearTimeout(timer); resolve(img.naturalWidth > 0 ? null : "That link is not a valid image."); };
+    img.onerror = () => { window.clearTimeout(timer); resolve("That link is broken or is not an image."); };
+    img.referrerPolicy = "no-referrer";
+    img.src = url;
+  });
+}
+
 // Build a safe storage path: no traversal, no user-supplied filename, normalized ext.
 function buildSafePath(file: File): string {
   const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "bin";
@@ -119,12 +141,19 @@ export const ImageUpload = forwardRef<HTMLDivElement, ImageUploadProps>(function
     setIsUploading(false);
   };
 
-  const handleUrlSubmit = () => {
-    if (urlInput.trim()) {
-      onChange(urlInput.trim());
-      setUrlInput("");
-      setShowUrlInput(false);
+  const handleUrlSubmit = async () => {
+    const url = urlInput.trim();
+    if (!url) return;
+    setIsUploading(true);
+    const problem = await checkImageUrl(url);
+    setIsUploading(false);
+    if (problem) {
+      toast({ title: "Invalid image URL", description: problem, variant: "destructive" });
+      return;
     }
+    onChange(url);
+    setUrlInput("");
+    setShowUrlInput(false);
   };
 
   const handleRemove = () => {
@@ -414,11 +443,18 @@ export function GalleryUpload({ value, onChange, bucket = "product-images", maxI
     setIsUploading(false);
   };
 
-  const handleUrlAdd = () => {
-    if (urlInput.trim() && value.length < maxImages) {
-      onChange([...value, urlInput.trim()]);
-      setUrlInput("");
+  const handleUrlAdd = async () => {
+    const url = urlInput.trim();
+    if (!url || value.length >= maxImages) return;
+    setIsUploading(true);
+    const problem = await checkImageUrl(url);
+    setIsUploading(false);
+    if (problem) {
+      toast({ title: "Invalid image URL", description: problem, variant: "destructive" });
+      return;
     }
+    onChange([...value, url]);
+    setUrlInput("");
   };
 
   const handleRemove = (index: number) => {

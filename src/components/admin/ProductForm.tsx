@@ -261,6 +261,7 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
     setAttributes([]);
     setVariations([]);
     setExistingVariations([]);
+    setOpenAttribute(null);
     if (product) {
       fetchProductData();
     }
@@ -380,7 +381,11 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
   };
 
   const removeAttribute = (index: number) => {
-    setAttributes(prev => prev.filter((_, i) => i !== index));
+    setAttributes(prev => {
+      const removed = prev[index];
+      if (removed && openAttribute === removed.name) setOpenAttribute(null);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const addAttributeValue = (attrIndex: number) => {
@@ -543,6 +548,12 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
 
     if (productType === "simple" && !asDraft && !guestPrice) {
       toast({ title: "Error", description: "Sale Price is required", variant: "destructive" });
+      return;
+    }
+
+    if (!asDraft && !brandId) {
+      toast({ title: "Brand required", description: "Choose a brand in the Brands panel before publishing this product.", variant: "destructive" });
+      setOpenSections(prev => ({ ...prev, brands: true }));
       return;
     }
 
@@ -1823,8 +1834,11 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
           </CollapsibleSection>
 
           {/* Brands */}
-          <CollapsibleSection id="brands" title="Brands" openSections={openSections} toggleSection={toggleSection}>
+          <CollapsibleSection id="brands" title="Brands (required to publish)" openSections={openSections} toggleSection={toggleSection}>
             <div className="space-y-2 max-h-48 overflow-y-auto">
+              {!brandId && (
+                <p className="text-xs text-destructive">Select a brand before publishing. Drafts can be saved without one.</p>
+              )}
               {brands.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No brands available</p>
               ) : (
