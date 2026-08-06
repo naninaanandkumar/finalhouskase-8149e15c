@@ -381,7 +381,11 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
   };
 
   const removeAttribute = (index: number) => {
-    setAttributes(prev => prev.filter((_, i) => i !== index));
+    setAttributes(prev => {
+      const removed = prev[index];
+      if (removed && openAttribute === removed.name) setOpenAttribute(null);
+      return prev.filter((_, i) => i !== index);
+    });
   };
 
   const addAttributeValue = (attrIndex: number) => {
@@ -544,6 +548,12 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
 
     if (productType === "simple" && !asDraft && !guestPrice) {
       toast({ title: "Error", description: "Sale Price is required", variant: "destructive" });
+      return;
+    }
+
+    if (!asDraft && !brandId) {
+      toast({ title: "Brand required", description: "Choose a brand in the Brands panel before publishing this product.", variant: "destructive" });
+      setOpenSections(prev => ({ ...prev, brands: true }));
       return;
     }
 
