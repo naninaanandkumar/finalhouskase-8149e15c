@@ -261,6 +261,7 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
     setAttributes([]);
     setVariations([]);
     setExistingVariations([]);
+    setOpenAttribute(null);
     if (product) {
       fetchProductData();
     }
