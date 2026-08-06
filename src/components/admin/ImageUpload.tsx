@@ -35,6 +35,28 @@ function validateFile(file: File): string | null {
   return null;
 }
 
+// Verifies a pasted URL is a well-formed http(s) link that actually loads as an image.
+function checkImageUrl(url: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      return resolve("Enter a full URL starting with https://");
+    }
+    if (!/^https?:$/.test(parsed.protocol)) return resolve("Only http(s) image links are allowed.");
+    const img = new Image();
+    const timer = window.setTimeout(() => {
+      img.src = "";
+      resolve("Image link could not be loaded (timed out).");
+    }, 8000);
+    img.onload = () => { window.clearTimeout(timer); resolve(img.naturalWidth > 0 ? null : "That link is not a valid image."); };
+    img.onerror = () => { window.clearTimeout(timer); resolve("That link is broken or is not an image."); };
+    img.referrerPolicy = "no-referrer";
+    img.src = url;
+  });
+}
+
 // Build a safe storage path: no traversal, no user-supplied filename, normalized ext.
 function buildSafePath(file: File): string {
   const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "bin";
