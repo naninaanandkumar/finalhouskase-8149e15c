@@ -222,6 +222,22 @@ export default function ProductDetail() {
   const [reviewStats, setReviewStats] = useState<ReviewStats | null>(null);
   const handleReviewStats = useCallback((s: ReviewStats) => setReviewStats(s), []);
   const [zoomIndex, setZoomIndex] = useState(0);
+  const galleryRef = useRef<string[]>([]);
+  const [galleryPaused, setGalleryPaused] = useState(false);
+
+  // Auto-slide the main feature image
+  useEffect(() => {
+    if (galleryPaused) return;
+    const timer = window.setInterval(() => {
+      const imgs = galleryRef.current;
+      if (!imgs || imgs.length <= 1) return;
+      setSelectedImage((prev) => {
+        const i = imgs.indexOf(prev || imgs[0]);
+        return imgs[(i + 1) % imgs.length];
+      });
+    }, 3000);
+    return () => window.clearInterval(timer);
+  }, [galleryPaused]);
 
   const getRolePrice = (p: Product | null, v: ProductVariation | null | undefined) => {
     const guestPrice = v?.guest_price ?? p?.guest_price ?? 0;
