@@ -359,6 +359,7 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
         usedForVariations: false,
         visibleOnProduct: true 
       }]);
+      setOpenAttribute(newAttributeName.trim());
       setNewAttributeName("");
     }
   };
@@ -374,6 +375,7 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
       visibleOnProduct: true,
       existingAttributeId: attrId,
     }]);
+    setOpenAttribute(dbAttr.name);
     setSelectedDbAttribute("");
   };
 
