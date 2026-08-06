@@ -24,7 +24,6 @@ import aboutHappyCustomer from "@/assets/about-happy-customer.png.asset.json";
 import aboutCitiesServed from "@/assets/about-cities-served.png.asset.json";
 import aboutPremiumProducts from "@/assets/about-premium-products.png.asset.json";
 import aboutQualityTested from "@/assets/about-quality-tested.png.asset.json";
-import aboutCtaBanner from "@/assets/about-cta-banner.png.asset.json";
 
 interface ProductLite {
   id: string;
@@ -189,7 +188,7 @@ export default function AboutUs() {
             <h2 className="font-display text-2xl font-bold text-brand-navy md:text-3xl">WHY CHOOSE HOUSKASE?</h2>
             <div className="mx-auto mt-2 h-1 w-16 rounded-full bg-brand-navy" />
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
             {[
               { img: wcPremiumQuality.url, title: "PREMIUM QUALITY", body: "High-performance materials with superior absorbency, strength, and durability for everyday use." },
               { img: wcEcoFriendly.url, title: "ECO-FRIENDLY", body: "Reusable cleaning cloths help reduce paper waste and support sustainable living." },
@@ -400,12 +399,17 @@ export default function AboutUs() {
 
         {/* CTA FOOTER STRIP */}
         <section className="relative overflow-hidden py-10 text-primary-foreground" style={{ backgroundColor: "#AD1E2A" }}>
-          <img src={aboutCtaBanner.url} alt="Houskase product collection" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
+          <img
+            src="https://ik.imagekit.io/houskase/Banner_rxFiE4NWw.png?updatedAt=1785301567142"
+            alt="Houskase product collection"
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+          />
           <div
             className="absolute inset-0"
-            style={{ background: "linear-gradient(to left, rgba(173,30,42,0.86) 0%, rgba(173,30,42,0.44) 34%, rgba(173,30,42,0) 62%)" }}
+            style={{ background: "linear-gradient(to right, rgba(173,30,42,0.86) 0%, rgba(173,30,42,0.44) 40%, rgba(173,30,42,0) 70%)" }}
           />
-          <div className="container relative mx-auto flex min-h-[170px] flex-col items-end justify-center gap-4 px-4 text-right">
+          <div className="container relative mx-auto flex min-h-[170px] flex-col items-start justify-center gap-4 px-4 text-left">
             <div className="max-w-xl">
               <p className="font-display font-bold text-2xl md:text-3xl">
                 HOUSKASE<sup className="text-lg">™</sup> <span className="italic font-normal opacity-90">— Wipe Away Worries.</span>
