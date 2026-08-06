@@ -141,12 +141,19 @@ export const ImageUpload = forwardRef<HTMLDivElement, ImageUploadProps>(function
     setIsUploading(false);
   };
 
-  const handleUrlSubmit = () => {
-    if (urlInput.trim()) {
-      onChange(urlInput.trim());
-      setUrlInput("");
-      setShowUrlInput(false);
+  const handleUrlSubmit = async () => {
+    const url = urlInput.trim();
+    if (!url) return;
+    setIsUploading(true);
+    const problem = await checkImageUrl(url);
+    setIsUploading(false);
+    if (problem) {
+      toast({ title: "Invalid image URL", description: problem, variant: "destructive" });
+      return;
     }
+    onChange(url);
+    setUrlInput("");
+    setShowUrlInput(false);
   };
 
   const handleRemove = () => {
