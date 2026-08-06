@@ -621,13 +621,13 @@ export default function ProductDetail() {
                         key={idx}
                         onClick={() => setSelectedImage(img)}
                         className={cn(
-                          "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all",
+                          "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all bg-card",
                           selectedImage === img 
                             ? "border-accent" 
                             : "border-border hover:border-accent/50"
                         )}
                       >
-                        <SignedImage src={img} alt="" className="w-full h-full object-cover" />
+                        <SignedImage src={img} alt="" className="w-full h-full object-contain bg-card" />
                       </button>
                     ))}
                   </div>
