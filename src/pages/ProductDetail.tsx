@@ -945,12 +945,6 @@ export default function ProductDetail() {
                 </div>
               </div>
 
-              {/* Available Offers */}
-              <ProductOffers categoryId={product.category_id} />
-
-              {/* Available Coupons */}
-              <ProductCoupons categoryId={product.category_id} />
-
               {/* Features Table */}
               {productAttributes.length > 0 && (
                 <div>
