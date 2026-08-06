@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
@@ -515,6 +515,7 @@ export default function ProductDetail() {
     ...variationGallery.filter(img => !variationFeatureImage.includes(img)),
     ...baseImages.filter(img => !variationFeatureImage.includes(img) && !variationGallery.includes(img)),
   ];
+  galleryRef.current = productImages;
 
   return (
     <div className="min-h-screen bg-background">
