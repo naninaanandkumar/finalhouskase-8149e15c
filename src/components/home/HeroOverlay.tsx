@@ -41,13 +41,6 @@ export interface HeroFeature {
   label: string;
 }
 
-/** Crop / zoom of the background artwork inside the 2172x724 safe area. */
-export interface HeroImageCrop {
-  zoom?: number; // 1 = fit, up to 2.5
-  x?: number; // object-position X in %
-  y?: number; // object-position Y in %
-}
-
 export interface HeroOverlayData {
   enabled?: boolean;
   brand?: string;
@@ -59,12 +52,14 @@ export interface HeroOverlayData {
   theme?: "dark" | "light";
   accent?: string;
   width?: number; // percentage of banner width
-  crop?: HeroImageCrop;
-  mobile_crop?: HeroImageCrop;
+  align?: "left" | "center" | "right";
+  badge_enabled?: boolean;
+  badge_number?: string;
+  badge_text?: string;
 }
 
 export const emptyHeroOverlay: HeroOverlayData = {
-  enabled: false,
+  enabled: true,
   brand: "",
   heading: "",
   subheading: "",
@@ -74,18 +69,37 @@ export const emptyHeroOverlay: HeroOverlayData = {
   theme: "dark",
   accent: "#C8102E",
   width: 46,
-  crop: { zoom: 1, x: 50, y: 50 },
-  mobile_crop: { zoom: 1, x: 50, y: 50 },
+  align: "left",
+  badge_enabled: false,
+  badge_number: "",
+  badge_text: "",
 };
 
-/** Inline style that applies a crop/zoom to a hero background image. */
-export function heroCropStyle(crop?: HeroImageCrop | null) {
-  const zoom = Math.min(Math.max(crop?.zoom ?? 1, 1), 2.5);
-  return {
-    objectPosition: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
-    transform: zoom === 1 ? undefined : `scale(${zoom})`,
-    transformOrigin: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
-  } as const;
+/** Round offer badge shown on the right of the banner (e.g. "50 TEAR-OFF SHEETS"). */
+export function HeroBadge({ data }: { data: HeroOverlayData }) {
+  if (!data?.badge_enabled || !(data.badge_number || data.badge_text)) return null;
+  const accent = data.accent || "#C8102E";
+  return (
+    <div
+      className="absolute z-[3] flex flex-col items-center justify-center rounded-full bg-white/95 text-center shadow-lg"
+      style={{
+        top: "8%",
+        right: "3%",
+        width: "clamp(4rem, 11%, 11rem)",
+        aspectRatio: "1 / 1",
+        border: `2px solid ${accent}`,
+        color: accent,
+        padding: "4%",
+      }}
+    >
+      <span className="font-display font-extrabold leading-none" style={{ fontSize: "clamp(1rem, 2.6vw, 2.6rem)" }}>
+        {data.badge_number}
+      </span>
+      <span className="font-semibold uppercase leading-tight" style={{ fontSize: "clamp(0.4rem, 0.75vw, 0.8rem)", marginTop: "0.3em" }}>
+        {data.badge_text}
+      </span>
+    </div>
+  );
 }
 
 /**
@@ -106,16 +120,21 @@ export function HeroOverlay({
   const light = data.theme === "light";
   const bodyColor = light ? "#ffffff" : "#1A1A1A";
   const features = (data.features || []).filter((f) => f?.label?.trim());
+  const align = data.align || "left";
 
   return (
     <div
-      className="absolute inset-y-0 left-0 z-[2] flex items-center pointer-events-none"
+      className="absolute inset-y-0 z-[2] flex items-center pointer-events-none"
       style={{
         paddingLeft: "clamp(1rem, 6%, 7rem)",
         paddingRight: "1rem",
         width: `${data.width || 46}%`,
         minWidth: "min(88%, 32rem)",
         maxWidth: "92%",
+        left: align === "right" ? "auto" : align === "center" ? "50%" : 0,
+        right: align === "right" ? 0 : "auto",
+        transform: align === "center" ? "translateX(-50%)" : undefined,
+        textAlign: align,
       }}
     >
       <div className="pointer-events-auto w-full" style={{ color: bodyColor }}>
