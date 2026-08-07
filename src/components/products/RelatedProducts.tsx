@@ -23,6 +23,15 @@ interface RelatedProductsProps {
 export function RelatedProducts({ currentProductId, categoryId }: RelatedProductsProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [active, setActive] = useState(0);
+
+  const onScroll = () => {
+    const el = scrollerRef.current;
+    if (!el || products.length === 0) return;
+    const idx = Math.round((el.scrollLeft / Math.max(1, el.scrollWidth - el.clientWidth)) * (products.length - 1));
+    setActive(Math.min(products.length - 1, Math.max(0, idx)));
+  };
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
