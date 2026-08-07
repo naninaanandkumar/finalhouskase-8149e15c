@@ -8,12 +8,12 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon } from "lucide-react";
+import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { SignedImage } from "@/components/common/SignedImage";
-import { HeroOverlay, HeroBadge, HERO_ICONS, emptyHeroOverlay, type HeroOverlayData, type HeroIconKey } from "@/components/home/HeroOverlay";
+import { HeroTemplate, HERO_ICONS, emptyHeroOverlay, type HeroOverlayData, type HeroIconKey } from "@/components/home/HeroOverlay";
 
 interface HeroSlide {
   id: string;
@@ -49,6 +49,8 @@ export default function AdminHeroSlides() {
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({ ...emptyForm });
   const [overlay, setOverlay] = useState<HeroOverlayData>({ ...emptyHeroOverlay });
+  const [dirty, setDirty] = useState(false);
+  const [imgWarning, setImgWarning] = useState<string | null>(null);
 
   const { toast } = useToast();
   const location = useLocation();
@@ -64,7 +66,44 @@ export default function AdminHeroSlides() {
 
   useEffect(() => { fetchSlides(); }, []);
 
-  const set = (patch: Partial<HeroOverlayData>) => setOverlay((p) => ({ ...p, ...patch }));
+  // Warn before losing unsaved edits (browser close / reload).
+  useEffect(() => {
+    if (!showForm || !dirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ""; };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [showForm, dirty]);
+
+  const closeForm = () => {
+    if (dirty && !confirm("You have unsaved changes. Leave without saving?")) return;
+    setDirty(false);
+    setShowForm(false);
+    setEditing(null);
+  };
+
+  /** Banner artwork must be the 2172 x 724 (3:1) hero ratio. */
+  const checkDimensions = (url: string) => {
+    if (!url) { setImgWarning(null); return; }
+    const img = new Image();
+    img.onload = () => {
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const target = 2172 / 724;
+      if (Math.abs(ratio - target) / target > 0.04) {
+        setImgWarning(`Uploaded image is ${img.naturalWidth} x ${img.naturalHeight} (ratio ${ratio.toFixed(2)}:1). The hero requires 2172 x 724 (3:1) — this image will be cropped.`);
+      } else if (img.naturalWidth < 1600) {
+        setImgWarning(`Image is only ${img.naturalWidth}px wide. Upload at least 2172px wide for a sharp banner.`);
+      } else {
+        setImgWarning(null);
+      }
+    };
+    img.onerror = () => setImgWarning(null);
+    img.src = url;
+  };
+
+  const setF = (patch: Partial<typeof emptyForm>) => { setDirty(true); setForm((p) => ({ ...p, ...patch })); };
+  const setBg = (url: string) => { setF({ image_url: url }); checkDimensions(url); };
+
+  const set = (patch: Partial<HeroOverlayData>) => { setDirty(true); setOverlay((p) => ({ ...p, ...patch })); };
   const features = overlay.features || [];
   const setFeature = (i: number, patch: Partial<{ icon: string; label: string }>) =>
     set({ features: features.map((f, idx) => (idx === i ? { ...f, ...patch } : f)) });
@@ -87,6 +126,9 @@ export default function AdminHeroSlides() {
       setForm({ ...emptyForm });
       setOverlay({ ...emptyHeroOverlay, features: [] });
     }
+    setDirty(false);
+    setImgWarning(null);
+    checkDimensions(slide?.image_url || "");
     setShowForm(true);
   };
 
@@ -115,7 +157,7 @@ export default function AdminHeroSlides() {
       await supabase.from("hero_slides").insert(data);
       toast({ title: "Slide created" });
     }
-    setShowForm(false); setEditing(null); fetchSlides(); setIsSaving(false);
+    setDirty(false); setShowForm(false); setEditing(null); fetchSlides(); setIsSaving(false);
   };
 
   const handleDelete = async (id: string) => {
@@ -129,7 +171,7 @@ export default function AdminHeroSlides() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><ArrowLeft className="h-5 w-5" /></Button>
+          <Button variant="ghost" size="icon" onClick={closeForm}><ArrowLeft className="h-5 w-5" /></Button>
           <h2 className="text-xl font-semibold">{editing ? "Edit Hero Slider" : "Add Hero Slider"}</h2>
         </div>
 
@@ -160,11 +202,11 @@ export default function AdminHeroSlides() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Button Text</Label>
-                    <Input value={form.cta_text} onChange={(e) => setForm((p) => ({ ...p, cta_text: e.target.value }))} placeholder="SHOP NOW" />
+                    <Input value={form.cta_text} onChange={(e) => setF({ cta_text: e.target.value })} placeholder="SHOP NOW" />
                   </div>
                   <div className="space-y-2">
                     <Label>Button URL</Label>
-                    <Input value={form.cta_link} onChange={(e) => setForm((p) => ({ ...p, cta_link: e.target.value }))} placeholder="/product/non-woven-cloth" />
+                    <Input value={form.cta_link} onChange={(e) => setF({ cta_link: e.target.value })} placeholder="/product/non-woven-cloth" />
                   </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -181,7 +223,7 @@ export default function AdminHeroSlides() {
                   </div>
                   <div className="space-y-2">
                     <Label>Slide Name (internal)</Label>
-                    <Input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="Homepage banner 1" />
+                    <Input value={form.title} onChange={(e) => setF({ title: e.target.value })} placeholder="Homepage banner 1" />
                   </div>
                 </div>
               </CardContent>
@@ -192,11 +234,18 @@ export default function AdminHeroSlides() {
                 <h3 className="font-semibold">2. Images</h3>
                 <div className="space-y-2">
                   <Label>Background Image <span className="text-xs text-muted-foreground">(recommended 2172 × 724 px)</span></Label>
-                  <ImageUpload value={form.image_url} onChange={(url) => setForm((p) => ({ ...p, image_url: url }))} bucket="product-images" />
+                  <ImageUpload value={form.image_url} onChange={setBg} bucket="product-images" />
+                  {imgWarning && (
+                    <p className="flex items-start gap-2 text-xs text-amber-600"><AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />{imgWarning}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label>Transparent Product PNG <span className="text-xs text-muted-foreground">(recommended 800 × 800 px, transparent)</span></Label>
+                  <ImageUpload value={overlay.product_png || ""} onChange={(url) => set({ product_png: url })} bucket="product-images" />
                 </div>
                 <div className="space-y-2">
                   <Label>Mobile Image <span className="text-xs text-muted-foreground">(optional)</span></Label>
-                  <ImageUpload value={form.mobile_image_url} onChange={(url) => setForm((p) => ({ ...p, mobile_image_url: url }))} bucket="product-images" />
+                  <ImageUpload value={form.mobile_image_url} onChange={(url) => setF({ mobile_image_url: url })} bucket="product-images" />
                 </div>
               </CardContent>
             </Card>
@@ -260,11 +309,31 @@ export default function AdminHeroSlides() {
                 <h3 className="font-semibold">5. Theme Colors</h3>
                 <div className="grid sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Accent Colour</Label>
+                    <Label>Primary Color</Label>
                     <div className="flex gap-2">
-                      <Input type="color" className="w-14 p-1" value={overlay.accent || "#C8102E"} onChange={(e) => set({ accent: e.target.value })} />
-                      <Input value={overlay.accent || "#C8102E"} onChange={(e) => set({ accent: e.target.value })} />
+                      <Input type="color" className="w-14 p-1" value={overlay.accent || "#B40000"} onChange={(e) => set({ accent: e.target.value })} />
+                      <Input value={overlay.accent || "#B40000"} onChange={(e) => set({ accent: e.target.value })} />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Secondary Color</Label>
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-14 p-1" value={overlay.secondary || "#111111"} onChange={(e) => set({ secondary: e.target.value })} />
+                      <Input value={overlay.secondary || "#111111"} onChange={(e) => set({ secondary: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Button Color</Label>
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-14 p-1" value={overlay.button_color || "#C30000"} onChange={(e) => set({ button_color: e.target.value })} />
+                      <Input value={overlay.button_color || "#C30000"} onChange={(e) => set({ button_color: e.target.value })} />
+                    </div>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Display Order</Label>
+                    <Input type="number" value={form.sort_order} onChange={(e) => setF({ sort_order: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label>Text Theme</Label>
@@ -276,17 +345,13 @@ export default function AdminHeroSlides() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Sort Order</Label>
-                    <Input type="number" value={form.sort_order} onChange={(e) => setForm((p) => ({ ...p, sort_order: e.target.value }))} />
-                  </div>
                 </div>
                 <div className="flex items-center justify-between pt-2">
-                  <Label>Active on storefront</Label>
-                  <Switch checked={form.is_active} onCheckedChange={(c) => setForm((p) => ({ ...p, is_active: c }))} />
+                  <Label>Status (active on storefront)</Label>
+                  <Switch checked={form.is_active} onCheckedChange={(c) => setF({ is_active: c })} />
                 </div>
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" className="flex-1" onClick={() => setShowForm(false)}>Cancel</Button>
+                  <Button variant="outline" className="flex-1" onClick={closeForm}>Cancel</Button>
                   <Button className="flex-1 bg-gradient-accent" onClick={handleSave} disabled={isSaving}>
                     {isSaving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editing ? "Update" : "Publish"}
                   </Button>
@@ -301,9 +366,10 @@ export default function AdminHeroSlides() {
               <CardContent className="pt-6 space-y-3">
                 <h3 className="font-semibold">Live Preview</h3>
                 <div className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: "2172 / 724" }}>
-                  {form.image_url && <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />}
-                  <HeroOverlay data={{ ...overlay, cta_text: form.cta_text }} />
-                  <HeroBadge data={overlay} />
+                  <HeroTemplate
+                    data={{ ...overlay, cta_text: form.cta_text }}
+                    imageNode={form.image_url ? <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" /> : null}
+                  />
                 </div>
                 <p className="text-xs text-muted-foreground">This is exactly how the banner renders on desktop and tablet (2172 × 724).</p>
               </CardContent>

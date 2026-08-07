@@ -11,7 +11,7 @@ import promoSports from "@/assets/promo-sports.jpg";
 import promoCleaning from "@/assets/promo-cleaning.jpg";
 import promoTissues from "@/assets/promo-tissues.jpg";
 import { SignedImage } from "@/components/common/SignedImage";
-import { HeroOverlay, HeroBadge, type HeroOverlayData } from "@/components/home/HeroOverlay";
+import { HeroTemplate, HeroCta, type HeroOverlayData } from "@/components/home/HeroOverlay";
 
 interface HeroSlide {
   id: string;
@@ -141,67 +141,39 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
             transition={{ duration: 0.25 }}
             className="absolute inset-0"
           >
-            {activeSlide?.mobile_image_url && (
-              <SignedImage
-                src={activeSlide.mobile_image_url}
-                alt={activeSlide?.title}
-                loading={currentSlide === 0 ? "eager" : "lazy"}
-                {...(currentSlide === 0 ? { fetchpriority: "high" as any } : {})}
-                className="block md:hidden w-full h-full bg-muted object-cover"
-              />
-            )}
-            <SignedImage
-              src={activeSlide?.image_url}
-              alt={activeSlide?.title}
-              loading={currentSlide === 0 ? "eager" : "lazy"}
-              {...(currentSlide === 0 ? { fetchpriority: "high" as any } : {})}
-              className={`${activeSlide?.mobile_image_url ? "hidden md:block" : "block"} w-full h-full bg-muted object-cover`}
+            <HeroTemplate
+              data={(activeSlide?.overlay as HeroOverlayData) || {}}
+              imageNode={
+                <>
+                  {activeSlide?.mobile_image_url && (
+                    <SignedImage
+                      src={activeSlide.mobile_image_url}
+                      alt={activeSlide?.title}
+                      loading={currentSlide === 0 ? "eager" : "lazy"}
+                      {...(currentSlide === 0 ? { fetchpriority: "high" as any } : {})}
+                      className="block md:hidden absolute inset-0 w-full h-full bg-muted object-cover"
+                    />
+                  )}
+                  <SignedImage
+                    src={activeSlide?.image_url}
+                    alt={activeSlide?.title}
+                    loading={currentSlide === 0 ? "eager" : "lazy"}
+                    {...(currentSlide === 0 ? { fetchpriority: "high" as any } : {})}
+                    className={`${activeSlide?.mobile_image_url ? "hidden md:block" : "block"} absolute inset-0 w-full h-full bg-muted object-cover`}
+                  />
+                  {activeSlide?.cta_link && (
+                    <SmartLink to={activeSlide.cta_link} ariaLabel={activeSlide.title} className="absolute inset-0 z-[1]" />
+                  )}
+                </>
+              }
+              ctaNode={
+                activeSlide?.overlay?.cta_text || activeSlide?.cta_text ? (
+                  <SmartLink to={activeSlide?.cta_link || "/products"}>
+                    <HeroCta data={{ ...(activeSlide?.overlay || {}), cta_text: activeSlide?.overlay?.cta_text || activeSlide?.cta_text || "" }} />
+                  </SmartLink>
+                ) : null
+              }
             />
-            {activeSlide?.cta_link && (
-              <SmartLink to={activeSlide.cta_link} ariaLabel={activeSlide.title} className="absolute inset-0 z-[1]" />
-            )}
-            
-            {activeSlide?.overlay?.enabled ? (
-              <>
-              <HeroBadge data={activeSlide.overlay} />
-              <HeroOverlay
-                data={activeSlide.overlay}
-                ctaNode={
-                  (activeSlide as any)?.show_buttons !== false && (activeSlide.overlay.cta_text || activeSlide.cta_text) ? (
-                    <SmartLink to={activeSlide.cta_link || "/products"}>
-                      <span
-                        className="inline-flex items-center gap-2 font-semibold uppercase tracking-wide text-white transition-opacity hover:opacity-90"
-                        style={{
-                          background: activeSlide.overlay.accent || "#C8102E",
-                          marginTop: "1.1em",
-                          padding: "0.6em 1.4em",
-                          fontSize: "clamp(0.6rem, 1.05vw, 1.05rem)",
-                        }}
-                      >
-                        {activeSlide.overlay.cta_text || activeSlide.cta_text}
-                        <ArrowRight style={{ width: "1.2em", height: "1.2em" }} />
-                      </span>
-                    </SmartLink>
-                  ) : null
-                }
-              />
-              </>
-            ) : (
-              (activeSlide as any)?.show_buttons !== false && (
-                <div className="absolute inset-0 z-[2] flex items-center py-4 sm:py-6 md:py-8 pointer-events-none" style={{ paddingLeft: "max(0.75rem, env(safe-area-inset-left))", paddingRight: "max(0.75rem, env(safe-area-inset-right))" }}>
-                  <div className="container mx-auto px-3 sm:px-4 md:px-6">
-                    <div className="max-w-[min(34rem,92vw)] pointer-events-auto">
-                      <SmartLink to={activeSlide?.cta_link || "/products"}>
-                        <Button size="sm" className="bg-accent hover:bg-accent-hover text-accent-foreground shadow-lg h-8 sm:h-9 text-xs sm:text-sm">
-                          {activeSlide?.cta_text || "Shop Now"}
-                          <ArrowRight className="ml-1.5 h-4 w-4" />
-                        </Button>
-                      </SmartLink>
-                    </div>
-                  </div>
-                </div>
-              )
-            )}
           </motion.div>
         </AnimatePresence>
 
