@@ -41,6 +41,13 @@ export interface HeroFeature {
   label: string;
 }
 
+/** Crop / zoom of the background artwork inside the 2172x724 safe area. */
+export interface HeroImageCrop {
+  zoom?: number; // 1 = fit, up to 2.5
+  x?: number; // object-position X in %
+  y?: number; // object-position Y in %
+}
+
 export interface HeroOverlayData {
   enabled?: boolean;
   brand?: string;
@@ -52,6 +59,8 @@ export interface HeroOverlayData {
   theme?: "dark" | "light";
   accent?: string;
   width?: number; // percentage of banner width
+  crop?: HeroImageCrop;
+  mobile_crop?: HeroImageCrop;
 }
 
 export const emptyHeroOverlay: HeroOverlayData = {
@@ -65,7 +74,19 @@ export const emptyHeroOverlay: HeroOverlayData = {
   theme: "dark",
   accent: "#C8102E",
   width: 46,
+  crop: { zoom: 1, x: 50, y: 50 },
+  mobile_crop: { zoom: 1, x: 50, y: 50 },
 };
+
+/** Inline style that applies a crop/zoom to a hero background image. */
+export function heroCropStyle(crop?: HeroImageCrop | null) {
+  const zoom = Math.min(Math.max(crop?.zoom ?? 1, 1), 2.5);
+  return {
+    objectPosition: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
+    transform: zoom === 1 ? undefined : `scale(${zoom})`,
+    transformOrigin: `${crop?.x ?? 50}% ${crop?.y ?? 50}%`,
+  } as const;
+}
 
 /**
  * Renders the editable left-side banner content (brand, heading, tagline bar,
