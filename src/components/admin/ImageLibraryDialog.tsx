@@ -27,7 +27,8 @@ function fileNameOf(url: string) {
 async function listStorageImages(prefix = "", depth = 0): Promise<LibImage[]> {
   if (depth > 2) return [];
   const { data, error } = await supabase.storage.from(BUCKET).list(prefix, { limit: 500, sortBy: { column: "created_at", order: "desc" } });
-  if (error || !data) return [];
+  if (error) throw error;
+  if (!data) return [];
   const out: LibImage[] = [];
   for (const item of data) {
     const path = prefix ? `${prefix}/${item.name}` : item.name;
@@ -80,15 +81,12 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect, multiple = fa
   const [debounced, setDebounced] = useState("");
   const [sort, setSort] = useState("newest");
   const [page, setPage] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    setSelected([]);
-    setQuery("");
-    setDebounced("");
-    setPage(0);
+  const load = async () => {
     setLoading(true);
-    (async () => {
+    setError(null);
+    try {
       const [storage, db] = await Promise.all([listStorageImages(), listDbImages()]);
       const map = new Map<string, LibImage>();
       [...storage, ...db].forEach((img) => {
@@ -97,8 +95,22 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect, multiple = fa
         if (!prev || img.createdAt > prev.createdAt) map.set(img.url, img);
       });
       setImages(Array.from(map.values()));
+    } catch (e) {
+      setImages([]);
+      setError(e instanceof Error ? e.message : "Could not load the image library.");
+    } finally {
       setLoading(false);
-    })();
+    }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    setSelected([]);
+    setQuery("");
+    setDebounced("");
+    setPage(0);
+    void load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   // Debounced search keeps typing snappy even with hundreds of images.
@@ -137,6 +149,25 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect, multiple = fa
     );
   };
 
+  // Roving keyboard navigation across the thumbnail grid.
+  const onGridKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const keys = ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"];
+    if (!keys.includes(e.key)) return;
+    const buttons = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>("button[data-idx]"));
+    if (buttons.length === 0) return;
+    const cols = window.innerWidth >= 640 ? 5 : 3;
+    const currentIdx = buttons.findIndex((b) => b === document.activeElement);
+    let next = currentIdx < 0 ? 0 : currentIdx;
+    if (e.key === "ArrowRight") next = Math.min(buttons.length - 1, next + 1);
+    if (e.key === "ArrowLeft") next = Math.max(0, next - 1);
+    if (e.key === "ArrowDown") next = Math.min(buttons.length - 1, next + cols);
+    if (e.key === "ArrowUp") next = Math.max(0, next - cols);
+    if (e.key === "Home") next = 0;
+    if (e.key === "End") next = buttons.length - 1;
+    e.preventDefault();
+    buttons[next]?.focus();
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
@@ -146,10 +177,16 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect, multiple = fa
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search file name or URL" className="pl-9" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search file name or URL"
+              className="pl-9"
+              aria-label="Search images by file name or URL"
+            />
           </div>
           <Select value={sort} onValueChange={(v) => { setSort(v); setPage(0); }}>
-            <SelectTrigger className="sm:w-48"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="sm:w-48" aria-label="Sort images"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="newest">Newest first</SelectItem>
               <SelectItem value="oldest">Oldest first</SelectItem>
@@ -160,27 +197,46 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect, multiple = fa
         </div>
         <div className="max-h-[55vh] overflow-y-auto">
           {loading ? (
-            <div className="py-16 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+            <div className="py-16 flex justify-center" role="status" aria-live="polite">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <span className="sr-only">Loading images…</span>
+            </div>
+          ) : error ? (
+            <div className="py-16 text-center space-y-3" role="alert">
+              <p className="text-sm text-destructive">{error}</p>
+              <Button type="button" variant="outline" onClick={() => void load()}>Try again</Button>
+            </div>
           ) : current.length === 0 ? (
-            <p className="py-16 text-center text-sm text-muted-foreground">No images found.</p>
+            <div className="py-16 text-center space-y-3" role="status" aria-live="polite">
+              <p className="text-sm text-muted-foreground">
+                {debounced ? `No images match “${query.trim()}”.` : "No images uploaded yet. Upload one to build your library."}
+              </p>
+              {debounced && (
+                <Button type="button" variant="outline" onClick={() => setQuery("")}>Clear search</Button>
+              )}
+            </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2" role="listbox" aria-label="Image library" aria-multiselectable={multiple} onKeyDown={onGridKeyDown}>
               {current.map((img) => {
                 const isSel = selected.includes(img.url);
                 return (
                   <button
                     key={img.url}
                     type="button"
+                    role="option"
+                    data-idx
+                    aria-selected={isSel}
+                    aria-label={img.name}
                     title={img.name}
                     onClick={() => toggle(img.url)}
-                    className={`group relative aspect-square rounded border overflow-hidden bg-muted/30 ${isSel ? "ring-2 ring-primary" : "hover:border-primary/60"}`}
+                    className={`group relative aspect-square rounded border overflow-hidden bg-muted/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${isSel ? "ring-2 ring-primary" : "hover:border-primary/60"}`}
                   >
                     <SignedImage
                       src={img.url}
                       alt={img.name}
                       className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-150"
                     />
-                    <span className="absolute inset-x-0 bottom-0 bg-background/85 text-[10px] px-1 py-0.5 truncate text-left opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="absolute inset-x-0 bottom-0 bg-background/85 text-[10px] px-1 py-0.5 truncate text-left opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity">
                       {img.name}
                     </span>
                     {isSel && (
@@ -199,10 +255,10 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect, multiple = fa
             {filtered.length} image{filtered.length === 1 ? "" : "s"} · page {page + 1} of {pageCount}
           </p>
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="icon" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
+            <Button type="button" variant="outline" size="icon" aria-label="Previous page" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button type="button" variant="outline" size="icon" disabled={page >= pageCount - 1} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}>
+            <Button type="button" variant="outline" size="icon" aria-label="Next page" disabled={page >= pageCount - 1} onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}>
               <ChevronRight className="h-4 w-4" />
             </Button>
             {multiple && (
