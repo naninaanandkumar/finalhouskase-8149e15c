@@ -171,7 +171,7 @@ const App = () => (
                 <Route path="ekart-settings" element={<AdminEkartSettings />} />
                 <Route path="blog" element={<AdminBlog />} />
                 <Route path="family-testimonials" element={<AdminFamilyTestimonials />} />
-                <Route path="email-preview" element={<AdminEmailPreview />} />
+                <Route path="email-preview" element={<EmailPreview />} />
               </Route>
 
               {/* Catch-all */}
