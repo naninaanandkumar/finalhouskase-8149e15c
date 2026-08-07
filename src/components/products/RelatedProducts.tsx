@@ -65,7 +65,7 @@ export function RelatedProducts({ currentProductId, categoryId }: RelatedProduct
   if (loading) {
     return (
       <div className="mt-8">
-        <Skeleton className="h-8 w-48 mb-6" />
+        <Skeleton className="h-8 w-48 mb-6 mx-auto" />
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="aspect-[3/4] rounded" />
@@ -78,22 +78,43 @@ export function RelatedProducts({ currentProductId, categoryId }: RelatedProduct
   if (products.length === 0) return null;
 
   return (
-    <div className="mt-8">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg sm:text-xl font-display font-bold text-foreground">
+    <section className="mt-8" aria-labelledby="related-products-heading">
+      <div className="flex items-center justify-center gap-3 sm:gap-4 mb-5">
+        <span aria-hidden className="hidden sm:block h-px w-12 sm:w-24 bg-gradient-to-r from-transparent to-border" />
+        <h2 id="related-products-heading" className="text-lg sm:text-xl font-display font-bold text-foreground text-center">
           Related Products
         </h2>
-        <Link to="/products" className="text-accent font-medium flex items-center gap-1 text-sm hover:gap-2 transition-all">
-          View All
-          <ArrowRight className="h-4 w-4" />
-        </Link>
+        <span aria-hidden className="hidden sm:block h-px w-12 sm:w-24 bg-gradient-to-l from-transparent to-border" />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+      {/* Mobile / tablet: horizontal scroller with dot indicators (no scrollbar line) */}
+      <div
+        ref={scrollerRef}
+        onScroll={onScroll}
+        className="lg:hidden flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth -mx-3 px-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {products.map((product, idx) => (
+          <div key={product.id} className="snap-start shrink-0 w-[46%] sm:w-[31%]">
+            <ProductCard product={product} index={idx} />
+          </div>
+        ))}
+      </div>
+      <div className="lg:hidden flex items-center justify-center gap-1.5 mt-3">
+        {products.map((p, i) => (
+          <span
+            key={p.id}
+            aria-hidden
+            className={`h-1.5 rounded-full transition-all ${i === active ? "w-4 bg-primary" : "w-1.5 bg-border"}`}
+          />
+        ))}
+      </div>
+
+      {/* Desktop grid */}
+      <div className="hidden lg:grid grid-cols-5 gap-4">
         {products.map((product, idx) => (
           <ProductCard key={product.id} product={product} index={idx} />
         ))}
       </div>
-    </div>
+    </section>
   );
 }
