@@ -240,6 +240,10 @@ export default function AdminHeroSlides() {
                   )}
                 </div>
                 <div className="space-y-2">
+                  <Label>Transparent Product PNG <span className="text-xs text-muted-foreground">(recommended 800 × 800 px, transparent)</span></Label>
+                  <ImageUpload value={overlay.product_png || ""} onChange={(url) => set({ product_png: url })} bucket="product-images" />
+                </div>
+                <div className="space-y-2">
                   <Label>Mobile Image <span className="text-xs text-muted-foreground">(optional)</span></Label>
                   <ImageUpload value={form.mobile_image_url} onChange={(url) => setF({ mobile_image_url: url })} bucket="product-images" />
                 </div>
@@ -305,11 +309,31 @@ export default function AdminHeroSlides() {
                 <h3 className="font-semibold">5. Theme Colors</h3>
                 <div className="grid sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Accent Colour</Label>
+                    <Label>Primary Color</Label>
                     <div className="flex gap-2">
-                      <Input type="color" className="w-14 p-1" value={overlay.accent || "#C8102E"} onChange={(e) => set({ accent: e.target.value })} />
-                      <Input value={overlay.accent || "#C8102E"} onChange={(e) => set({ accent: e.target.value })} />
+                      <Input type="color" className="w-14 p-1" value={overlay.accent || "#B40000"} onChange={(e) => set({ accent: e.target.value })} />
+                      <Input value={overlay.accent || "#B40000"} onChange={(e) => set({ accent: e.target.value })} />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Secondary Color</Label>
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-14 p-1" value={overlay.secondary || "#111111"} onChange={(e) => set({ secondary: e.target.value })} />
+                      <Input value={overlay.secondary || "#111111"} onChange={(e) => set({ secondary: e.target.value })} />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Button Color</Label>
+                    <div className="flex gap-2">
+                      <Input type="color" className="w-14 p-1" value={overlay.button_color || "#C30000"} onChange={(e) => set({ button_color: e.target.value })} />
+                      <Input value={overlay.button_color || "#C30000"} onChange={(e) => set({ button_color: e.target.value })} />
+                    </div>
+                  </div>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Display Order</Label>
+                    <Input type="number" value={form.sort_order} onChange={(e) => setF({ sort_order: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label>Text Theme</Label>
@@ -321,13 +345,9 @@ export default function AdminHeroSlides() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Sort Order</Label>
-                    <Input type="number" value={form.sort_order} onChange={(e) => setF({ sort_order: e.target.value })} />
-                  </div>
                 </div>
                 <div className="flex items-center justify-between pt-2">
-                  <Label>Active on storefront</Label>
+                  <Label>Status (active on storefront)</Label>
                   <Switch checked={form.is_active} onCheckedChange={(c) => setF({ is_active: c })} />
                 </div>
                 <div className="flex gap-2 pt-2">
@@ -346,9 +366,10 @@ export default function AdminHeroSlides() {
               <CardContent className="pt-6 space-y-3">
                 <h3 className="font-semibold">Live Preview</h3>
                 <div className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: "2172 / 724" }}>
-                  {form.image_url && <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />}
-                  <HeroOverlay data={{ ...overlay, cta_text: form.cta_text }} />
-                  <HeroBadge data={overlay} />
+                  <HeroTemplate
+                    data={{ ...overlay, cta_text: form.cta_text }}
+                    imageNode={form.image_url ? <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" /> : null}
+                  />
                 </div>
                 <p className="text-xs text-muted-foreground">This is exactly how the banner renders on desktop and tablet (2172 × 724).</p>
               </CardContent>
