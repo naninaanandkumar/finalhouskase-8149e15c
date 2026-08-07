@@ -206,8 +206,20 @@ export default function AdminHeroSlides() {
 
                     {form.image_url && (
                       <div className="space-y-2">
-                        <Label>Live preview (desktop / tablet ratio 2172 × 724)</Label>
-                        <div className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: "2172 / 724" }}>
+                        <div className="flex items-center justify-between">
+                          <Label>Live preview (desktop / tablet ratio 2172 × 724)</Label>
+                          <Button type="button" variant="outline" size="sm" className="gap-2" disabled={shooting}
+                            onClick={async () => {
+                              if (!formPreviewRef.current) return;
+                              setShooting(true);
+                              try { await downloadPreviewShot(formPreviewRef.current, form.title || "hero-slide"); }
+                              catch (e: any) { toast({ title: "Screenshot failed", description: e.message, variant: "destructive" }); }
+                              setShooting(false);
+                            }}>
+                            {shooting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}Export preview PNG
+                          </Button>
+                        </div>
+                        <div ref={formPreviewRef} className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: "2172 / 724" }}>
                           <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" style={heroCropStyle(overlay.crop)} />
                           <HeroOverlay data={overlay} />
                           <div className="pointer-events-none absolute inset-0 border-2 border-dashed border-primary/25" style={{ margin: "4%" }} />
@@ -226,6 +238,41 @@ export default function AdminHeroSlides() {
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2"><Label>CTA Link</Label><Input value={form.cta_link} onChange={e => setForm(p => ({...p, cta_link: e.target.value}))} placeholder="/products?category=..." /></div>
                       <div className="space-y-2"><Label>Sort Order</Label><Input type="number" value={form.sort_order} onChange={e => setForm(p => ({...p, sort_order: e.target.value}))} /></div>
+                    </div>
+                    {validateCtaLink(form.cta_link).map((w, i) => (
+                      <p key={i} className={`flex items-start gap-2 text-xs ${w.level === "error" ? "text-destructive" : "text-amber-600"}`}>
+                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />{w.message}
+                      </p>
+                    ))}
+
+                    <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
+                      <div>
+                        <Label className="text-base">Draft &amp; scheduling</Label>
+                        <p className="text-xs text-muted-foreground">Drafts never show on the storefront. Scheduled slides appear and disappear automatically.</p>
+                      </div>
+                      <div className="grid sm:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Status</Label>
+                          <Select value={schedule.status || "published"} onValueChange={(v) => setSchedule(p => ({ ...p, status: v as "draft" | "published" }))}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="published">Published</SelectItem>
+                              <SelectItem value="draft">Draft</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Publish from</Label>
+                          <Input type="datetime-local" value={schedule.publish_at || ""} onChange={e => setSchedule(p => ({ ...p, publish_at: e.target.value || null }))} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Hide after</Label>
+                          <Input type="datetime-local" value={schedule.unpublish_at || ""} onChange={e => setSchedule(p => ({ ...p, unpublish_at: e.target.value || null }))} />
+                        </div>
+                      </div>
+                      {schedule.publish_at && schedule.unpublish_at && new Date(schedule.unpublish_at) <= new Date(schedule.publish_at) && (
+                        <p className="flex items-center gap-2 text-xs text-destructive"><AlertTriangle className="h-4 w-4" />"Hide after" must be later than "Publish from".</p>
+                      )}
                     </div>
                     <div className="flex items-center justify-between"><Label>Active</Label><Switch checked={form.is_active} onCheckedChange={c => setForm(p => ({...p, is_active: c}))} /></div>
                     <div className="flex items-center justify-between"><Label>Show Slider Text</Label><Switch checked={form.show_text} onCheckedChange={c => setForm(p => ({...p, show_text: c}))} /></div>
