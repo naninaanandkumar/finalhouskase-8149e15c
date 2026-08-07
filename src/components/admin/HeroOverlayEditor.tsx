@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { HERO_ICONS, type HeroOverlayData, type HeroIconKey } from "@/components/home/HeroOverlay";
+import { validateHeroOverlay } from "@/lib/heroSlides";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const ICON_KEYS = Object.keys(HERO_ICONS) as HeroIconKey[];
 
@@ -20,6 +22,11 @@ export function HeroOverlayEditor({
   const features = value.features || [];
   const setFeature = (i: number, patch: Partial<{ icon: string; label: string }>) =>
     set({ features: features.map((f, idx) => (idx === i ? { ...f, ...patch } : f)) });
+  const warnings = validateHeroOverlay(value);
+  const crop = value.crop || { zoom: 1, x: 50, y: 50 };
+  const setCrop = (patch: Partial<{ zoom: number; x: number; y: number }>) => set({ crop: { ...crop, ...patch } });
+  const mcrop = value.mobile_crop || { zoom: 1, x: 50, y: 50 };
+  const setMCrop = (patch: Partial<{ zoom: number; x: number; y: number }>) => set({ mobile_crop: { ...mcrop, ...patch } });
 
   return (
     <div className="space-y-4 rounded-lg border bg-muted/30 p-4">
@@ -117,6 +124,56 @@ export function HeroOverlayEditor({
             <Label>Content width: {value.width || 46}% of banner</Label>
             <input type="range" min={25} max={70} step={1} value={value.width || 46}
               onChange={(e) => set({ width: Number(e.target.value) })} className="w-full accent-primary" />
+          </div>
+
+          <div className="space-y-3 rounded-lg border bg-background p-4">
+            <div>
+              <Label className="text-base">Image crop &amp; zoom (desktop / tablet)</Label>
+              <p className="text-xs text-muted-foreground">Reframe the artwork so the left side stays clear for the text — the 2172 × 724 safe area.</p>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs">Zoom {(crop.zoom ?? 1).toFixed(2)}×</Label>
+                <input type="range" min={1} max={2.5} step={0.01} value={crop.zoom ?? 1} onChange={(e) => setCrop({ zoom: Number(e.target.value) })} className="w-full accent-primary" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Horizontal {Math.round(crop.x ?? 50)}%</Label>
+                <input type="range" min={0} max={100} step={1} value={crop.x ?? 50} onChange={(e) => setCrop({ x: Number(e.target.value) })} className="w-full accent-primary" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Vertical {Math.round(crop.y ?? 50)}%</Label>
+                <input type="range" min={0} max={100} step={1} value={crop.y ?? 50} onChange={(e) => setCrop({ y: Number(e.target.value) })} className="w-full accent-primary" />
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-4 border-t pt-3">
+              <div className="space-y-2">
+                <Label className="text-xs">Mobile zoom {(mcrop.zoom ?? 1).toFixed(2)}×</Label>
+                <input type="range" min={1} max={2.5} step={0.01} value={mcrop.zoom ?? 1} onChange={(e) => setMCrop({ zoom: Number(e.target.value) })} className="w-full accent-primary" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Mobile horizontal {Math.round(mcrop.x ?? 50)}%</Label>
+                <input type="range" min={0} max={100} step={1} value={mcrop.x ?? 50} onChange={(e) => setMCrop({ x: Number(e.target.value) })} className="w-full accent-primary" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Mobile vertical {Math.round(mcrop.y ?? 50)}%</Label>
+                <input type="range" min={0} max={100} step={1} value={mcrop.y ?? 50} onChange={(e) => setMCrop({ y: Number(e.target.value) })} className="w-full accent-primary" />
+              </div>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={() => set({ crop: { zoom: 1, x: 50, y: 50 }, mobile_crop: { zoom: 1, x: 50, y: 50 } })}>
+              Reset crop
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            {warnings.length === 0 ? (
+              <p className="flex items-center gap-2 text-xs text-green-600"><CheckCircle2 className="h-4 w-4" />Content fits the desktop and tablet safe area.</p>
+            ) : (
+              warnings.map((w, i) => (
+                <p key={i} className={`flex items-start gap-2 text-xs ${w.level === "error" ? "text-destructive" : "text-amber-600"}`}>
+                  <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />{w.message}
+                </p>
+              ))
+            )}
           </div>
         </div>
       )}
