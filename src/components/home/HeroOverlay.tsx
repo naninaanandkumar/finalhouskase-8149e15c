@@ -120,16 +120,21 @@ export function HeroOverlay({
   const light = data.theme === "light";
   const bodyColor = light ? "#ffffff" : "#1A1A1A";
   const features = (data.features || []).filter((f) => f?.label?.trim());
+  const align = data.align || "left";
 
   return (
     <div
-      className="absolute inset-y-0 left-0 z-[2] flex items-center pointer-events-none"
+      className="absolute inset-y-0 z-[2] flex items-center pointer-events-none"
       style={{
         paddingLeft: "clamp(1rem, 6%, 7rem)",
         paddingRight: "1rem",
         width: `${data.width || 46}%`,
         minWidth: "min(88%, 32rem)",
         maxWidth: "92%",
+        left: align === "right" ? "auto" : align === "center" ? "50%" : 0,
+        right: align === "right" ? 0 : "auto",
+        transform: align === "center" ? "translateX(-50%)" : undefined,
+        textAlign: align,
       }}
     >
       <div className="pointer-events-auto w-full" style={{ color: bodyColor }}>
