@@ -11,7 +11,7 @@ import promoSports from "@/assets/promo-sports.jpg";
 import promoCleaning from "@/assets/promo-cleaning.jpg";
 import promoTissues from "@/assets/promo-tissues.jpg";
 import { SignedImage } from "@/components/common/SignedImage";
-import { HeroOverlay, type HeroOverlayData } from "@/components/home/HeroOverlay";
+import { HeroOverlay, heroCropStyle, type HeroOverlayData } from "@/components/home/HeroOverlay";
 
 interface HeroSlide {
   id: string;
@@ -58,6 +58,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
   const [promoBanners, setPromoBanners] = useState<PromoBanner[]>(fallbackBanners);
   const [showPromoBanners, setShowPromoBanners] = useState(true);
+  const [slider, setSlider] = useState({ autoplay: true, interval: 2800, loop: true });
 
   useEffect(() => {
     let isMounted = true;
@@ -72,6 +73,10 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
           ]);
 
           if (!isMounted) return;
+
+          supabase.from("site_settings").select("value").eq("key", "hero_slider").maybeSingle().then(({ data }) => {
+            if (isMounted && data?.value) setSlider((p) => ({ ...p, ...(data.value as any) }));
+          });
 
           if (slidesRes.data && slidesRes.data.length > 0) {
             setHeroSlides(slidesRes.data as HeroSlide[]);
@@ -108,12 +113,16 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
   }, []);
 
   useEffect(() => {
-    if (heroSlides.length < 2) return;
+    if (heroSlides.length < 2 || !slider.autoplay) return;
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-    }, 2800);
+      setCurrentSlide((prev) => {
+        const next = prev + 1;
+        if (next >= heroSlides.length) return slider.loop ? 0 : prev;
+        return next;
+      });
+    }, Math.max(1000, slider.interval || 2800));
     return () => clearInterval(timer);
-  }, [heroSlides.length]);
+  }, [heroSlides.length, slider.autoplay, slider.interval, slider.loop]);
 
   const goToSlide = (idx: number) => setCurrentSlide(idx);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
@@ -143,6 +152,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
                 loading={currentSlide === 0 ? "eager" : "lazy"}
                 {...(currentSlide === 0 ? { fetchpriority: "high" as any } : {})}
                 className="block md:hidden w-full h-full bg-muted object-cover"
+                style={heroCropStyle(activeSlide?.overlay?.mobile_crop)}
               />
             )}
             <SignedImage
@@ -151,6 +161,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
               loading={currentSlide === 0 ? "eager" : "lazy"}
               {...(currentSlide === 0 ? { fetchpriority: "high" as any } : {})}
               className={`${activeSlide?.mobile_image_url ? "hidden md:block" : "block"} w-full h-full bg-muted object-cover`}
+              style={heroCropStyle(activeSlide?.overlay?.crop)}
             />
             {activeSlide?.cta_link && (
               <SmartLink to={activeSlide.cta_link} ariaLabel={activeSlide.title} className="absolute inset-0 z-[1]" />

@@ -9,13 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon } from "lucide-react";
+import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon, Download, Upload, ArrowUp, ArrowDown, Copy } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { SignedImage } from "@/components/common/SignedImage";
 import { HeroOverlayEditor } from "@/components/admin/HeroOverlayEditor";
-import { HeroOverlay, emptyHeroOverlay, type HeroOverlayData } from "@/components/home/HeroOverlay";
+import { HeroOverlay, emptyHeroOverlay, heroCropStyle, type HeroOverlayData } from "@/components/home/HeroOverlay";
+import { downloadHeroBundle, parseHeroBundle, validateHeroOverlay } from "@/lib/heroSlides";
 
 interface HeroSlide {
   id: string;
@@ -41,7 +44,12 @@ export default function AdminHeroSlides() {
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({ title: "", subtitle: "", image_url: "", mobile_image_url: "", badge_label: "", cta_text: "Shop Now", cta_link: "/products", sort_order: "0", is_active: true, show_text: true, show_buttons: true });
   const [overlay, setOverlay] = useState<HeroOverlayData>(emptyHeroOverlay);
-  
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const [slider, setSlider] = useState({ autoplay: true, interval: 2800, loop: true });
+  const [savingSlider, setSavingSlider] = useState(false);
+
   const { toast } = useToast();
 
   const fetchSlides = async () => {
@@ -51,8 +59,58 @@ export default function AdminHeroSlides() {
     setIsLoading(false);
   };
 
+  const fetchSlider = async () => {
+    const { data } = await supabase.from("site_settings").select("value").eq("key", "hero_slider").maybeSingle();
+    if (data?.value) setSlider((p) => ({ ...p, ...(data.value as any) }));
+  };
 
-  useEffect(() => { fetchSlides(); }, []);
+  useEffect(() => { fetchSlides(); fetchSlider(); }, []);
+
+  const saveSlider = async (next: typeof slider) => {
+    setSlider(next);
+    setSavingSlider(true);
+    await supabase.from("site_settings").upsert({ key: "hero_slider", value: next as any }, { onConflict: "key" });
+    setSavingSlider(false);
+  };
+
+  const reorder = async (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= slides.length) return;
+    const next = [...slides];
+    [next[index], next[target]] = [next[target], next[index]];
+    setSlides(next);
+    await Promise.all(next.map((s, i) => supabase.from("hero_slides").update({ sort_order: i }).eq("id", s.id)));
+    fetchSlides();
+  };
+
+  const duplicateSlide = async (slide: HeroSlide) => {
+    const { id, ...rest } = slide as any;
+    await supabase.from("hero_slides").insert({ ...rest, title: `${slide.title} (copy)`, sort_order: slides.length });
+    toast({ title: "Slide duplicated" });
+    fetchSlides();
+  };
+
+  const handleImport = async () => {
+    setIsImporting(true);
+    try {
+      const parsed = parseHeroBundle(importText);
+      const rows = parsed.map((s, i) => ({ ...s, sort_order: slides.length + i }));
+      const { error } = await supabase.from("hero_slides").insert(rows as any);
+      if (error) throw new Error(error.message);
+      toast({ title: `Imported ${rows.length} slide(s)` });
+      setImportOpen(false);
+      setImportText("");
+      fetchSlides();
+    } catch (e: any) {
+      toast({ title: "Import failed", description: e.message, variant: "destructive" });
+    }
+    setIsImporting(false);
+  };
+
+  const handleImportFile = async (file?: File | null) => {
+    if (!file) return;
+    setImportText(await file.text());
+  };
 
   // Hero Slide handlers
   const openForm = (slide?: HeroSlide) => {
@@ -70,6 +128,8 @@ export default function AdminHeroSlides() {
 
   const handleSave = async () => {
     if (!form.title || !form.image_url) { toast({ title: "Error", description: "Title and Image are required", variant: "destructive" }); return; }
+    const blocking = validateHeroOverlay(overlay).filter((w) => w.level === "error");
+    if (blocking.length && !confirm(`This banner may overflow on tablet:\n\n${blocking.map((w) => `• ${w.message}`).join("\n")}\n\nSave anyway?`)) return;
     setIsSaving(true);
     const data: any = { title: form.title, subtitle: form.subtitle || null, image_url: form.image_url, mobile_image_url: form.mobile_image_url || null, badge_label: form.badge_label || null, cta_text: form.cta_text || "Shop Now", cta_link: form.cta_link || "/products", sort_order: parseInt(form.sort_order) || 0, is_active: form.is_active, show_text: form.show_text, show_buttons: form.show_buttons, overlay };
     if (editing) {
@@ -121,8 +181,9 @@ export default function AdminHeroSlides() {
                       <div className="space-y-2">
                         <Label>Live preview (desktop / tablet ratio 2172 × 724)</Label>
                         <div className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: "2172 / 724" }}>
-                          <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                          <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" style={heroCropStyle(overlay.crop)} />
                           <HeroOverlay data={overlay} />
+                          <div className="pointer-events-none absolute inset-0 border-2 border-dashed border-primary/25" style={{ margin: "4%" }} />
                         </div>
                       </div>
                     )}
@@ -153,8 +214,38 @@ export default function AdminHeroSlides() {
               <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
                 <div className="flex items-center justify-between">
                   <p className="text-muted-foreground text-sm">Manage homepage hero slider</p>
-                  <Button onClick={() => openForm()} className="bg-gradient-accent gap-2"><Plus className="h-4 w-4" />Add Slide</Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" className="gap-2" onClick={() => downloadHeroBundle(slides)} disabled={slides.length === 0}><Download className="h-4 w-4" />Export all</Button>
+                    <Button variant="outline" className="gap-2" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" />Import</Button>
+                    <Button onClick={() => openForm()} className="bg-gradient-accent gap-2"><Plus className="h-4 w-4" />Add Slide</Button>
+                  </div>
                 </div>
+
+                <Card className="shadow-card">
+                  <CardContent className="pt-6 grid gap-4 sm:grid-cols-3 items-end">
+                    <div className="flex items-center justify-between gap-4 sm:col-span-1">
+                      <div>
+                        <Label>Auto-advance</Label>
+                        <p className="text-xs text-muted-foreground">Off = manual dots only</p>
+                      </div>
+                      <Switch checked={slider.autoplay} onCheckedChange={(c) => saveSlider({ ...slider, autoplay: c })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Slide duration: {(slider.interval / 1000).toFixed(1)}s</Label>
+                      <input type="range" min={1500} max={10000} step={100} value={slider.interval} disabled={!slider.autoplay}
+                        onChange={(e) => setSlider((p) => ({ ...p, interval: Number(e.target.value) }))}
+                        onMouseUp={() => saveSlider(slider)} onTouchEnd={() => saveSlider(slider)}
+                        className="w-full accent-primary disabled:opacity-50" />
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <Label>Loop carousel</Label>
+                        <p className="text-xs text-muted-foreground">{savingSlider ? "Saving…" : "Saved automatically"}</p>
+                      </div>
+                      <Switch checked={slider.loop} onCheckedChange={(c) => saveSlider({ ...slider, loop: c })} />
+                    </div>
+                  </CardContent>
+                </Card>
                 <Card className="shadow-card">
                   <CardContent className="p-0">
                     {isLoading ? (
@@ -165,16 +256,27 @@ export default function AdminHeroSlides() {
                       <Table>
                         <TableHeader><TableRow><TableHead>Image</TableHead><TableHead>Title</TableHead><TableHead>Badge</TableHead><TableHead>Order</TableHead><TableHead>Status</TableHead><TableHead className="w-10"></TableHead></TableRow></TableHeader>
                         <TableBody>
-                          {slides.map(slide => (
+                          {slides.map((slide, index) => (
                             <TableRow key={slide.id}>
                               <TableCell><SignedImage src={slide.image_url} alt="" className="w-20 h-12 object-cover rounded" /></TableCell>
                               <TableCell className="font-medium">{slide.title}</TableCell>
                               <TableCell>{slide.badge_label || "—"}</TableCell>
-                              <TableCell>{slide.sort_order}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" disabled={index === 0} onClick={() => reorder(index, -1)} aria-label="Move up"><ArrowUp className="h-3.5 w-3.5" /></Button>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7" disabled={index === slides.length - 1} onClick={() => reorder(index, 1)} aria-label="Move down"><ArrowDown className="h-3.5 w-3.5" /></Button>
+                                  <span className="text-xs text-muted-foreground">{slide.sort_order}</span>
+                                </div>
+                              </TableCell>
                               <TableCell><span className={`text-xs font-medium px-2 py-0.5 rounded ${slide.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{slide.is_active ? "Active" : "Inactive"}</span></TableCell>
                               <TableCell>
                                 <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end"><DropdownMenuItem onClick={() => openForm(slide)}><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem><DropdownMenuItem onClick={() => handleDelete(slide.id)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem></DropdownMenuContent>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => openForm(slide)}><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => duplicateSlide(slide)}><Copy className="h-4 w-4 mr-2" />Duplicate</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => downloadHeroBundle([slide], `hero-slide-${slide.id}.json`)}><Download className="h-4 w-4 mr-2" />Export JSON</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleDelete(slide.id)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
+                                  </DropdownMenuContent>
                                 </DropdownMenu>
                               </TableCell>
                             </TableRow>
@@ -190,6 +292,23 @@ export default function AdminHeroSlides() {
         </TabsContent>
 
       </Tabs>
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader><DialogTitle>Import hero slides</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Upload or paste a hero slides JSON export. Slides are added at the end of the carousel — nothing is overwritten.</p>
+            <Input type="file" accept="application/json,.json" onChange={(e) => handleImportFile(e.target.files?.[0])} />
+            <Textarea rows={10} className="font-mono text-xs" value={importText} onChange={(e) => setImportText(e.target.value)} placeholder='{"kind":"houskase.hero_slides","slides":[ ... ]}' />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportOpen(false)}>Cancel</Button>
+            <Button onClick={handleImport} disabled={isImporting || !importText.trim()} className="bg-gradient-accent">
+              {isImporting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Import
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
