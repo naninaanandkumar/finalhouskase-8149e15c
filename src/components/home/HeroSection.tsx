@@ -11,6 +11,7 @@ import promoSports from "@/assets/promo-sports.jpg";
 import promoCleaning from "@/assets/promo-cleaning.jpg";
 import promoTissues from "@/assets/promo-tissues.jpg";
 import { SignedImage } from "@/components/common/SignedImage";
+import { HeroOverlay, type HeroOverlayData } from "@/components/home/HeroOverlay";
 
 interface HeroSlide {
   id: string;
@@ -21,6 +22,7 @@ interface HeroSlide {
   badge_label: string | null;
   cta_text: string | null;
   cta_link: string | null;
+  overlay?: HeroOverlayData | null;
 }
 
 interface PromoBanner {
@@ -154,21 +156,44 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
               <SmartLink to={activeSlide.cta_link} ariaLabel={activeSlide.title} className="absolute inset-0 z-[1]" />
             )}
             
-            <div className="absolute inset-0 z-[2] flex items-center py-4 sm:py-6 md:py-8 pointer-events-none" style={{ paddingLeft: "max(0.75rem, env(safe-area-inset-left))", paddingRight: "max(0.75rem, env(safe-area-inset-right))" }}>
-              <div className="container mx-auto px-3 sm:px-4 md:px-6">
-                <div className="max-w-[min(34rem,92vw)] pointer-events-auto">
-
-                  {(activeSlide as any)?.show_buttons !== false && (
-                    <SmartLink to={activeSlide?.cta_link || "/products"}>
-                      <Button size="sm" className="bg-accent hover:bg-accent-hover text-accent-foreground shadow-lg h-8 sm:h-9 text-xs sm:text-sm">
-                        {activeSlide?.cta_text || "Shop Now"}
-                        <ArrowRight className="ml-1.5 h-4 w-4" />
-                      </Button>
+            {activeSlide?.overlay?.enabled ? (
+              <HeroOverlay
+                data={activeSlide.overlay}
+                ctaNode={
+                  (activeSlide as any)?.show_buttons !== false && (activeSlide.overlay.cta_text || activeSlide.cta_text) ? (
+                    <SmartLink to={activeSlide.cta_link || "/products"}>
+                      <span
+                        className="inline-flex items-center gap-2 font-semibold uppercase tracking-wide text-white transition-opacity hover:opacity-90"
+                        style={{
+                          background: activeSlide.overlay.accent || "#C8102E",
+                          marginTop: "1.1em",
+                          padding: "0.6em 1.4em",
+                          fontSize: "clamp(0.6rem, 1.05vw, 1.05rem)",
+                        }}
+                      >
+                        {activeSlide.overlay.cta_text || activeSlide.cta_text}
+                        <ArrowRight style={{ width: "1.2em", height: "1.2em" }} />
+                      </span>
                     </SmartLink>
-                  )}
+                  ) : null
+                }
+              />
+            ) : (
+              (activeSlide as any)?.show_buttons !== false && (
+                <div className="absolute inset-0 z-[2] flex items-center py-4 sm:py-6 md:py-8 pointer-events-none" style={{ paddingLeft: "max(0.75rem, env(safe-area-inset-left))", paddingRight: "max(0.75rem, env(safe-area-inset-right))" }}>
+                  <div className="container mx-auto px-3 sm:px-4 md:px-6">
+                    <div className="max-w-[min(34rem,92vw)] pointer-events-auto">
+                      <SmartLink to={activeSlide?.cta_link || "/products"}>
+                        <Button size="sm" className="bg-accent hover:bg-accent-hover text-accent-foreground shadow-lg h-8 sm:h-9 text-xs sm:text-sm">
+                          {activeSlide?.cta_text || "Shop Now"}
+                          <ArrowRight className="ml-1.5 h-4 w-4" />
+                        </Button>
+                      </SmartLink>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              )
+            )}
           </motion.div>
         </AnimatePresence>
 
