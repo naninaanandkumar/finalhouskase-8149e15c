@@ -100,7 +100,8 @@ export default function AdminHeroSlides() {
     img.src = url;
   };
 
-  const setBg = (url: string) => { setDirty(true); setForm((p) => ({ ...p, image_url: url })); checkDimensions(url); };
+  const setF = (patch: Partial<typeof emptyForm>) => { setDirty(true); setForm((p) => ({ ...p, ...patch })); };
+  const setBg = (url: string) => { setF({ image_url: url }); checkDimensions(url); };
 
   const set = (patch: Partial<HeroOverlayData>) => { setDirty(true); setOverlay((p) => ({ ...p, ...patch })); };
   const features = overlay.features || [];
@@ -201,11 +202,11 @@ export default function AdminHeroSlides() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Button Text</Label>
-                    <Input value={form.cta_text} onChange={(e) => setDirty(true); setForm((p) => ({ ...p, cta_text: e.target.value }))} placeholder="SHOP NOW" />
+                    <Input value={form.cta_text} onChange={(e) => setF({ cta_text: e.target.value })} placeholder="SHOP NOW" />
                   </div>
                   <div className="space-y-2">
                     <Label>Button URL</Label>
-                    <Input value={form.cta_link} onChange={(e) => setDirty(true); setForm((p) => ({ ...p, cta_link: e.target.value }))} placeholder="/product/non-woven-cloth" />
+                    <Input value={form.cta_link} onChange={(e) => setF({ cta_link: e.target.value })} placeholder="/product/non-woven-cloth" />
                   </div>
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -222,7 +223,7 @@ export default function AdminHeroSlides() {
                   </div>
                   <div className="space-y-2">
                     <Label>Slide Name (internal)</Label>
-                    <Input value={form.title} onChange={(e) => setDirty(true); setForm((p) => ({ ...p, title: e.target.value }))} placeholder="Homepage banner 1" />
+                    <Input value={form.title} onChange={(e) => setF({ title: e.target.value })} placeholder="Homepage banner 1" />
                   </div>
                 </div>
               </CardContent>
@@ -240,7 +241,7 @@ export default function AdminHeroSlides() {
                 </div>
                 <div className="space-y-2">
                   <Label>Mobile Image <span className="text-xs text-muted-foreground">(optional)</span></Label>
-                  <ImageUpload value={form.mobile_image_url} onChange={(url) => setDirty(true); setForm((p) => ({ ...p, mobile_image_url: url }))} bucket="product-images" />
+                  <ImageUpload value={form.mobile_image_url} onChange={(url) => setF({ mobile_image_url: url })} bucket="product-images" />
                 </div>
               </CardContent>
             </Card>
@@ -322,12 +323,12 @@ export default function AdminHeroSlides() {
                   </div>
                   <div className="space-y-2">
                     <Label>Sort Order</Label>
-                    <Input type="number" value={form.sort_order} onChange={(e) => setDirty(true); setForm((p) => ({ ...p, sort_order: e.target.value }))} />
+                    <Input type="number" value={form.sort_order} onChange={(e) => setF({ sort_order: e.target.value })} />
                   </div>
                 </div>
                 <div className="flex items-center justify-between pt-2">
                   <Label>Active on storefront</Label>
-                  <Switch checked={form.is_active} onCheckedChange={(c) => setDirty(true); setForm((p) => ({ ...p, is_active: c }))} />
+                  <Switch checked={form.is_active} onCheckedChange={(c) => setF({ is_active: c })} />
                 </div>
                 <div className="flex gap-2 pt-2">
                   <Button variant="outline" className="flex-1" onClick={closeForm}>Cancel</Button>
