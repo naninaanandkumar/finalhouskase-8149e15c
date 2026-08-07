@@ -371,6 +371,37 @@ export default function AdminOrders() {
                   <Button size="sm" variant="outline" onClick={() => handleTestTrigger(selectedOrder)} disabled={isUpdating}>
                     Test Status Update
                   </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="gap-2"
+                    onClick={async () => {
+                      try {
+                        const { error } = await supabase.functions.invoke("send-order-notification", {
+                          body: {
+                            type: selectedOrder.status || "new_order",
+                            order_number: selectedOrder.order_number,
+                            to_email: (selectedOrder.billing_address as any)?.email || selectedOrder.profile?.email,
+                          },
+                        });
+                        if (error) throw error;
+                        
+                        await supabase.from("email_logs").insert({
+                          order_id: selectedOrder.id,
+                          recipient_email: (selectedOrder.billing_address as any)?.email || selectedOrder.profile?.email || "unknown",
+                          status: "sent",
+                          notification_type: selectedOrder.status || "new_order"
+                        });
+                        
+                        toast({ title: "Email Resent", description: "Notification has been sent to the customer." });
+                      } catch (err) {
+                        toast({ title: "Failed to resend", description: "Check SMTP configuration.", variant: "destructive" });
+                      }
+                    }}
+                  >
+                    <Mail className="h-4 w-4" />
+                    Resend Email
+                  </Button>
                 </div>
               </CardContent>
             </Card>
