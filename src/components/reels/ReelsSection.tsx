@@ -128,7 +128,7 @@ export function ReelsSection({ title = "Featured Videos", excludeProductId, limi
   }
 
   return (
-    <section className="py-8 sm:py-10 bg-background -mt-10">
+    <section className="pt-8 sm:pt-10 pb-4 sm:pb-5 bg-background -mt-10">
       <div className="container mx-auto px-3 sm:px-4 relative">
         <SectionHeading title={title} />
 

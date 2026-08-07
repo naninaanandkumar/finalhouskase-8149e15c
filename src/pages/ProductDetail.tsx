@@ -619,6 +619,10 @@ export default function ProductDetail() {
                     {productImages.map((img, idx) => (
                       <button
                         key={idx}
+                        type="button"
+                        data-gallery-thumb
+                        aria-label={`View image ${idx + 1}`}
+                        aria-current={selectedImage === img}
                         onClick={() => setSelectedImage(img)}
                         className={cn(
                           "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all bg-card",
@@ -1066,16 +1070,46 @@ export default function ProductDetail() {
             </div>
           )}
 
-          {/* Related products → Trending reels → Reviews */}
+          {/* Related products → Description blocks → Reviews → Trending reels */}
           <RelatedProducts currentProductId={product.id} categoryId={product.category_id} />
-          <div className="mt-[30px]">
-            <ReelsSection title="Trending Reels" placement="product" />
-          </div>
+
+          {Array.isArray((product as any).description_blocks) &&
+            (product as any).description_blocks.length > 0 && (
+              <section className="mt-10 space-y-8" aria-label="Product details">
+                {((product as any).description_blocks as Array<{ image?: string; text?: string }>).map(
+                  (block, idx) => (
+                    <div
+                      key={idx}
+                      className={`grid gap-4 sm:gap-8 items-center md:grid-cols-2 ${idx % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""}`}
+                    >
+                      {block.image && (
+                        <div className="rounded-xl overflow-hidden border border-border bg-white">
+                          <SignedImage
+                            src={block.image}
+                            alt={`${product.name} detail ${idx + 1}`}
+                            className="w-full h-auto object-contain"
+                          />
+                        </div>
+                      )}
+                      {block.text && (
+                        <div className="text-sm text-muted-foreground leading-relaxed">
+                          <FormattedProductText text={block.text} />
+                        </div>
+                      )}
+                    </div>
+                  )
+                )}
+              </section>
+            )}
+
           <CustomerReviews
             productId={product.id}
             productName={product.name}
             onStats={handleReviewStats}
           />
+          <div className="mt-[30px]">
+            <ReelsSection title="Trending Reels" placement="product" />
+          </div>
         </div>
       </main>
 
