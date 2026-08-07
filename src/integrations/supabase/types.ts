@@ -547,6 +547,86 @@ export type Database = {
           },
         ]
       }
+      email_logs: {
+        Row: {
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          notification_type: string
+          order_id: string | null
+          recipient_email: string
+          sent_at: string | null
+          sent_by: string | null
+          status: string
+        }
+        Insert: {
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type: string
+          order_id?: string | null
+          recipient_email: string
+          sent_at?: string | null
+          sent_by?: string | null
+          status: string
+        }
+        Update: {
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          notification_type?: string
+          order_id?: string | null
+          recipient_email?: string
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_templates: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          html_content: string
+          id: string
+          is_active: boolean
+          name: string
+          subject: string
+          type: string
+          version: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          html_content: string
+          id?: string
+          is_active?: boolean
+          name: string
+          subject: string
+          type: string
+          version?: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          html_content?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          subject?: string
+          type?: string
+          version?: number
+        }
+        Relationships: []
+      }
       family_testimonials: {
         Row: {
           age: string | null

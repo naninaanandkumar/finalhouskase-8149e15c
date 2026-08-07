@@ -74,7 +74,7 @@ export const PromoBanners = ({ onFetchStatus }: PromoBannersProps) => {
   const loop = rest.length >= 4 ? [...rest, ...rest] : [...rest, ...rest, ...rest, ...rest];
 
   const itemWidth =
-    "w-[calc((100vw-24px-36px)/4)] sm:w-[calc((100vw-32px-60px)/5)] lg:w-[140px]";
+    "w-[calc((100vw-24px-36px)/4)] sm:w-[calc((100vw-32px-60px)/5)] lg:w-[120px] scale-90 sm:scale-95 lg:scale-100";
 
   const Item = ({ banner, className }: { banner: PromoBanner; className?: string }) => (
     <CircleLink
