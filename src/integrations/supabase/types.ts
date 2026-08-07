@@ -603,6 +603,7 @@ export type Database = {
           mobile_height: number | null
           mobile_image_url: string | null
           object_fit: string
+          overlay: Json
           show_buttons: boolean | null
           show_text: boolean | null
           sort_order: number | null
@@ -623,6 +624,7 @@ export type Database = {
           mobile_height?: number | null
           mobile_image_url?: string | null
           object_fit?: string
+          overlay?: Json
           show_buttons?: boolean | null
           show_text?: boolean | null
           sort_order?: number | null
@@ -643,6 +645,7 @@ export type Database = {
           mobile_height?: number | null
           mobile_image_url?: string | null
           object_fit?: string
+          overlay?: Json
           show_buttons?: boolean | null
           show_text?: boolean | null
           sort_order?: number | null
