@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, GripVertical } from "lucide-react";
 import { HERO_ICONS, type HeroOverlayData, type HeroIconKey } from "@/components/home/HeroOverlay";
-import { validateHeroOverlay } from "@/lib/heroSlides";
+import { validateHeroOverlay, validateHeroAccessibility } from "@/lib/heroSlides";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const ICON_KEYS = Object.keys(HERO_ICONS) as HeroIconKey[];
@@ -23,6 +23,7 @@ export function HeroOverlayEditor({
   const setFeature = (i: number, patch: Partial<{ icon: string; label: string }>) =>
     set({ features: features.map((f, idx) => (idx === i ? { ...f, ...patch } : f)) });
   const warnings = validateHeroOverlay(value);
+  const a11y = validateHeroAccessibility(value);
   const crop = value.crop || { zoom: 1, x: 50, y: 50 };
   const setCrop = (patch: Partial<{ zoom: number; x: number; y: number }>) => set({ crop: { ...crop, ...patch } });
   const mcrop = value.mobile_crop || { zoom: 1, x: 50, y: 50 };
@@ -159,16 +160,13 @@ export function HeroOverlayEditor({
                 <input type="range" min={0} max={100} step={1} value={mcrop.y ?? 50} onChange={(e) => setMCrop({ y: Number(e.target.value) })} className="w-full accent-primary" />
               </div>
             </div>
-            <Button type="button" variant="outline" size="sm" onClick={() => set({ crop: { zoom: 1, x: 50, y: 50 }, mobile_crop: { zoom: 1, x: 50, y: 50 } })}>
-              Reset crop
-            </Button>
           </div>
 
           <div className="space-y-2">
-            {warnings.length === 0 ? (
+            {warnings.length === 0 && a11y.length === 0 ? (
               <p className="flex items-center gap-2 text-xs text-green-600"><CheckCircle2 className="h-4 w-4" />Content fits the desktop and tablet safe area.</p>
             ) : (
-              warnings.map((w, i) => (
+              [...warnings, ...a11y].map((w, i) => (
                 <p key={i} className={`flex items-start gap-2 text-xs ${w.level === "error" ? "text-destructive" : "text-amber-600"}`}>
                   <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />{w.message}
                 </p>

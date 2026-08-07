@@ -40,6 +40,17 @@ const fallbackBanners: PromoBanner[] = [];
 
 const isExternalHref = (href: string) => /^(https?:)?\/\//i.test(href) || /^(mailto:|tel:|whatsapp:)/i.test(href);
 
+/** Drafts stay hidden; scheduled slides appear/disappear at their set times. */
+const isSlideLive = (slide: HeroSlide) => {
+  const s = (slide.overlay as any)?.schedule;
+  if (!s) return true;
+  if (s.status === "draft") return false;
+  const now = Date.now();
+  if (s.publish_at && new Date(s.publish_at).getTime() > now) return false;
+  if (s.unpublish_at && new Date(s.unpublish_at).getTime() < now) return false;
+  return true;
+};
+
 function SmartLink({ to, className, children, ariaLabel }: { to?: string | null; className?: string; children?: ReactNode; ariaLabel?: string }) {
   const href = to?.trim();
   if (!href || href === "#") return <>{children}</>;
@@ -79,7 +90,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
           });
 
           if (slidesRes.data && slidesRes.data.length > 0) {
-            setHeroSlides(slidesRes.data as HeroSlide[]);
+            setHeroSlides((slidesRes.data as HeroSlide[]).filter(isSlideLive));
           }
           if (bannersRes.data && bannersRes.data.length > 0) {
             const fetched = bannersRes.data as PromoBanner[];

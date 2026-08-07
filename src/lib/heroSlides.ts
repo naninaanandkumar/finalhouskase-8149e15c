@@ -78,6 +78,127 @@ export interface HeroWarning {
   message: string;
 }
 
+/* ---------------- CTA link validation ---------------- */
+
+export function validateCtaLink(link?: string | null): HeroWarning[] {
+  const w: HeroWarning[] = [];
+  const href = (link || "").trim();
+  if (!href) {
+    w.push({ level: "warn", message: "No button link set — the banner will fall back to /products." });
+    return w;
+  }
+  if (href === "#") {
+    w.push({ level: "error", message: 'Button link is "#" — clicking the banner will do nothing.' });
+    return w;
+  }
+  if (/^(mailto:|tel:|whatsapp:)/i.test(href)) return w;
+  if (/^https?:\/\//i.test(href)) {
+    try {
+      const u = new URL(href);
+      if (!u.hostname.includes(".")) w.push({ level: "error", message: `"${href}" is not a valid web address.` });
+      if (u.protocol === "http:") w.push({ level: "warn", message: "Link uses insecure http:// — prefer https://." });
+    } catch {
+      w.push({ level: "error", message: `"${href}" is not a valid URL.` });
+    }
+    return w;
+  }
+  if (!href.startsWith("/")) {
+    w.push({ level: "error", message: `Internal links must start with "/" — got "${href}".` });
+    return w;
+  }
+  if (/\s/.test(href)) w.push({ level: "error", message: "Link contains spaces — remove them or use %20." });
+  const path = href.split("?")[0].split("#")[0];
+  const known = ["/", "/products", "/about-us", "/blog", "/rfq", "/help", "/connect", "/dashboard", "/cart", "/checkout", "/login", "/signup", "/contact"];
+  const dynamic = /^\/(products|blog|guides|category|page)\/[^/]+$/.test(path);
+  if (!known.includes(path) && !dynamic) {
+    w.push({ level: "warn", message: `"${path}" doesn't match a known storefront route — double-check it before publishing.` });
+  }
+  return w;
+}
+
+/* ---------------- Contrast / readability ---------------- */
+
+function hexToRgb(hex: string): [number, number, number] | null {
+  const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return null;
+  let h = m[1];
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+function luminance(rgb: [number, number, number]) {
+  const [r, g, b] = rgb.map((v) => {
+    const s = v / 255;
+    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+export function contrastRatio(a: string, b: string): number | null {
+  const ra = hexToRgb(a);
+  const rb = hexToRgb(b);
+  if (!ra || !rb) return null;
+  const la = luminance(ra);
+  const lb = luminance(rb);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+/**
+ * Readability checks for the overlay: contrast of accent-on-white button text,
+ * accent vs the assumed banner backdrop, and rendered font sizes at the
+ * desktop (1440px) and tablet (768px) breakpoints.
+ */
+export function validateHeroAccessibility(data: HeroOverlayData): HeroWarning[] {
+  const w: HeroWarning[] = [];
+  if (!data?.enabled) return w;
+
+  const accent = data.accent || "#C8102E";
+  if (!hexToRgb(accent)) {
+    w.push({ level: "error", message: `Accent colour "${accent}" is not a valid hex colour.` });
+    return w;
+  }
+
+  // Button + tagline bar render white text on the accent fill.
+  const onAccent = contrastRatio(accent, "#ffffff") ?? 21;
+  if (onAccent < 3) {
+    w.push({ level: "error", message: `White button/tagline text on the accent colour has only ${onAccent.toFixed(1)}:1 contrast — use a darker accent (needs 4.5:1).` });
+  } else if (onAccent < 4.5) {
+    w.push({ level: "warn", message: `White text on the accent colour is ${onAccent.toFixed(1)}:1 — readable at large sizes only, darken the accent for small text.` });
+  }
+
+  // Body copy sits on the artwork; theme picks the assumed backdrop.
+  const light = data.theme === "light";
+  const body = light ? "#ffffff" : "#1A1A1A";
+  const assumedBg = light ? "#1A1A1A" : "#ffffff";
+  const bodyContrast = contrastRatio(body, assumedBg) ?? 21;
+  if (bodyContrast < 4.5) {
+    w.push({ level: "warn", message: "Body text contrast is low for the selected theme — switch the text theme or crop to a plainer part of the image." });
+  }
+  const accentOnBg = contrastRatio(accent, assumedBg) ?? 21;
+  if (accentOnBg < 3) {
+    w.push({ level: "warn", message: `The brand line uses the accent colour and only reaches ${accentOnBg.toFixed(1)}:1 against a ${light ? "dark" : "light"} banner — pick a stronger accent.` });
+  }
+
+  // Rendered sizes: clamp(min, vw, max) evaluated at 768px (tablet) in px.
+  const tabletPx = (vw: number, min: number, max: number) => Math.min(Math.max((vw / 100) * 768, min * 16), max * 16);
+  const featureSize = tabletPx(0.95, 0.55, 1);
+  if ((data.features || []).some((f) => f?.label?.trim()) && featureSize < 12) {
+    w.push({ level: "warn", message: `Feature point text renders at ~${featureSize.toFixed(0)}px on tablet — below the 12px readable minimum. Shorten labels or reduce the number of points.` });
+  }
+  const ctaSize = tabletPx(1.05, 0.6, 1.05);
+  if ((data.cta_text || "").trim() && ctaSize < 12) {
+    w.push({ level: "warn", message: `Button label renders at ~${ctaSize.toFixed(0)}px on tablet — consider a shorter label so it can scale up.` });
+  }
+  const subSize = tabletPx(2, 0.85, 2.1);
+  if ((data.subheading || "").trim() && subSize < 14) {
+    w.push({ level: "warn", message: "Short description renders very small on tablet — move key wording into the heading." });
+  }
+  if (light && !data.tagline && !data.brand) {
+    w.push({ level: "warn", message: "Light text has no coloured backing element — make sure the artwork behind the text is dark enough." });
+  }
+  return w;
+}
+
 /**
  * Layout guard rails for the 2172x724 artwork. Limits are derived from the
  * rendered clamp() font sizes at desktop (1440px) and tablet (768px) widths.
