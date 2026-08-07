@@ -619,6 +619,10 @@ export default function ProductDetail() {
                     {productImages.map((img, idx) => (
                       <button
                         key={idx}
+                        type="button"
+                        data-gallery-thumb
+                        aria-label={`View image ${idx + 1}`}
+                        aria-current={selectedImage === img}
                         onClick={() => setSelectedImage(img)}
                         className={cn(
                           "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all bg-card",
