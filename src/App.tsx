@@ -39,6 +39,7 @@ import { RouteCanonical } from "./components/RouteCanonical";
 import BambooVsCottonGuide from "./pages/guides/BambooVsCottonTowels";
 import OAuthConsent from "./pages/OAuthConsent";
 import Connect from "./pages/Connect";
+import EmailPreview from "./pages/admin/EmailPreview";
 
 
 // Admin — eager imports to eliminate white-flash on route changes
@@ -170,6 +171,7 @@ const App = () => (
                 <Route path="ekart-settings" element={<AdminEkartSettings />} />
                 <Route path="blog" element={<AdminBlog />} />
                 <Route path="family-testimonials" element={<AdminFamilyTestimonials />} />
+                <Route path="email-preview" element={<AdminEmailPreview />} />
               </Route>
 
               {/* Catch-all */}
