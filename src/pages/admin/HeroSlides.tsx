@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon, Download, Upload, ArrowUp, ArrowDown, Copy } from "lucide-react";
+import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon, Download, Upload, ArrowUp, ArrowDown, Copy, Camera, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +19,8 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { SignedImage } from "@/components/common/SignedImage";
 import { HeroOverlayEditor } from "@/components/admin/HeroOverlayEditor";
 import { HeroOverlay, emptyHeroOverlay, heroCropStyle, type HeroOverlayData } from "@/components/home/HeroOverlay";
-import { downloadHeroBundle, parseHeroBundle, validateHeroOverlay } from "@/lib/heroSlides";
+import { downloadHeroBundle, parseHeroBundle, validateHeroOverlay, validateHeroAccessibility, validateCtaLink } from "@/lib/heroSlides";
+import { downloadPreviewShot, downloadPreviewShots } from "@/lib/heroPreviewShot";
 
 interface HeroSlide {
   id: string;
@@ -32,6 +34,18 @@ interface HeroSlide {
   sort_order: number | null;
   is_active: boolean | null;
   overlay?: HeroOverlayData | null;
+}
+
+type Schedule = { status?: "draft" | "published"; publish_at?: string | null; unpublish_at?: string | null };
+
+const getSchedule = (o?: HeroOverlayData | null): Schedule => (o as any)?.schedule || { status: "published", publish_at: null, unpublish_at: null };
+
+export function scheduleState(s: Schedule): { label: string; tone: "green" | "amber" | "gray" } {
+  if (s.status === "draft") return { label: "Draft", tone: "gray" };
+  const now = Date.now();
+  if (s.publish_at && new Date(s.publish_at).getTime() > now) return { label: `Scheduled ${new Date(s.publish_at).toLocaleString()}`, tone: "amber" };
+  if (s.unpublish_at && new Date(s.unpublish_at).getTime() < now) return { label: "Expired", tone: "gray" };
+  return { label: "Published", tone: "green" };
 }
 
 export default function AdminHeroSlides() {
@@ -49,8 +63,16 @@ export default function AdminHeroSlides() {
   const [isImporting, setIsImporting] = useState(false);
   const [slider, setSlider] = useState({ autoplay: true, interval: 2800, loop: true });
   const [savingSlider, setSavingSlider] = useState(false);
+  const [schedule, setSchedule] = useState<Schedule>({ status: "published", publish_at: null, unpublish_at: null });
+  const [shooting, setShooting] = useState(false);
+  const formPreviewRef = useRef<HTMLDivElement | null>(null);
+  const shotRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const { toast } = useToast();
+  const location = useLocation();
+
+  // Clicking the sidebar link while the editor is open should return to the list.
+  useEffect(() => { setShowForm(false); setEditing(null); }, [location.key]);
 
   const fetchSlides = async () => {
     setIsLoading(true);
@@ -118,10 +140,12 @@ export default function AdminHeroSlides() {
       setEditing(slide);
       setForm({ title: slide.title, subtitle: slide.subtitle || "", image_url: slide.image_url, mobile_image_url: slide.mobile_image_url || "", badge_label: slide.badge_label || "", cta_text: slide.cta_text || "Shop Now", cta_link: slide.cta_link || "/products", sort_order: String(slide.sort_order || 0), is_active: slide.is_active ?? true, show_text: (slide as any).show_text ?? true, show_buttons: (slide as any).show_buttons ?? true });
       setOverlay({ ...emptyHeroOverlay, ...((slide.overlay as HeroOverlayData) || {}) });
+      setSchedule(getSchedule(slide.overlay));
     } else {
       setEditing(null);
       setForm({ title: "", subtitle: "", image_url: "", mobile_image_url: "", badge_label: "", cta_text: "Shop Now", cta_link: "/products", sort_order: "0", is_active: true, show_text: true, show_buttons: true });
       setOverlay({ ...emptyHeroOverlay, features: [] });
+      setSchedule({ status: "published", publish_at: null, unpublish_at: null });
     }
     setShowForm(true);
   };
@@ -129,9 +153,12 @@ export default function AdminHeroSlides() {
   const handleSave = async () => {
     if (!form.title || !form.image_url) { toast({ title: "Error", description: "Title and Image are required", variant: "destructive" }); return; }
     const blocking = validateHeroOverlay(overlay).filter((w) => w.level === "error");
+    const linkErrors = validateCtaLink(form.cta_link).filter((w) => w.level === "error");
+    if (linkErrors.length && !confirm(`Button link problem:\n\n${linkErrors.map((w) => `• ${w.message}`).join("\n")}\n\nSave anyway?`)) return;
     if (blocking.length && !confirm(`This banner may overflow on tablet:\n\n${blocking.map((w) => `• ${w.message}`).join("\n")}\n\nSave anyway?`)) return;
     setIsSaving(true);
-    const data: any = { title: form.title, subtitle: form.subtitle || null, image_url: form.image_url, mobile_image_url: form.mobile_image_url || null, badge_label: form.badge_label || null, cta_text: form.cta_text || "Shop Now", cta_link: form.cta_link || "/products", sort_order: parseInt(form.sort_order) || 0, is_active: form.is_active, show_text: form.show_text, show_buttons: form.show_buttons, overlay };
+    const overlayWithSchedule = { ...overlay, schedule };
+    const data: any = { title: form.title, subtitle: form.subtitle || null, image_url: form.image_url, mobile_image_url: form.mobile_image_url || null, badge_label: form.badge_label || null, cta_text: form.cta_text || "Shop Now", cta_link: form.cta_link || "/products", sort_order: parseInt(form.sort_order) || 0, is_active: form.is_active, show_text: form.show_text, show_buttons: form.show_buttons, overlay: overlayWithSchedule };
     if (editing) {
       await supabase.from("hero_slides").update(data).eq("id", editing.id);
       toast({ title: "Slide Updated" });
