@@ -170,9 +170,8 @@ export default function AdminHeroSlides() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 max-w-md">
+        <TabsList className="grid w-full grid-cols-1 max-w-[220px]">
           <TabsTrigger value="slides" className="gap-2"><ImageIcon className="h-4 w-4" />Hero Slides</TabsTrigger>
-          <TabsTrigger value="banners" className="gap-2"><Megaphone className="h-4 w-4" />Promo Banners</TabsTrigger>
         </TabsList>
 
         {/* ========== HERO SLIDES TAB ========== */}
@@ -186,17 +185,30 @@ export default function AdminHeroSlides() {
                 </div>
                 <Card className="shadow-card">
                   <CardContent className="pt-6 space-y-4">
-                    <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="space-y-2"><Label>Title *</Label><Input value={form.title} onChange={e => setForm(p => ({...p, title: e.target.value}))} /></div>
-                      <div className="space-y-2"><Label>Subtitle</Label><Input value={form.subtitle} onChange={e => setForm(p => ({...p, subtitle: e.target.value}))} /></div>
-                    </div>
                     <div className="space-y-2">
-                      <Label>Slide Image *</Label>
+                      <Label>Slide Image * <span className="text-xs font-normal text-muted-foreground">(recommended 2172 × 724 px)</span></Label>
                       <ImageUpload value={form.image_url} onChange={(url) => setForm(p => ({...p, image_url: url}))} bucket="product-images" />
                     </div>
                     <div className="space-y-2">
                       <Label>Mobile Image (optional, shown at 500px height on phones)</Label>
                       <ImageUpload value={form.mobile_image_url} onChange={(url) => setForm(p => ({...p, mobile_image_url: url}))} bucket="product-images" />
+                    </div>
+
+                    <HeroOverlayEditor value={overlay} onChange={setOverlay} />
+
+                    {form.image_url && (
+                      <div className="space-y-2">
+                        <Label>Live preview (desktop / tablet ratio 2172 × 724)</Label>
+                        <div className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: "2172 / 724" }}>
+                          <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                          <HeroOverlay data={overlay} />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2"><Label>Title *</Label><Input value={form.title} onChange={e => setForm(p => ({...p, title: e.target.value}))} /></div>
+                      <div className="space-y-2"><Label>Subtitle</Label><Input value={form.subtitle} onChange={e => setForm(p => ({...p, subtitle: e.target.value}))} /></div>
                     </div>
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div className="space-y-2"><Label>Badge Label</Label><Input value={form.badge_label} onChange={e => setForm(p => ({...p, badge_label: e.target.value}))} placeholder="e.g. Top Seller" /></div>
