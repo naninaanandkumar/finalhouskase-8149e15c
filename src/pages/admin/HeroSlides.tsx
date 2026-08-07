@@ -290,6 +290,18 @@ export default function AdminHeroSlides() {
                   <p className="text-muted-foreground text-sm">Manage homepage hero slider</p>
                   <div className="flex flex-wrap gap-2">
                     <Button variant="outline" className="gap-2" onClick={() => downloadHeroBundle(slides)} disabled={slides.length === 0}><Download className="h-4 w-4" />Export all</Button>
+                    <Button variant="outline" className="gap-2" disabled={shooting || slides.length === 0}
+                      onClick={async () => {
+                        setShooting(true);
+                        try {
+                          const nodes = slides.map(s => ({ node: shotRefs.current[s.id], title: s.title })).filter(n => n.node) as { node: HTMLElement; title: string }[];
+                          await downloadPreviewShots(nodes);
+                          toast({ title: `Exported ${nodes.length} preview image(s)` });
+                        } catch (e: any) { toast({ title: "Screenshot failed", description: e.message, variant: "destructive" }); }
+                        setShooting(false);
+                      }}>
+                      {shooting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}Export previews
+                    </Button>
                     <Button variant="outline" className="gap-2" onClick={() => setImportOpen(true)}><Upload className="h-4 w-4" />Import</Button>
                     <Button onClick={() => openForm()} className="bg-gradient-accent gap-2"><Plus className="h-4 w-4" />Add Slide</Button>
                   </div>
@@ -342,12 +354,27 @@ export default function AdminHeroSlides() {
                                   <span className="text-xs text-muted-foreground">{slide.sort_order}</span>
                                 </div>
                               </TableCell>
-                              <TableCell><span className={`text-xs font-medium px-2 py-0.5 rounded ${slide.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{slide.is_active ? "Active" : "Inactive"}</span></TableCell>
+                              <TableCell>
+                                <div className="flex flex-col gap-1 items-start">
+                                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${slide.is_active ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{slide.is_active ? "Active" : "Inactive"}</span>
+                                  {(() => {
+                                    const st = scheduleState(getSchedule(slide.overlay));
+                                    const tone = st.tone === "green" ? "bg-green-100 text-green-700" : st.tone === "amber" ? "bg-amber-100 text-amber-700" : "bg-muted text-muted-foreground";
+                                    return <span className={`text-[11px] px-2 py-0.5 rounded ${tone}`}>{st.label}</span>;
+                                  })()}
+                                </div>
+                              </TableCell>
                               <TableCell>
                                 <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => openForm(slide)}><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => duplicateSlide(slide)}><Copy className="h-4 w-4 mr-2" />Duplicate</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={async () => {
+                                      const node = shotRefs.current[slide.id];
+                                      if (!node) return;
+                                      try { await downloadPreviewShot(node, slide.title); }
+                                      catch (e: any) { toast({ title: "Screenshot failed", description: e.message, variant: "destructive" }); }
+                                    }}><Camera className="h-4 w-4 mr-2" />Export preview PNG</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => downloadHeroBundle([slide], `hero-slide-${slide.id}.json`)}><Download className="h-4 w-4 mr-2" />Export JSON</DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleDelete(slide.id)} className="text-destructive"><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
                                   </DropdownMenuContent>
@@ -360,6 +387,21 @@ export default function AdminHeroSlides() {
                     )}
                   </CardContent>
                 </Card>
+
+                {/* Off-screen render targets used for one-click preview screenshots */}
+                <div aria-hidden className="pointer-events-none fixed -left-[10000px] top-0" style={{ width: 1086 }}>
+                  {slides.map(slide => (
+                    <div
+                      key={slide.id}
+                      ref={(el) => { shotRefs.current[slide.id] = el; }}
+                      className="relative overflow-hidden bg-muted"
+                      style={{ width: 1086, aspectRatio: "2172 / 724" }}
+                    >
+                      <SignedImage src={slide.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" style={heroCropStyle(slide.overlay?.crop)} />
+                      {slide.overlay?.enabled && <HeroOverlay data={slide.overlay} />}
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
