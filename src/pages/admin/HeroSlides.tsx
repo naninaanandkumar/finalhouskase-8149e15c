@@ -181,8 +181,9 @@ export default function AdminHeroSlides() {
                       <div className="space-y-2">
                         <Label>Live preview (desktop / tablet ratio 2172 × 724)</Label>
                         <div className="relative w-full overflow-hidden rounded-lg border bg-muted" style={{ aspectRatio: "2172 / 724" }}>
-                          <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                          <SignedImage src={form.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" style={heroCropStyle(overlay.crop)} />
                           <HeroOverlay data={overlay} />
+                          <div className="pointer-events-none absolute inset-0 border-2 border-dashed border-primary/25" style={{ margin: "4%" }} />
                         </div>
                       </div>
                     )}
