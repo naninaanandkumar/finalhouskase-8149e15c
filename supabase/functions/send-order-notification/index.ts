@@ -562,6 +562,23 @@ ${emailPayload.gst_number ? `<p style="margin:12px 0 0;font-size:13px;color:#166
     });
   } catch (error) {
     console.error("Error sending order notification:", error);
+    
+    // Log failure to database for admin visibility
+    try {
+      await adminClient.from("audit_log").insert({
+        action: "email_failed",
+        table_name: "orders",
+        row_id: body.order_number,
+        new_data: { 
+          error: error.message, 
+          type: notificationType, 
+          recipient: recipientEmail 
+        }
+      });
+    } catch (logError) {
+      console.error("Secondary error logging failure:", logError);
+    }
+
     return new Response(JSON.stringify({ error: "Failed to send order notification" }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
