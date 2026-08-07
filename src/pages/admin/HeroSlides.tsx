@@ -9,13 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon } from "lucide-react";
+import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon, Download, Upload, ArrowUp, ArrowDown, Copy } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { SignedImage } from "@/components/common/SignedImage";
 import { HeroOverlayEditor } from "@/components/admin/HeroOverlayEditor";
-import { HeroOverlay, emptyHeroOverlay, type HeroOverlayData } from "@/components/home/HeroOverlay";
+import { HeroOverlay, emptyHeroOverlay, heroCropStyle, type HeroOverlayData } from "@/components/home/HeroOverlay";
+import { downloadHeroBundle, parseHeroBundle, validateHeroOverlay } from "@/lib/heroSlides";
 
 interface HeroSlide {
   id: string;
@@ -41,7 +44,12 @@ export default function AdminHeroSlides() {
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({ title: "", subtitle: "", image_url: "", mobile_image_url: "", badge_label: "", cta_text: "Shop Now", cta_link: "/products", sort_order: "0", is_active: true, show_text: true, show_buttons: true });
   const [overlay, setOverlay] = useState<HeroOverlayData>(emptyHeroOverlay);
-  
+  const [importOpen, setImportOpen] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const [slider, setSlider] = useState({ autoplay: true, interval: 2800, loop: true });
+  const [savingSlider, setSavingSlider] = useState(false);
+
   const { toast } = useToast();
 
   const fetchSlides = async () => {
@@ -51,8 +59,58 @@ export default function AdminHeroSlides() {
     setIsLoading(false);
   };
 
+  const fetchSlider = async () => {
+    const { data } = await supabase.from("site_settings").select("value").eq("key", "hero_slider").maybeSingle();
+    if (data?.value) setSlider((p) => ({ ...p, ...(data.value as any) }));
+  };
 
-  useEffect(() => { fetchSlides(); }, []);
+  useEffect(() => { fetchSlides(); fetchSlider(); }, []);
+
+  const saveSlider = async (next: typeof slider) => {
+    setSlider(next);
+    setSavingSlider(true);
+    await supabase.from("site_settings").upsert({ key: "hero_slider", value: next as any }, { onConflict: "key" });
+    setSavingSlider(false);
+  };
+
+  const reorder = async (index: number, dir: -1 | 1) => {
+    const target = index + dir;
+    if (target < 0 || target >= slides.length) return;
+    const next = [...slides];
+    [next[index], next[target]] = [next[target], next[index]];
+    setSlides(next);
+    await Promise.all(next.map((s, i) => supabase.from("hero_slides").update({ sort_order: i }).eq("id", s.id)));
+    fetchSlides();
+  };
+
+  const duplicateSlide = async (slide: HeroSlide) => {
+    const { id, ...rest } = slide as any;
+    await supabase.from("hero_slides").insert({ ...rest, title: `${slide.title} (copy)`, sort_order: slides.length });
+    toast({ title: "Slide duplicated" });
+    fetchSlides();
+  };
+
+  const handleImport = async () => {
+    setIsImporting(true);
+    try {
+      const parsed = parseHeroBundle(importText);
+      const rows = parsed.map((s, i) => ({ ...s, sort_order: slides.length + i }));
+      const { error } = await supabase.from("hero_slides").insert(rows as any);
+      if (error) throw new Error(error.message);
+      toast({ title: `Imported ${rows.length} slide(s)` });
+      setImportOpen(false);
+      setImportText("");
+      fetchSlides();
+    } catch (e: any) {
+      toast({ title: "Import failed", description: e.message, variant: "destructive" });
+    }
+    setIsImporting(false);
+  };
+
+  const handleImportFile = async (file?: File | null) => {
+    if (!file) return;
+    setImportText(await file.text());
+  };
 
   // Hero Slide handlers
   const openForm = (slide?: HeroSlide) => {
@@ -70,6 +128,8 @@ export default function AdminHeroSlides() {
 
   const handleSave = async () => {
     if (!form.title || !form.image_url) { toast({ title: "Error", description: "Title and Image are required", variant: "destructive" }); return; }
+    const blocking = validateHeroOverlay(overlay).filter((w) => w.level === "error");
+    if (blocking.length && !confirm(`This banner may overflow on tablet:\n\n${blocking.map((w) => `• ${w.message}`).join("\n")}\n\nSave anyway?`)) return;
     setIsSaving(true);
     const data: any = { title: form.title, subtitle: form.subtitle || null, image_url: form.image_url, mobile_image_url: form.mobile_image_url || null, badge_label: form.badge_label || null, cta_text: form.cta_text || "Shop Now", cta_link: form.cta_link || "/products", sort_order: parseInt(form.sort_order) || 0, is_active: form.is_active, show_text: form.show_text, show_buttons: form.show_buttons, overlay };
     if (editing) {
