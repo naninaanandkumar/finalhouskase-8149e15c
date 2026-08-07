@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -150,7 +150,7 @@ export function ImageLibraryDialog({ open, onOpenChange, onSelect, multiple = fa
   };
 
   // Roving keyboard navigation across the thumbnail grid.
-  const onGridKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const onGridKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const keys = ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"];
     if (!keys.includes(e.key)) return;
     const buttons = Array.from(e.currentTarget.querySelectorAll<HTMLButtonElement>("button[data-idx]"));
