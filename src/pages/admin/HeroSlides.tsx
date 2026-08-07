@@ -14,6 +14,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { SignedImage } from "@/components/common/SignedImage";
+import { HeroOverlayEditor } from "@/components/admin/HeroOverlayEditor";
+import { HeroOverlay, emptyHeroOverlay, type HeroOverlayData } from "@/components/home/HeroOverlay";
 
 interface HeroSlide {
   id: string;
@@ -26,6 +28,7 @@ interface HeroSlide {
   cta_link: string | null;
   sort_order: number | null;
   is_active: boolean | null;
+  overlay?: HeroOverlayData | null;
 }
 
 interface PromoBanner {
@@ -48,6 +51,7 @@ export default function AdminHeroSlides() {
   const [editing, setEditing] = useState<HeroSlide | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [form, setForm] = useState({ title: "", subtitle: "", image_url: "", mobile_image_url: "", badge_label: "", cta_text: "Shop Now", cta_link: "/products", sort_order: "0", is_active: true, show_text: true, show_buttons: true });
+  const [overlay, setOverlay] = useState<HeroOverlayData>(emptyHeroOverlay);
   
   // Promo Banners
   const [banners, setBanners] = useState<PromoBanner[]>([]);
@@ -102,9 +106,11 @@ export default function AdminHeroSlides() {
     if (slide) {
       setEditing(slide);
       setForm({ title: slide.title, subtitle: slide.subtitle || "", image_url: slide.image_url, mobile_image_url: slide.mobile_image_url || "", badge_label: slide.badge_label || "", cta_text: slide.cta_text || "Shop Now", cta_link: slide.cta_link || "/products", sort_order: String(slide.sort_order || 0), is_active: slide.is_active ?? true, show_text: (slide as any).show_text ?? true, show_buttons: (slide as any).show_buttons ?? true });
+      setOverlay({ ...emptyHeroOverlay, ...((slide.overlay as HeroOverlayData) || {}) });
     } else {
       setEditing(null);
       setForm({ title: "", subtitle: "", image_url: "", mobile_image_url: "", badge_label: "", cta_text: "Shop Now", cta_link: "/products", sort_order: "0", is_active: true, show_text: true, show_buttons: true });
+      setOverlay({ ...emptyHeroOverlay, features: [] });
     }
     setShowForm(true);
   };
@@ -112,7 +118,7 @@ export default function AdminHeroSlides() {
   const handleSave = async () => {
     if (!form.title || !form.image_url) { toast({ title: "Error", description: "Title and Image are required", variant: "destructive" }); return; }
     setIsSaving(true);
-    const data: any = { title: form.title, subtitle: form.subtitle || null, image_url: form.image_url, mobile_image_url: form.mobile_image_url || null, badge_label: form.badge_label || null, cta_text: form.cta_text || "Shop Now", cta_link: form.cta_link || "/products", sort_order: parseInt(form.sort_order) || 0, is_active: form.is_active, show_text: form.show_text, show_buttons: form.show_buttons };
+    const data: any = { title: form.title, subtitle: form.subtitle || null, image_url: form.image_url, mobile_image_url: form.mobile_image_url || null, badge_label: form.badge_label || null, cta_text: form.cta_text || "Shop Now", cta_link: form.cta_link || "/products", sort_order: parseInt(form.sort_order) || 0, is_active: form.is_active, show_text: form.show_text, show_buttons: form.show_buttons, overlay };
     if (editing) {
       await supabase.from("hero_slides").update(data).eq("id", editing.id);
       toast({ title: "Slide Updated" });
