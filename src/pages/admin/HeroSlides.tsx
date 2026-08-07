@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon, Megaphone } from "lucide-react";
+import { Plus, MoreHorizontal, Edit, Trash2, ArrowLeft, Loader2, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -31,17 +31,6 @@ interface HeroSlide {
   overlay?: HeroOverlayData | null;
 }
 
-interface PromoBanner {
-  id: string;
-  title: string;
-  offer_text: string | null;
-  image_url: string;
-  mobile_image_url?: string | null;
-  link: string | null;
-  sort_order: number | null;
-  is_active: boolean | null;
-}
-
 export default function AdminHeroSlides() {
   const [activeTab, setActiveTab] = useState("slides");
   // Hero Slides
@@ -53,15 +42,6 @@ export default function AdminHeroSlides() {
   const [form, setForm] = useState({ title: "", subtitle: "", image_url: "", mobile_image_url: "", badge_label: "", cta_text: "Shop Now", cta_link: "/products", sort_order: "0", is_active: true, show_text: true, show_buttons: true });
   const [overlay, setOverlay] = useState<HeroOverlayData>(emptyHeroOverlay);
   
-  // Promo Banners
-  const [banners, setBanners] = useState<PromoBanner[]>([]);
-  const [bannersLoading, setBannersLoading] = useState(true);
-  const [showBannerForm, setShowBannerForm] = useState(false);
-  const [editingBanner, setEditingBanner] = useState<PromoBanner | null>(null);
-  const [isSavingBanner, setIsSavingBanner] = useState(false);
-  const [bannerForm, setBannerForm] = useState({ title: "", offer_text: "", image_url: "", mobile_image_url: "", link: "/products", sort_order: "0", is_active: true });
-  const [showPromoBannersOnHomepage, setShowPromoBannersOnHomepage] = useState(true);
-  
   const { toast } = useToast();
 
   const fetchSlides = async () => {
@@ -71,35 +51,8 @@ export default function AdminHeroSlides() {
     setIsLoading(false);
   };
 
-  const fetchBanners = async () => {
-    setBannersLoading(true);
-    const { data } = await supabase.from("promo_banners").select("*").order("sort_order");
-    setBanners((data as PromoBanner[]) || []);
-    setBannersLoading(false);
-  };
 
-  const fetchSettings = async () => {
-    const { data } = await supabase.from("site_settings").select("value").eq("key", "homepage").maybeSingle();
-    if (data?.value) {
-      const v = data.value as any;
-      if (v.show_promo_banners === false) setShowPromoBannersOnHomepage(false);
-    }
-  };
-
-  const togglePromoBanners = async (checked: boolean) => {
-    setShowPromoBannersOnHomepage(checked);
-    const { data: existing } = await supabase.from("site_settings").select("id, value").eq("key", "homepage").maybeSingle();
-    const currentValue = (existing?.value as any) || {};
-    const newValue = { ...currentValue, show_promo_banners: checked };
-    if (existing) {
-      await supabase.from("site_settings").update({ value: newValue }).eq("id", existing.id);
-    } else {
-      await supabase.from("site_settings").insert({ key: "homepage", value: newValue });
-    }
-    toast({ title: checked ? "Promo Banners Enabled" : "Promo Banners Disabled" });
-  };
-
-  useEffect(() => { fetchSlides(); fetchBanners(); fetchSettings(); }, []);
+  useEffect(() => { fetchSlides(); }, []);
 
   // Hero Slide handlers
   const openForm = (slide?: HeroSlide) => {
@@ -133,38 +86,6 @@ export default function AdminHeroSlides() {
     if (!confirm("Delete this slide?")) return;
     await supabase.from("hero_slides").delete().eq("id", id);
     toast({ title: "Slide Deleted" }); fetchSlides();
-  };
-
-  // Promo Banner handlers
-  const openBannerForm = (b?: PromoBanner) => {
-    if (b) {
-      setEditingBanner(b);
-      setBannerForm({ title: b.title, offer_text: b.offer_text || "", image_url: b.image_url, mobile_image_url: b.mobile_image_url || "", link: b.link || "/products", sort_order: String(b.sort_order || 0), is_active: b.is_active ?? true });
-    } else {
-      setEditingBanner(null);
-      setBannerForm({ title: "", offer_text: "", image_url: "", mobile_image_url: "", link: "/products", sort_order: "0", is_active: true });
-    }
-    setShowBannerForm(true);
-  };
-
-  const handleSaveBanner = async () => {
-    if (!bannerForm.title || !bannerForm.image_url) { toast({ title: "Error", description: "Title and Image required", variant: "destructive" }); return; }
-    setIsSavingBanner(true);
-    const data: any = { title: bannerForm.title, offer_text: bannerForm.offer_text || null, image_url: bannerForm.image_url, mobile_image_url: bannerForm.mobile_image_url || null, link: bannerForm.link || "/products", sort_order: parseInt(bannerForm.sort_order) || 0, is_active: bannerForm.is_active };
-    if (editingBanner) {
-      await supabase.from("promo_banners").update(data).eq("id", editingBanner.id);
-      toast({ title: "Banner Updated" });
-    } else {
-      await supabase.from("promo_banners").insert(data);
-      toast({ title: "Banner Created" });
-    }
-    setShowBannerForm(false); setEditingBanner(null); fetchBanners(); setIsSavingBanner(false);
-  };
-
-  const handleDeleteBanner = async (id: string) => {
-    if (!confirm("Delete this banner?")) return;
-    await supabase.from("promo_banners").delete().eq("id", id);
-    toast({ title: "Banner Deleted" }); fetchBanners();
   };
 
   return (
