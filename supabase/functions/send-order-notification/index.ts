@@ -14,6 +14,9 @@ type OrderNotificationType =
   | "order_shipped"
   | "order_delivered"
   | "order_cancelled"
+  | "order_on_hold"
+  | "order_failed"
+  | "payment_failed"
   | "payment_received";
 
 interface ShippingAddress {
@@ -92,6 +95,9 @@ const ORDER_TYPES = new Set<OrderNotificationType>([
   "order_shipped",
   "order_delivered",
   "order_cancelled",
+  "order_on_hold",
+  "order_failed",
+  "payment_failed",
   "payment_received",
 ]);
 
@@ -142,136 +148,156 @@ const getBillingDetails = (value: Record<string, unknown> | null) => {
 };
 
 const getEmailContent = (req: EmailPayload) => {
+  const BRAND = "Houskase";
+  const LOGO_URL = "https://finalhouskase.lovable.app/logo.png"; // Replace with your actual logo URL
+
   const itemRows =
     req.items
       ?.map((item) => {
         const safeName = stripHtml(item.name);
         const varHtml = item.variation
-          ? `<br><span style="color:#888;font-size:12px;">${stripHtml(item.variation)}</span>`
+          ? `<br><span style="color:#666;font-size:12px;">${stripHtml(item.variation)}</span>`
           : "";
 
         return `<tr>
-<td style="padding:12px;border-bottom:1px solid #eee;font-size:14px;color:#333;"><strong>${safeName}</strong>${varHtml}</td>
-<td style="padding:12px;border-bottom:1px solid #eee;text-align:center;font-size:14px;color:#333;">${item.quantity}</td>
-<td style="padding:12px;border-bottom:1px solid #eee;text-align:right;font-size:14px;color:#333;">&#x20B9;${item.unit_price.toLocaleString()}</td>
-<td style="padding:12px;border-bottom:1px solid #eee;text-align:right;font-size:14px;font-weight:600;color:#333;">&#x20B9;${item.total_price.toLocaleString()}</td>
+<td style="padding:15px 0;border-bottom:1px solid #eee;">
+  <div style="font-size:14px;color:#333;font-weight:500;">${safeName}</div>
+  ${varHtml}
+  <div style="font-size:12px;color:#888;margin-top:4px;">Qty: ${item.quantity}</div>
+</td>
+<td style="padding:15px 0;border-bottom:1px solid #eee;text-align:right;font-size:14px;color:#333;font-weight:600;">&#x20B9;${item.total_price.toLocaleString()}</td>
 </tr>`;
       })
       .join("") || "";
 
   const addr = req.shipping_address;
   const addressHtml = addr
-    ? `<div style="background:#f8f9fa;border-radius:8px;padding:16px;margin:16px 0;">
-<h3 style="margin:0 0 8px;font-size:14px;color:#333;font-weight:600;">Shipping Address</h3>
-<p style="margin:0;font-size:13px;color:#555;line-height:1.6;">${addr.full_name || ""}${addr.company ? "<br>" + addr.company : ""}${addr.address ? "<br>" + addr.address : ""}${addr.city ? "<br>" + addr.city : ""}${addr.state ? ", " + addr.state : ""} ${addr.postal_code || ""}${addr.country ? "<br>" + addr.country : ""}${addr.phone ? "<br>Phone: " + addr.phone : ""}</p>
+    ? `<div style="margin-top:30px;padding-top:20px;border-top:1px solid #eee;">
+<h3 style="margin:0 0 10px;font-size:14px;color:#333;text-transform:uppercase;letter-spacing:1px;">Shipping Address</h3>
+<p style="margin:0;font-size:14px;color:#666;line-height:1.6;">
+  <strong>${addr.full_name || ""}</strong><br>
+  ${addr.address || ""}<br>
+  ${addr.city || ""}, ${addr.state || ""} ${addr.postal_code || ""}<br>
+  ${addr.country || ""}<br>
+  ${addr.phone ? "Phone: " + addr.phone : ""}
+</p>
 </div>`
     : "";
 
-  const gstInfo = req.gst_number
-    ? `<div style="background:#f0fdf4;border-radius:8px;padding:12px 16px;margin:16px 0;border-left:4px solid #16a34a;">
-<p style="margin:0;font-size:13px;color:#166534;"><strong>GST Invoice</strong> | GSTIN: ${req.gst_number}</p>
-${req.company_name ? '<p style="margin:4px 0 0;font-size:13px;color:#166534;">Company: ' + req.company_name + "</p>" : ""}
-</div>`
-    : "";
-
-  const BRAND = "Houskase";
+  let statusTitle = "Order Update";
+  let statusMessage = "Your order has been updated.";
+  let statusColor = "#333";
+  let iconHtml = "";
 
   switch (req.type) {
     case "new_order":
-      return {
-        subject: `Order Placed - ${req.order_number} | ${BRAND}`,
-        html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:640px;margin:0 auto;background:#f8f9fa;">
-<div style="background:linear-gradient(135deg,#0f2547,#1a3a6e);padding:24px;text-align:center;">
-<h1 style="color:#fff;margin:16px 0 4px;font-size:22px;">Order Placed Successfully</h1>
-<p style="color:rgba(255,255,255,0.8);margin:0;font-size:14px;">Thank you for shopping with ${BRAND}!</p>
-</div>
-<div style="padding:24px;">
-<div style="background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-<p style="color:#333;font-size:15px;margin:0 0 4px;">Hi <strong>${req.buyer_name}</strong>,</p>
-<p style="color:#666;font-size:14px;line-height:1.6;margin:0 0 16px;">Your order <strong style="color:#e8590c;">${req.order_number}</strong> has been received and is being processed.</p>
-${gstInfo}
-${req.items && req.items.length > 0 ? `<table style="width:100%;border-collapse:collapse;margin:16px 0;">
-<thead><tr style="background:#f5f5f5;">
-<th style="padding:10px 12px;text-align:left;font-size:12px;color:#888;text-transform:uppercase;">Item</th>
-<th style="padding:10px 12px;text-align:center;font-size:12px;color:#888;text-transform:uppercase;">Qty</th>
-<th style="padding:10px 12px;text-align:right;font-size:12px;color:#888;text-transform:uppercase;">Price</th>
-<th style="padding:10px 12px;text-align:right;font-size:12px;color:#888;text-transform:uppercase;">Total</th>
-</tr></thead>
-<tbody>${itemRows}</tbody>
-</table>` : ""}
-<div style="border-top:2px solid #eee;padding-top:16px;margin-top:8px;">
-${req.subtotal != null ? `<table width="100%"><tr><td style="font-size:14px;color:#666;padding:3px 0;">Subtotal</td><td style="font-size:14px;color:#333;text-align:right;padding:3px 0;">&#x20B9;${req.subtotal.toLocaleString()}</td></tr></table>` : ""}
-${req.tax != null ? `<table width="100%"><tr><td style="font-size:14px;color:#666;padding:3px 0;">Tax (GST)</td><td style="font-size:14px;color:#333;text-align:right;padding:3px 0;">&#x20B9;${req.tax.toLocaleString()}</td></tr></table>` : ""}
-${req.shipping != null ? `<table width="100%"><tr><td style="font-size:14px;color:#666;padding:3px 0;">Shipping</td><td style="font-size:14px;color:#333;text-align:right;padding:3px 0;">${req.shipping === 0 ? "Free" : "&#x20B9;" + req.shipping.toLocaleString()}</td></tr></table>` : ""}
-<table width="100%" style="border-top:1px solid #eee;margin-top:8px;"><tr><td style="font-size:18px;font-weight:700;color:#333;padding:12px 0 0;">Total</td><td style="font-size:18px;font-weight:700;color:#e8590c;text-align:right;padding:12px 0 0;">&#x20B9;${req.order_total.toLocaleString()}</td></tr></table>
-</div>
-${addressHtml}
-</div>
-<p style="text-align:center;color:#888;font-size:12px;margin-top:20px;">We'll email you again when your order ships.</p>
-<div style="text-align:center;margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;">
-<p style="color:#999;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} ${BRAND}. All rights reserved.</p>
-</div>
-</div>
-</div>`,
-      };
-
     case "order_confirmed":
-      return {
-        subject: `Order Confirmed - ${req.order_number} | ${BRAND}`,
-        html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;background:#fff;padding:24px;">
-<h1 style="color:#0f2547;">Order Confirmed</h1>
-<p>Hi ${req.buyer_name}, great news! Your order <strong>${req.order_number}</strong> has been confirmed and is being prepared for shipment.</p>
-<p><strong>Total:</strong> &#x20B9;${req.order_total.toLocaleString()}</p>
-${addressHtml}
-<p style="color:#888;font-size:12px;">&copy; ${new Date().getFullYear()} ${BRAND}</p></div>`,
-      };
-
+      statusTitle = "Woohoo! Your order is confirmed.";
+      statusMessage = "We'll start working on this right away. We'll email you as soon as it ships.";
+      statusColor = "#1a1a1a";
+      iconHtml = `<div style="text-align:center;margin-bottom:20px;"><span style="font-size:40px;">✨</span></div>`;
+      break;
+    case "order_on_hold":
+      statusTitle = "Your order is on hold.";
+      statusMessage = "There is a slight delay with your order. We'll update you as soon as possible.";
+      statusColor = "#f59e0b";
+      break;
     case "order_shipped":
-      return {
-        subject: `Your Order is on its way! - ${req.order_number} | ${BRAND}`,
-        html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;background:#fff;padding:24px;">
-<h1 style="color:#0f2547;">Your order has shipped!</h1>
-<p>Hi ${req.buyer_name}, your order <strong>${req.order_number}</strong> is on its way.</p>
-${req.tracking_number ? `<div style="background:#f0fdf4;border-radius:8px;padding:16px;margin:16px 0;"><p style="margin:0;color:#166534;"><strong>Tracking Number:</strong> ${req.tracking_number}</p></div>` : ""}
-<p style="color:#888;font-size:12px;">&copy; ${new Date().getFullYear()} ${BRAND}</p></div>`,
-      };
-
+      statusTitle = "Your order is on its way!";
+      statusMessage = "Great news! Your package has been handed over to our courier partner.";
+      statusColor = "#3b82f6";
+      break;
     case "order_delivered":
-      return {
-        subject: `Order Delivered - ${req.order_number} | ${BRAND}`,
-        html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;background:#fff;padding:24px;">
-<h1 style="color:#16a34a;">Order Delivered 🎉</h1>
-<p>Hi ${req.buyer_name}, your order <strong>${req.order_number}</strong> has been delivered. We hope you love your ${BRAND} essentials!</p>
-<p>Thank you for choosing ${BRAND}.</p>
-<p style="color:#888;font-size:12px;">&copy; ${new Date().getFullYear()} ${BRAND}</p></div>`,
-      };
-
+      statusTitle = "Your order has been delivered!";
+      statusMessage = "We hope you love your new Houskase products. Thank you for shopping with us!";
+      statusColor = "#10b981";
+      break;
     case "order_cancelled":
-      return {
-        subject: `Order Cancelled - ${req.order_number} | ${BRAND}`,
-        html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;background:#fff;padding:24px;">
-<h1 style="color:#dc2626;">Order Cancelled</h1>
-<p>Hi ${req.buyer_name}, your order <strong>${req.order_number}</strong> has been cancelled.</p>
-<p>If a payment was made, any refund will be processed to the original payment method within 5–7 business days.</p>
-<p>If this was a mistake, please reply to this email or contact us at <a href="mailto:sales@houskase.com">sales@houskase.com</a>.</p>
-<p style="color:#888;font-size:12px;">&copy; ${new Date().getFullYear()} ${BRAND}</p></div>`,
-      };
-
+      statusTitle = "Order Cancelled.";
+      statusMessage = "Your order has been cancelled. If payment was made, a refund will be processed shortly.";
+      statusColor = "#ef4444";
+      break;
+    case "order_failed":
+    case "payment_failed":
+      statusTitle = "Payment Failed.";
+      statusMessage = "Unfortunately, we couldn't process your payment. Please try again or use a different method.";
+      statusColor = "#ef4444";
+      break;
     case "payment_received":
-      return {
-        subject: `Payment Received - ${req.order_number} | ${BRAND}`,
-        html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;background:#fff;padding:24px;">
-<h1 style="color:#16a34a;">Payment Received</h1>
-<p>Hi ${req.buyer_name}, we've received your payment of <strong>&#x20B9;${req.order_total.toLocaleString()}</strong> for order <strong>${req.order_number}</strong>. Thank you!</p>
-<p style="color:#888;font-size:12px;">&copy; ${new Date().getFullYear()} ${BRAND}</p></div>`,
-      };
-
-    default:
-      return {
-        subject: `Order Update - ${req.order_number} | ${BRAND}`,
-        html: `<p>Your order ${req.order_number} has been updated.</p>`,
-      };
+      statusTitle = "Payment Received.";
+      statusMessage = "We've successfully received your payment. Your order is moving to the next step.";
+      statusColor = "#10b981";
+      break;
   }
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.5; color: #333; margin: 0; padding: 0; background-color: #f9f9f9; }
+  .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 40px; border-radius: 8px; }
+  .header { text-align: center; margin-bottom: 40px; }
+  .status-section { text-align: center; margin-bottom: 40px; }
+  .status-title { font-size: 24px; font-weight: 700; color: ${statusColor}; margin-bottom: 10px; }
+  .status-message { font-size: 16px; color: #666; margin-bottom: 30px; }
+  .btn { display: inline-block; padding: 12px 30px; background: #1a1a1a; color: #ffffff !important; text-decoration: none; border-radius: 25px; font-weight: 600; font-size: 14px; }
+  .order-details { margin-top: 40px; }
+  .detail-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+  .total-row { display: flex; justify-content: space-between; padding: 15px 0; border-top: 2px solid #eee; margin-top: 10px; font-size: 18px; font-weight: 700; }
+  .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #999; }
+</style>
+</head>
+<body>
+  <div style="padding: 20px 0;">
+    <div class="container">
+      <div class="header">
+        <h1 style="color:#e67e22; font-size: 32px; margin: 0; font-family: serif; letter-spacing: 1px;">${BRAND}</h1>
+      </div>
+
+      <div class="status-section">
+        ${iconHtml}
+        <h2 class="status-title">${statusTitle}</h2>
+        <p class="status-message">${statusMessage}</p>
+        <a href="https://finalhouskase.lovable.app/account/orders" class="btn">View your order</a>
+      </div>
+
+      <div class="order-details">
+        <h3 style="font-size: 18px; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">Order details</h3>
+        <p style="font-size: 13px; color: #888; margin-bottom: 20px;">Confirmation number: ${req.order_number}</p>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+          ${itemRows}
+        </table>
+
+        <div style="margin-top: 20px;">
+          <div class="detail-row"><span>Subtotal</span><span>&#x20B9;${(req.subtotal || 0).toLocaleString()}</span></div>
+          ${req.tax ? `<div class="detail-row"><span>Sales tax</span><span>&#x20B9;${req.tax.toLocaleString()}</span></div>` : ""}
+          <div class="detail-row"><span>Shipping</span><span>${req.shipping === 0 ? "FREE" : "&#x20B9;" + (req.shipping || 0).toLocaleString()}</span></div>
+          <div class="total-row"><span>Total</span><span>&#x20B9;${req.order_total.toLocaleString()}</span></div>
+        </div>
+
+        ${addressHtml}
+
+        ${req.tracking_number ? `
+        <div style="margin-top: 20px; padding: 15px; background: #f0f7ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+          <p style="margin: 0; font-size: 14px; color: #1e40af;"><strong>Tracking Number:</strong> ${req.tracking_number}</p>
+        </div>` : ""}
+      </div>
+
+      <div class="footer">
+        <p>&copy; ${new Date().getFullYear()} ${BRAND}. All rights reserved.</p>
+        <p>If you have any questions, contact us at <a href="mailto:sales@houskase.com" style="color:#999;">sales@houskase.com</a></p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  return {
+    subject: `${statusTitle} - ${req.order_number} | ${BRAND}`,
+    html,
+  };
 };
 
 serve(async (req: Request) => {
@@ -478,6 +504,9 @@ serve(async (req: Request) => {
         order_shipped: "📦 Order Shipped",
         order_delivered: "🎉 Order Delivered",
         order_cancelled: "❌ Order Cancelled",
+        order_on_hold: "⏳ Order On Hold",
+        order_failed: "⚠️ Order Failed",
+        payment_failed: "❌ Payment Failed",
         payment_received: "💰 Payment Received",
       };
       const adminSubject = `[Admin] ${eventLabel[notificationType]} - ${emailPayload.order_number}`;
