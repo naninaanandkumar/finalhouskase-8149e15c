@@ -2209,34 +2209,8 @@ export type Database = {
         Args: { _expires_in?: number; _urls: string[] }
         Returns: string[]
       }
-      get_auto_apply_coupon: {
-        Args: { _subtotal: number }
-        Returns: {
-          code: string
-          discount_type: string
-          discount_value: number
-          id: string
-          max_discount_amount: number
-          min_order_amount: number
-        }[]
-      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
-      list_public_coupons: {
-        Args: { _category_id?: string }
-        Returns: {
-          auto_apply: boolean
-          category_id: string
-          code: string
-          description: string
-          discount_type: string
-          discount_value: number
-          id: string
-          min_order_amount: number
-          show_on_product: boolean
-          title: string
-        }[]
-      }
       list_users_with_roles: {
         Args: never
         Returns: {
