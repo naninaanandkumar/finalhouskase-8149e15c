@@ -197,13 +197,13 @@ export function TaggedProductSection({
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory sm:scrollbar-hide sm:pb-1 lg:grid lg:grid-cols-5 lg:overflow-visible lg:pb-0 gap-3">
             {products.slice(0, 10).map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 index={idx}
-                className="w-full"
+                className="w-full sm:shrink-0 sm:snap-start sm:w-[calc(25%-9px)] lg:w-full lg:shrink"
               />
             ))}
           </div>
