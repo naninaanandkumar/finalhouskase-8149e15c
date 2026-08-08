@@ -24,7 +24,7 @@ interface TaggedProductSectionProps {
   subtitle?: string;
   limit?: number;
   className?: string;
-  /** "showcase" renders a coloured panel with a sunburst label + horizontal product rail */
+  /** "showcase" renders a coloured panel with a sunburst label + product grid */
   variant?: "grid" | "showcase";
   forceHorizontalOnTablet?: boolean;
   panelLabelTop?: string;
@@ -55,23 +55,6 @@ export function TaggedProductSection({
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const railRef = useRef<HTMLDivElement>(null);
-  const [activeDot, setActiveDot] = useState(0);
-
-  const handleScroll = () => {
-    const el = railRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    const ratio = max > 0 ? el.scrollLeft / max : 0;
-    setActiveDot(Math.min(2, Math.round(ratio * 2)));
-  };
-
-  const scrollToDot = (i: number) => {
-    const el = railRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    el.scrollTo({ left: (max * i) / 2, behavior: "smooth" });
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -90,10 +73,11 @@ export function TaggedProductSection({
     return () => {
       isMounted = false;
     };
-  }, [tag, limit]);
+  }, [tag]);
 
   if (!loading && products.length === 0) return null;
 
+  if (variant === "showcase") {
     return (
       <section className={`py-8 sm:py-10 ${className}`}>
         <div className="container mx-auto px-3 sm:px-4">
@@ -147,7 +131,7 @@ export function TaggedProductSection({
             </div>
           </div>
 
-          <div className="mt-6 text-center">
+          <div className="mt-4 text-center">
             <Link to="/products" className="inline-flex items-center gap-1 text-accent font-medium text-sm hover:underline">
               View All <ArrowRight className="h-4 w-4" />
             </Link>
@@ -155,6 +139,7 @@ export function TaggedProductSection({
         </div>
       </section>
     );
+  }
 
   return (
     <section className={`py-8 sm:py-10 ${className}`}>
@@ -181,7 +166,7 @@ export function TaggedProductSection({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-            {products.slice(0, 12).map((product, idx) => (
+            {products.slice(0, 6).map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -191,7 +176,6 @@ export function TaggedProductSection({
             ))}
           </div>
         )}
-
       </div>
     </section>
   );
