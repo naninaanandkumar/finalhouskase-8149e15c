@@ -159,7 +159,7 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
                     key={product.id}
                     product={product}
                     index={idx}
-                    className="shrink-0 w-[45%] sm:w-[23%] lg:w-full snap-start"
+                    className={`shrink-0 w-[45%] sm:w-[23%] lg:w-full snap-start ${idx >= 5 ? "lg:hidden" : ""}`}
                   />
                 ))}
               </div>
