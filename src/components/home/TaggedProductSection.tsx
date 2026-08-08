@@ -94,14 +94,13 @@ export function TaggedProductSection({
 
   if (!loading && products.length === 0) return null;
 
-  if (variant === "showcase") {
     return (
       <section className={`py-8 sm:py-10 ${className}`}>
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="rounded-2xl bg-primary p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
-            {/* Fixed sunburst label panel */}
+          <div className="rounded-2xl bg-primary p-3 sm:p-4 flex flex-col lg:flex-row gap-3 sm:gap-4">
+            {/* Sunburst label panel - Stacks on mobile/tablet, side-by-side on desktop */}
             <div
-              className="relative shrink-0 w-full sm:w-[26%] lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+              className="relative shrink-0 w-full lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
               aria-hidden="true"
             >
               <div
@@ -111,7 +110,7 @@ export function TaggedProductSection({
                     "repeating-conic-gradient(from 0deg at 50% 50%, hsl(var(--primary-foreground) / 0.14) 0deg 9deg, transparent 9deg 18deg)",
                 }}
               />
-              <div className="relative text-center px-3 py-6 sm:py-10">
+              <div className="relative text-center px-3 py-6 sm:py-10 lg:py-14">
                 <p className="font-display font-extrabold leading-none tracking-tight text-primary-foreground text-2xl sm:text-4xl lg:text-5xl animate-[pulse_2.6s_ease-in-out_infinite]">
                   {panelLabelTop}
                 </p>
@@ -121,51 +120,34 @@ export function TaggedProductSection({
               </div>
             </div>
 
-            {/* Only the product cards slide */}
-            <div
-              ref={railRef}
-              onScroll={handleScroll}
-              className="flex-1 min-w-0 flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {loading
-                ? [...Array(4)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="shrink-0 w-[70%] sm:w-[40%] lg:w-[24%] rounded-xl bg-card p-2 space-y-2"
-                    >
+            {/* Product Grid - 2 columns on mobile (6 products), 4 on tablet, 5 on desktop */}
+            <div className="flex-1 min-w-0">
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl p-2 space-y-2">
                       <Skeleton className="aspect-square rounded-lg" />
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-3 w-1/2" />
-                      <Skeleton className="h-4 w-1/3" />
                     </div>
-                  ))
-                : products.map((product, idx) => (
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {products.slice(0, 6).map((product, idx) => (
                     <ProductCard
                       key={product.id}
                       product={product}
                       index={idx}
-                      className="shrink-0 snap-start w-[70%] sm:w-[40%] lg:w-[24%] bg-card rounded-xl"
+                      className="w-full bg-card rounded-xl"
                     />
                   ))}
+                </div>
+              )}
             </div>
           </div>
 
-
-          <div className="mt-3 flex items-center justify-center gap-2">
-            {[0, 1, 2].map((i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Go to slide ${i + 1}`}
-                onClick={() => scrollToDot(i)}
-                className={`h-2 rounded-full transition-all ${
-                  activeDot === i ? "w-5 bg-accent" : "w-2 bg-muted-foreground/30"
-                }`}
-              />
-            ))}
-          </div>
-
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center">
             <Link to="/products" className="inline-flex items-center gap-1 text-accent font-medium text-sm hover:underline">
               View All <ArrowRight className="h-4 w-4" />
             </Link>
@@ -173,7 +155,6 @@ export function TaggedProductSection({
         </div>
       </section>
     );
-  }
 
   return (
     <section className={`py-8 sm:py-10 ${className}`}>
