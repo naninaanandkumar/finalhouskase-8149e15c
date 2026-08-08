@@ -132,7 +132,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
       <div
         className="relative w-full overflow-hidden h-[500px] md:h-auto md:aspect-[2171/724]"
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           <motion.div
             key={heroSlides[currentSlide]?.id || currentSlide}
             initial={{ opacity: 0 }}
