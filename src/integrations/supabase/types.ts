@@ -2220,27 +2220,6 @@ export type Database = {
           min_order_amount: number
         }[]
       }
-      get_product_review_stats: {
-        Args: { _product_id: string }
-        Returns: {
-          avg_rating: number
-          review_count: number
-        }[]
-      }
-      get_public_product_reviews: {
-        Args: { _product_id: string }
-        Returns: {
-          created_at: string
-          id: string
-          is_verified: boolean
-          photos: string[]
-          product_id: string
-          rating: number
-          review_text: string
-          review_title: string
-          reviewer_name: string
-        }[]
-      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       list_public_coupons: {
