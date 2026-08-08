@@ -192,9 +192,9 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
                       e.stopPropagation();
                       setSelectedSize(v.id);
                     }}
-                    className={`flex-1 min-w-0 px-0.5 py-1 rounded-[5px] border text-[9px] sm:text-[11px] font-medium transition-colors text-center truncate ${
+                    className={`flex-1 min-w-0 px-1 py-1.5 rounded-[5px] border text-[10px] sm:text-[12px] font-bold transition-colors text-center truncate ${
                       selectedSize === v.id
-                        ? "border-accent bg-accent text-accent-foreground"
+                        ? "border-accent bg-accent text-accent-foreground shadow-sm"
                         : "border-border bg-background text-foreground hover:border-accent"
                     }`}
                   >
