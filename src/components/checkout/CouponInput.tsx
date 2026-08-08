@@ -53,8 +53,8 @@ export function CouponInput({ subtotal, onApply }: CouponInputProps) {
   // Auto-apply coupon on mount
   useEffect(() => {
     const tryAutoApply = async () => {
-      const { data } = await supabase.rpc("get_auto_apply_coupon", { _subtotal: subtotal });
-      const c = Array.isArray(data) ? data[0] : data;
+      const { data } = await supabase.rpc("get_auto_apply_coupon" as any, { _subtotal: subtotal });
+      const c = (Array.isArray(data) ? data[0] : data) as any;
       if (c) {
         const disc = calcDiscount(c, subtotal);
         setApplied(c as AppliedCoupon);

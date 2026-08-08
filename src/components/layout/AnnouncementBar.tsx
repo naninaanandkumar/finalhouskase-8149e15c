@@ -37,8 +37,8 @@ export function AnnouncementBar() {
         return;
       }
 
-      const { data } = await supabase.rpc("list_public_coupons", { _category_id: null });
-      const mapped: Announcement[] = (data || []).slice(0, 6).map((c: any) => ({
+      const { data } = await supabase.rpc("list_public_coupons" as any, { _category_id: null });
+      const mapped: Announcement[] = (Array.isArray(data) ? data : []).slice(0, 6).map((c: any) => ({
         id: c.id,
         text:
           c.description ||

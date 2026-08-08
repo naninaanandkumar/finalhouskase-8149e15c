@@ -25,10 +25,10 @@ export function ProductCoupons({ categoryId }: ProductCouponsProps) {
 
   useEffect(() => {
     const fetchCoupons = async () => {
-      const { data } = await supabase.rpc("list_public_coupons", {
+      const { data } = await supabase.rpc("list_public_coupons" as any, {
         _category_id: categoryId ?? null,
       });
-      const filtered = (data || []).filter((c: any) => c.show_on_product);
+      const filtered = (Array.isArray(data) ? data : []).filter((c: any) => c.show_on_product);
       setCoupons(filtered.slice(0, 4) as Coupon[]);
     };
     fetchCoupons();

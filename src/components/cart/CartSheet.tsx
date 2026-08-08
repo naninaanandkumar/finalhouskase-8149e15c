@@ -39,9 +39,9 @@ export function CartSheet() {
   const [suggestedCoupon, setSuggestedCoupon] = useState<{ code: string } | null>(null);
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.rpc("list_public_coupons", { _category_id: null });
-      const first = Array.isArray(data) ? data[0] : null;
-      if (first?.code) setSuggestedCoupon({ code: first.code });
+      const { data } = await supabase.rpc("list_public_coupons" as any, { _category_id: null });
+      const first = (Array.isArray(data) ? data[0] : null) as any;
+      if (first?.code) setSuggestedCoupon({ code: String(first.code) });
     })();
   }, []);
 
