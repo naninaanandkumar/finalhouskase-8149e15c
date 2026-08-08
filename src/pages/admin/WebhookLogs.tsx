@@ -7,10 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface WebhookEvent {
   id: string;
-  provider: "razorpay" | "ekart";
-  event_type: string;
-  external_id: string;
-  status: string;
+  provider: string;
+  event_type: string | null;
+  external_id: string | null;
+  status: string | null;
   created_at: string;
   error_message: string | null;
 }
@@ -29,7 +29,7 @@ export default function WebhookLogs() {
       .order("created_at", { ascending: false })
       .limit(50);
     if (error) toast({ title: "Failed to load logs", description: error.message, variant: "destructive" });
-    setLogs(data || []);
+    setLogs((data as any) || []);
     setLoading(false);
   };
 

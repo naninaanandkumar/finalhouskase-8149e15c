@@ -73,6 +73,7 @@ import AdminEkartLogs from "./pages/admin/EkartLogs";
 import AdminEkartSettings from "./pages/admin/EkartSettings";
 import AdminBlog from "./pages/admin/Blog";
 import AdminFamilyTestimonials from "./pages/admin/FamilyTestimonials";
+import AdminWebhookLogs from "./pages/admin/WebhookLogs";
 import InvoicePreview from "./pages/dev/InvoicePreview";
 
 
@@ -171,6 +172,7 @@ const App = () => (
                 <Route path="ekart-settings" element={<AdminEkartSettings />} />
                 <Route path="blog" element={<AdminBlog />} />
                 <Route path="family-testimonials" element={<AdminFamilyTestimonials />} />
+                <Route path="webhook-logs" element={<AdminWebhookLogs />} />
                 <Route path="email-preview" element={<EmailPreview />} />
               </Route>
 
