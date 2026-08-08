@@ -46,7 +46,7 @@ const Index = () => {
         <HeroMarquee />
         <PromoBanners />
         <FeaturedProducts onFetchStatus={noop} />
-        <TaggedProductSection tag="mega saver packs" title="Mega Saver Packs" className="bg-[#ffffff]" limit={6} />
+        <TaggedProductSection tag="mega saver packs" title="Mega Saver Packs" className="bg-[#ffffff]" limit={6} forceHorizontalOnTablet={true} />
         <TaggedProductSection
           tag="bestseller"
           title="Bestseller"
