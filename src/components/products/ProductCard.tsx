@@ -45,7 +45,7 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
   useEffect(() => {
     let cancelled = false;
     supabase
-      .rpc("get_product_review_stats", { _product_id: product.id })
+      .rpc("get_product_review_stats" as any, { _product_id: product.id })
       .then(({ data }) => {
         if (cancelled) return;
         const row: any = Array.isArray(data) ? data[0] : data;

@@ -12,7 +12,7 @@ export function ReviewsSummary({ productId }: ReviewsSummaryProps) {
 
   useEffect(() => {
     const fetch = async () => {
-      const { data } = await supabase.rpc("get_product_review_stats", { _product_id: productId });
+      const { data } = await supabase.rpc("get_product_review_stats" as any, { _product_id: productId });
       const row: any = Array.isArray(data) ? data[0] : data;
       if (row && Number(row.review_count) > 0) {
         setAvg(Math.round(Number(row.avg_rating) * 10) / 10);
