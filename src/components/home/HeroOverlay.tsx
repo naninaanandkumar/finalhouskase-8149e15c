@@ -100,7 +100,7 @@ export function HeroTemplate({
   const items = align === "center" ? "center" : align === "right" ? "flex-end" : "flex-start";
 
   return (
-    <div className="absolute inset-0" style={{ containerType: "inline-size" }}>
+    <div className="absolute inset-0 hero-template-content" style={{ containerType: "inline-size" }}>
       {imageNode}
 
       {/* Right — transparent product PNG floating with a soft shadow */}
