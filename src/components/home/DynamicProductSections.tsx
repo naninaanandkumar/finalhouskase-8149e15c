@@ -107,8 +107,8 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
       <section className="py-6 sm:py-8">
         <div className="container mx-auto px-3 sm:px-4">
           <Skeleton className="h-6 w-48 mb-4" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            {[...Array(6)].map((_, i) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+            {[...Array(5)].map((_, i) => (
               <div key={i} className="space-y-2">
                 <Skeleton className="aspect-square rounded" />
                 <Skeleton className="h-4 w-3/4" />
@@ -153,8 +153,8 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                {products.slice(0, 6).map((product, idx) => (
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                {products.slice(0, 10).map((product, idx) => (
                   <ProductCard
                     key={product.id}
                     product={product}
