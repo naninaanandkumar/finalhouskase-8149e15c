@@ -57,7 +57,7 @@ export function ReelsSection({ title = "Featured Videos", excludeProductId, limi
       const { data } = await supabase
         .from("product_reels")
         .select("id, video_url, title, show_on_home, show_on_product, object_fit, product:products(id, name, slug, images, guest_price, regular_price, short_description, has_variations)")
-        .eq("is_active", true)
+        
         .eq(placementCol, true)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false })
