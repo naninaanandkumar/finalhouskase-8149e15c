@@ -200,7 +200,7 @@ export function TaggedProductSection({
           </div>
         ) : (
           <div className={`${forceHorizontalOnTablet ? "grid grid-cols-2 md:flex md:overflow-x-auto md:pb-4 md:scrollbar-none md:snap-x md:snap-mandatory" : "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6"} gap-3`}>
-            {products.map((product, idx) => (
+            {products.slice(0, 6).map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}

@@ -153,8 +153,8 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {products.map((product, idx) => (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {products.slice(0, 6).map((product, idx) => (
                   <ProductCard
                     key={product.id}
                     product={product}
