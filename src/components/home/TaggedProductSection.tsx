@@ -24,7 +24,7 @@ interface TaggedProductSectionProps {
   subtitle?: string;
   limit?: number;
   className?: string;
-  /** "showcase" renders a coloured panel with a sunburst label + horizontal product rail */
+  /** "showcase" renders a coloured panel with a sunburst label + product grid */
   variant?: "grid" | "showcase";
   forceHorizontalOnTablet?: boolean;
   panelLabelTop?: string;
@@ -55,23 +55,6 @@ export function TaggedProductSection({
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const railRef = useRef<HTMLDivElement>(null);
-  const [activeDot, setActiveDot] = useState(0);
-
-  const handleScroll = () => {
-    const el = railRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    const ratio = max > 0 ? el.scrollLeft / max : 0;
-    setActiveDot(Math.min(2, Math.round(ratio * 2)));
-  };
-
-  const scrollToDot = (i: number) => {
-    const el = railRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    el.scrollTo({ left: (max * i) / 2, behavior: "smooth" });
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -82,7 +65,7 @@ export function TaggedProductSection({
         .eq("is_active", true)
         .overlaps("tags", tagVariants(tag))
         .order("created_at", { ascending: false })
-        .limit(limit);
+        .limit(12);
       if (!isMounted) return;
       setProducts((data as unknown as Product[]) || []);
       setLoading(false);
@@ -90,7 +73,7 @@ export function TaggedProductSection({
     return () => {
       isMounted = false;
     };
-  }, [tag, limit]);
+  }, [tag]);
 
   if (!loading && products.length === 0) return null;
 
@@ -98,10 +81,10 @@ export function TaggedProductSection({
     return (
       <section className={`py-8 sm:py-10 ${className}`}>
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="rounded-2xl bg-primary p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
-            {/* Fixed sunburst label panel */}
+          <div className="rounded-2xl bg-primary p-3 sm:p-4 flex flex-col lg:flex-row gap-3 sm:gap-4">
+            {/* Sunburst label panel - Stacks on mobile/tablet, side-by-side on desktop */}
             <div
-              className="relative shrink-0 w-full sm:w-[26%] lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+              className="relative shrink-0 w-full lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
               aria-hidden="true"
             >
               <div
@@ -111,7 +94,7 @@ export function TaggedProductSection({
                     "repeating-conic-gradient(from 0deg at 50% 50%, hsl(var(--primary-foreground) / 0.14) 0deg 9deg, transparent 9deg 18deg)",
                 }}
               />
-              <div className="relative text-center px-3 py-6 sm:py-10">
+              <div className="relative text-center px-3 py-6 sm:py-10 lg:py-14">
                 <p className="font-display font-extrabold leading-none tracking-tight text-primary-foreground text-2xl sm:text-4xl lg:text-5xl animate-[pulse_2.6s_ease-in-out_infinite]">
                   {panelLabelTop}
                 </p>
@@ -121,48 +104,31 @@ export function TaggedProductSection({
               </div>
             </div>
 
-            {/* Only the product cards slide */}
-            <div
-              ref={railRef}
-              onScroll={handleScroll}
-              className="flex-1 min-w-0 flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-            >
-              {loading
-                ? [...Array(4)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="shrink-0 w-[70%] sm:w-[40%] lg:w-[24%] rounded-xl bg-card p-2 space-y-2"
-                    >
+            {/* Product Grid - 2 columns on mobile (6 products), 4 on tablet, 5 on desktop */}
+            <div className="flex-1 min-w-0">
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {[...Array(6)].map((_, i) => (
+                    <div key={i} className="bg-card rounded-xl p-2 space-y-2">
                       <Skeleton className="aspect-square rounded-lg" />
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-3 w-1/2" />
-                      <Skeleton className="h-4 w-1/3" />
                     </div>
-                  ))
-                : products.map((product, idx) => (
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {products.slice(0, 6).map((product, idx) => (
                     <ProductCard
                       key={product.id}
                       product={product}
                       index={idx}
-                      className="shrink-0 snap-start w-[70%] sm:w-[40%] lg:w-[24%] bg-card rounded-xl"
+                      className="w-full bg-card rounded-xl"
                     />
                   ))}
+                </div>
+              )}
             </div>
-          </div>
-
-
-          <div className="mt-3 flex items-center justify-center gap-2">
-            {[0, 1, 2].map((i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Go to slide ${i + 1}`}
-                onClick={() => scrollToDot(i)}
-                className={`h-2 rounded-full transition-all ${
-                  activeDot === i ? "w-5 bg-accent" : "w-2 bg-muted-foreground/30"
-                }`}
-              />
-            ))}
           </div>
 
           <div className="mt-4 text-center">
@@ -189,7 +155,7 @@ export function TaggedProductSection({
         />
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="space-y-2">
                 <Skeleton className="aspect-square rounded" />
@@ -199,8 +165,8 @@ export function TaggedProductSection({
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            {products.slice(0, 6).map((product, idx) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+            {products.slice(0, 12).map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}
@@ -210,7 +176,6 @@ export function TaggedProductSection({
             ))}
           </div>
         )}
-
       </div>
     </section>
   );

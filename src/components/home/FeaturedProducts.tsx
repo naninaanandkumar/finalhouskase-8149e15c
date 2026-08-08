@@ -38,7 +38,7 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
             .select("id, name, slug, images, guest_price, retail_price, shop_price, regular_price, has_variations")
             .eq("is_active", true)
             .order("created_at", { ascending: false })
-            .limit(6);
+            .limit(12);
 
           if (!isMounted) return;
 
@@ -86,7 +86,7 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
 
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="space-y-2">
                 <Skeleton className="aspect-square rounded" />
@@ -96,8 +96,8 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
             ))}
           </div>
         ) : products.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-            {products.map((product, idx) => (
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+            {products.slice(0, 6).map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}
