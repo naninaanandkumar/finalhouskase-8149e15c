@@ -107,9 +107,9 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
       <section className="py-6 sm:py-8">
         <div className="container mx-auto px-3 sm:px-4">
           <Skeleton className="h-6 w-48 mb-4" />
-          <div className="grid grid-cols-2 sm:flex sm:overflow-x-auto lg:grid lg:grid-cols-5 gap-3 scrollbar-none pb-2 sm:pb-0">
+          <div className="flex lg:grid lg:grid-cols-5 gap-3 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-none">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="shrink-0 w-full sm:w-[40%] lg:w-auto space-y-2">
+              <div key={i} className="shrink-0 w-[45%] sm:w-[23%] lg:w-auto space-y-2">
                 <Skeleton className="aspect-square rounded" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
@@ -153,13 +153,13 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
                 </Link>
               </div>
 
-              <div className="grid grid-cols-2 sm:flex sm:overflow-x-auto lg:grid lg:grid-cols-5 gap-3 scrollbar-none snap-x snap-mandatory pb-2 sm:pb-0">
+              <div className="flex lg:grid lg:grid-cols-5 gap-3 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-none snap-x snap-mandatory">
                 {products.slice(0, 10).map((product, idx) => (
                   <ProductCard
                     key={product.id}
                     product={product}
                     index={idx}
-                    className="w-full sm:shrink-0 sm:w-[40%] lg:w-full snap-start"
+                    className="shrink-0 w-[45%] sm:w-[23%] lg:w-full snap-start"
                   />
                 ))}
               </div>
