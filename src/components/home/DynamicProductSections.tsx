@@ -109,7 +109,7 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
           <Skeleton className="h-6 w-48 mb-4" />
           <div className="flex lg:grid lg:grid-cols-5 gap-3 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 scrollbar-none">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="shrink-0 w-[45%] sm:w-[23%] lg:w-auto space-y-2">
+              <div key={i} className="shrink-0 w-[31.5%] sm:w-[23%] lg:w-auto space-y-2">
                 <Skeleton className="aspect-square rounded" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
@@ -159,7 +159,7 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
                     key={product.id}
                     product={product}
                     index={idx}
-                    className={`shrink-0 w-[45%] sm:w-[23%] lg:w-full snap-start ${idx >= 5 ? "lg:hidden" : ""}`}
+                    className={`shrink-0 w-[31.5%] sm:w-[23%] lg:w-full snap-start ${idx >= 5 ? "lg:hidden" : ""}`}
                   />
                 ))}
               </div>
