@@ -67,8 +67,8 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         try {
           const [slidesRes, bannersRes, settingsRes] = await Promise.all([
-            supabase.from("hero_slides").select("*").eq("is_active", true).order("sort_order"),
-            supabase.from("promo_banners").select("*").eq("is_active", true).order("sort_order"),
+            supabase.from("hero_slides").select("*").order("sort_order"),
+            supabase.from("promo_banners").select("*").order("sort_order"),
             supabase.from("site_settings").select("value").eq("key", "homepage").maybeSingle(),
           ]);
 
