@@ -24,7 +24,7 @@ interface TaggedProductSectionProps {
   subtitle?: string;
   limit?: number;
   className?: string;
-  /** "showcase" renders a coloured panel with a sunburst label + product grid */
+  /** "showcase" renders a coloured panel with a sunburst label + product grid or rail */
   variant?: "grid" | "showcase";
   forceHorizontalOnTablet?: boolean;
   panelLabelTop?: string;
@@ -55,6 +55,23 @@ export function TaggedProductSection({
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const railRef = useRef<HTMLDivElement>(null);
+  const [activeDot, setActiveDot] = useState(0);
+
+  const handleScroll = () => {
+    const el = railRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    const ratio = max > 0 ? el.scrollLeft / max : 0;
+    setActiveDot(Math.min(2, Math.round(ratio * 2)));
+  };
+
+  const scrollToDot = (i: number) => {
+    const el = railRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    el.scrollTo({ left: (max * i) / 2, behavior: "smooth" });
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -81,10 +98,10 @@ export function TaggedProductSection({
     return (
       <section className={`py-8 sm:py-10 ${className}`}>
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="rounded-2xl bg-primary p-3 sm:p-4 flex flex-col lg:flex-row gap-3 sm:gap-4">
-            {/* Sunburst label panel - Stacks on mobile/tablet, side-by-side on desktop */}
+          <div className="rounded-2xl bg-primary p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Sunburst label panel - Back to fixed width on mobile/tablet rail layout */}
             <div
-              className="relative shrink-0 w-full lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+              className="relative shrink-0 w-full sm:w-[26%] lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
               aria-hidden="true"
             >
               <div
@@ -104,31 +121,46 @@ export function TaggedProductSection({
               </div>
             </div>
 
-            {/* Product Grid - 2 columns on mobile (6 products), 4 on tablet, 5 on desktop */}
-            <div className="flex-1 min-w-0">
-              {loading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className="bg-card rounded-xl p-2 space-y-2">
+            {/* Horizontal Product Rail - Back to sliding behavior */}
+            <div
+              ref={railRef}
+              onScroll={handleScroll}
+              className="flex-1 min-w-0 flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory pb-1 scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {loading
+                ? [...Array(4)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="shrink-0 w-[70%] sm:w-[40%] lg:w-[24%] rounded-xl bg-card p-2 space-y-2"
+                    >
                       <Skeleton className="aspect-square rounded-lg" />
                       <Skeleton className="h-4 w-3/4" />
                       <Skeleton className="h-3 w-1/2" />
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {products.slice(0, 6).map((product, idx) => (
+                  ))
+                : products.map((product, idx) => (
                     <ProductCard
                       key={product.id}
                       product={product}
                       index={idx}
-                      className="w-full bg-card rounded-xl"
+                      className="shrink-0 snap-start w-[70%] sm:w-[40%] lg:w-[24%] bg-card rounded-xl"
                     />
                   ))}
-                </div>
-              )}
             </div>
+          </div>
+
+          <div className="mt-3 flex items-center justify-center gap-2">
+            {[0, 1, 2].map((i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to slide ${i + 1}`}
+                onClick={() => scrollToDot(i)}
+                className={`h-2 rounded-full transition-all ${
+                  activeDot === i ? "w-5 bg-accent" : "w-2 bg-muted-foreground/30"
+                }`}
+              />
+            ))}
           </div>
 
           <div className="mt-4 text-center">
