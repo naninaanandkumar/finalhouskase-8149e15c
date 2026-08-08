@@ -97,7 +97,7 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
           </div>
         ) : products.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
-            {products.map((product, idx) => (
+            {products.slice(0, 6).map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}

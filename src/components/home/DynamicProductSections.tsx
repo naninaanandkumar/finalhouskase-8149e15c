@@ -60,7 +60,7 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
                   .select("id, name, slug, images, guest_price, retail_price, shop_price, regular_price, has_variations")
                   .eq("is_active", true)
                   .order("created_at", { ascending: false })
-                  .limit(section.product_limit || 12);
+                  .limit(12);
 
                 if (section.category_id) {
                   query = query.eq("category_id", section.category_id);
