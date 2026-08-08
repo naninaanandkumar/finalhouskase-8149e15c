@@ -42,6 +42,7 @@ const productSubItems = [
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin" },
+  { icon: Activity, label: "Health & Status", href: "/admin/diagnostics" },
   { icon: Users, label: "Users", href: "/admin/users" },
   { icon: ShoppingCart, label: "Orders", href: "/admin/orders" },
   { icon: FileText, label: "RFQ Requests", href: "/admin/rfq" },

@@ -25,6 +25,7 @@ export function BlogSection() {
       const { data } = await supabase
         .from("blog_posts")
         .select("id, title, slug, excerpt, cover_image, author, published_at")
+        .eq("is_published", true)
         .order("sort_order", { ascending: true })
         .order("published_at", { ascending: false })
         .limit(4);

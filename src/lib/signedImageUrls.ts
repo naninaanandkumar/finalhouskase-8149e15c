@@ -36,7 +36,7 @@ export async function getSignedImageUrl(url?: string | null): Promise<string> {
       if (!path) return url;
       const { data, error } = await supabase.storage
         .from(PRODUCT_BUCKET)
-        .createSignedUrl(path, 60 * 60 * 12);
+        .createSignedUrl(path, 60 * 60 * 24 * 7); // Extend to 7 days
       if (error || !data?.signedUrl) return url;
       return data.signedUrl;
     } catch (error) {
