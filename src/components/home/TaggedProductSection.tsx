@@ -187,7 +187,7 @@ export function TaggedProductSection({
         />
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="space-y-2">
                 <Skeleton className="aspect-square rounded" />
