@@ -183,8 +183,8 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
             </div>
 
             {sizes.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {sizes.slice(0, 4).map((v) => (
+              <div className="mt-2 flex gap-1.5 w-full">
+                {sizes.slice(0, 3).map((v) => (
                   <button
                     key={v.id}
                     onClick={(e) => {
@@ -192,7 +192,7 @@ export function ProductCard({ product, index = 0, className = "" }: ProductCardP
                       e.stopPropagation();
                       setSelectedSize(v.id);
                     }}
-                    className={`px-2 py-1 rounded-[5px] border text-[11px] font-medium transition-colors ${
+                    className={`flex-1 min-w-0 px-1 py-1 rounded-[5px] border text-[10px] sm:text-[11px] font-medium transition-colors text-center truncate ${
                       selectedSize === v.id
                         ? "border-accent bg-accent text-accent-foreground"
                         : "border-border bg-background text-foreground hover:border-accent"

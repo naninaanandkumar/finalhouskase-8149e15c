@@ -189,9 +189,9 @@ export function TaggedProductSection({
         />
 
         {loading ? (
-          <div className={`grid ${forceHorizontalOnTablet ? "grid-cols-2 md:flex md:overflow-x-auto md:pb-4 md:scrollbar-none" : "grid-cols-2 sm:grid-cols-2 md:grid-cols-4"} lg:grid-cols-6 gap-3`}>
+          <div className={`grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 ${forceHorizontalOnTablet ? "sm:grid-cols-2" : "sm:grid-cols-2"}`}>
             {[...Array(6)].map((_, i) => (
-              <div key={i} className={`space-y-2 ${forceHorizontalOnTablet ? "md:shrink-0 md:w-[30%] lg:w-auto" : ""}`}>
+              <div key={i} className="space-y-2">
                 <Skeleton className="aspect-square rounded" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
@@ -199,13 +199,13 @@ export function TaggedProductSection({
             ))}
           </div>
         ) : (
-          <div className={`${forceHorizontalOnTablet ? "grid grid-cols-2 md:flex md:overflow-x-auto md:pb-4 md:scrollbar-none md:snap-x md:snap-mandatory" : "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6"} gap-3`}>
+          <div className={`grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3`}>
             {products.slice(0, 6).map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 index={idx}
-                className={`${forceHorizontalOnTablet ? "md:shrink-0 md:snap-start md:w-[30%] lg:w-auto lg:snap-align-none" : "w-full"}`}
+                className="w-full"
               />
             ))}
           </div>

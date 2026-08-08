@@ -86,9 +86,9 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
 
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:flex sm:gap-3 overflow-hidden">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex-shrink-0 w-full sm:w-[calc(33.333%-8px)] md:w-[calc(20%-10px)] space-y-2">
+              <div key={i} className="space-y-2">
                 <Skeleton className="aspect-square rounded" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
@@ -96,13 +96,13 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
             ))}
           </div>
         ) : products.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3 sm:flex sm:overflow-x-auto sm:snap-x sm:snap-mandatory sm:pb-2 lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {products.map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 index={idx}
-                className="sm:w-[calc(33.333%-0.5rem)] md:w-[calc(25%-0.5625rem)] lg:w-auto sm:flex-shrink-0 sm:snap-start"
+                className="w-full"
               />
             ))}
           </div>
