@@ -187,9 +187,9 @@ export function TaggedProductSection({
         />
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="flex sm:grid sm:grid-cols-4 lg:grid-cols-5 gap-3 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0 scrollbar-none">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="space-y-2">
+              <div key={i} className="shrink-0 w-[45%] sm:w-auto space-y-2">
                 <Skeleton className="aspect-square rounded" />
                 <Skeleton className="h-4 w-3/4" />
                 <Skeleton className="h-3 w-1/2" />
@@ -197,13 +197,13 @@ export function TaggedProductSection({
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="flex sm:grid sm:grid-cols-4 lg:grid-cols-5 gap-3 overflow-x-auto sm:overflow-x-visible pb-2 sm:pb-0 scrollbar-none snap-x snap-mandatory">
             {products.slice(0, 10).map((product, idx) => (
               <ProductCard
                 key={product.id}
                 product={product}
                 index={idx}
-                className="w-full"
+                className="shrink-0 w-[45%] sm:w-full snap-start"
               />
             ))}
           </div>
