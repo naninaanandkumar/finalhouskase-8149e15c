@@ -970,8 +970,10 @@ export type Database = {
           billing_address: Json | null
           buyer_type: Database["public"]["Enums"]["app_role"]
           created_at: string
+          ekart_history: Json | null
           ekart_last_error: string | null
           ekart_shipment_id: string | null
+          ekart_status: string | null
           ekart_sync_status: string
           ekart_synced_at: string | null
           id: string
@@ -1001,8 +1003,10 @@ export type Database = {
           billing_address?: Json | null
           buyer_type: Database["public"]["Enums"]["app_role"]
           created_at?: string
+          ekart_history?: Json | null
           ekart_last_error?: string | null
           ekart_shipment_id?: string | null
+          ekart_status?: string | null
           ekart_sync_status?: string
           ekart_synced_at?: string | null
           id?: string
@@ -1032,8 +1036,10 @@ export type Database = {
           billing_address?: Json | null
           buyer_type?: Database["public"]["Enums"]["app_role"]
           created_at?: string
+          ekart_history?: Json | null
           ekart_last_error?: string | null
           ekart_shipment_id?: string | null
+          ekart_status?: string | null
           ekart_sync_status?: string
           ekart_synced_at?: string | null
           id?: string
@@ -2148,6 +2154,45 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          event_type: string | null
+          external_id: string | null
+          headers: Json | null
+          id: string
+          payload: Json | null
+          processed_at: string | null
+          provider: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          event_type?: string | null
+          external_id?: string | null
+          headers?: Json | null
+          id?: string
+          payload?: Json | null
+          processed_at?: string | null
+          provider: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          event_type?: string | null
+          external_id?: string | null
+          headers?: Json | null
+          id?: string
+          payload?: Json | null
+          processed_at?: string | null
+          provider?: string
+          status?: string | null
         }
         Relationships: []
       }

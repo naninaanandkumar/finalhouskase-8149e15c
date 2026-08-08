@@ -25,6 +25,7 @@ import {
   SlidersHorizontal,
   Video,
   ShieldAlert,
+  Activity,
   Mail,
   Bot,
   Inbox,
@@ -58,6 +59,7 @@ const menuItems = [
   { icon: Bell, label: "Notifications", href: "/admin/notifications" },
   { icon: ShieldAlert, label: "Ekart Logs", href: "/admin/ekart-logs" },
   { icon: Bot, label: "Ekart Settings", href: "/admin/ekart-settings" },
+  { icon: Activity, label: "Webhook Logs", href: "/admin/webhook-logs" },
   { icon: Settings, label: "Settings", href: "/admin/settings" },
 ];
 

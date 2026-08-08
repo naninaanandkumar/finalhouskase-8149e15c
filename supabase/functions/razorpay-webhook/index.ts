@@ -73,6 +73,15 @@ Deno.serve(async (req) => {
     log("event", { type: event?.event, event_id: event?.id });
     const admin = createClient(supabaseUrl, serviceKey, { auth: { autoRefreshToken: false, persistSession: false } });
 
+    // Log the webhook event
+    await admin.from("webhook_events").insert({
+      provider: "razorpay",
+      event_type: event.event,
+      external_id: event.id,
+      payload: event,
+      headers: Object.fromEntries(req.headers.entries()),
+    });
+
     const payment = event?.payload?.payment?.entity;
     const rzpOrderId = payment?.order_id;
     if (!rzpOrderId) {
