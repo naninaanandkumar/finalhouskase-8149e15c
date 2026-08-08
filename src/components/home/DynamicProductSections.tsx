@@ -44,7 +44,6 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
           const { data, error } = await supabase
             .from("homepage_sections")
             .select("id, title, category_id, background_image, product_limit")
-            .eq("is_active", true)
             .order("sort_order");
 
           if (!isMounted) return;
@@ -58,7 +57,7 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
                 let query = supabase
                   .from("products")
                   .select("id, name, slug, images, guest_price, retail_price, shop_price, regular_price, has_variations")
-                  .eq("is_active", true)
+                  
                   .order("created_at", { ascending: false })
                   .limit(12);
 

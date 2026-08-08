@@ -67,8 +67,8 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         try {
           const [slidesRes, bannersRes, settingsRes] = await Promise.all([
-            supabase.from("hero_slides").select("*").eq("is_active", true).order("sort_order"),
-            supabase.from("promo_banners").select("*").eq("is_active", true).order("sort_order"),
+            supabase.from("hero_slides").select("*").order("sort_order"),
+            supabase.from("promo_banners").select("*").order("sort_order"),
             supabase.from("site_settings").select("value").eq("key", "homepage").maybeSingle(),
           ]);
 
@@ -132,7 +132,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
       <div
         className="relative w-full overflow-hidden h-[500px] md:h-auto md:aspect-[2171/724]"
       >
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence>
           <motion.div
             key={heroSlides[currentSlide]?.id || currentSlide}
             initial={{ opacity: 0 }}
@@ -142,7 +142,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
             className="absolute inset-0"
           >
             <HeroTemplate
-              data={(activeSlide?.overlay as HeroOverlayData) || {}}
+              data={(activeSlide?.overlay as HeroOverlayData) || { heading: activeSlide?.title }}
               imageNode={
                 <>
                   {activeSlide?.mobile_image_url && (
