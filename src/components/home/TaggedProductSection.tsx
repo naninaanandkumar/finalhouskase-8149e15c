@@ -98,10 +98,10 @@ export function TaggedProductSection({
     return (
       <section className={`py-8 sm:py-10 ${className}`}>
         <div className="container mx-auto px-3 sm:px-4">
-          <div className="rounded-2xl bg-primary p-3 sm:p-4 flex gap-3 sm:gap-4">
-            {/* Fixed sunburst label panel — never scrolls */}
+          <div className="rounded-2xl bg-primary p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4">
+            {/* Fixed sunburst label panel */}
             <div
-              className="relative shrink-0 w-[38%] sm:w-[26%] lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
+              className="relative shrink-0 w-full sm:w-[26%] lg:w-[21%] rounded-xl overflow-hidden flex items-center justify-center bg-primary"
               aria-hidden="true"
             >
               <div
@@ -111,7 +111,7 @@ export function TaggedProductSection({
                     "repeating-conic-gradient(from 0deg at 50% 50%, hsl(var(--primary-foreground) / 0.14) 0deg 9deg, transparent 9deg 18deg)",
                 }}
               />
-              <div className="relative text-center px-3 py-10">
+              <div className="relative text-center px-3 py-6 sm:py-10">
                 <p className="font-display font-extrabold leading-none tracking-tight text-primary-foreground text-2xl sm:text-4xl lg:text-5xl animate-[pulse_2.6s_ease-in-out_infinite]">
                   {panelLabelTop}
                 </p>
