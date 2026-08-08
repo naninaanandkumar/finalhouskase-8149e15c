@@ -142,7 +142,7 @@ export function HeroSection({ onFetchStatus }: HeroSectionProps) {
             className="absolute inset-0"
           >
             <HeroTemplate
-              data={(activeSlide?.overlay as HeroOverlayData) || {}}
+              data={(activeSlide?.overlay as HeroOverlayData) || { heading: activeSlide?.title }}
               imageNode={
                 <>
                   {activeSlide?.mobile_image_url && (

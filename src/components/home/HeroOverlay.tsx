@@ -74,7 +74,7 @@ export const emptyHeroOverlay: HeroOverlayData = {
 export const heroHasContent = (d?: HeroOverlayData | null) =>
   !!(d && d.enabled !== false && (d.brand || d.heading || d.subheading || d.tagline ||
     d.cta_text || d.product_png || (d.badge_enabled && (d.badge_number || d.badge_text)) ||
-    (d.features || []).some((f) => f?.label?.trim())));
+    (d.features && d.features.length > 0 && d.features.some((f) => f?.label?.trim()))));
 
 /**
  * Fixed premium hero template. Admins only supply content — spacing, sizing and
