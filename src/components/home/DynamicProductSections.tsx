@@ -159,6 +159,7 @@ export function DynamicProductSections({ onFetchStatus }: DynamicProductSections
                     key={product.id}
                     product={product}
                     index={idx}
+                    className="w-full"
                   />
                 ))}
               </div>
