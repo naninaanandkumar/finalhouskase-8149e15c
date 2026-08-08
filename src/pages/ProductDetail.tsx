@@ -727,23 +727,23 @@ export default function ProductDetail() {
                                 if (sizeVariation) handleVariantSelect(sizeVariation.id);
                               }}
                               className={cn(
-                                "rounded-lg border-2 text-left transition-all overflow-hidden min-w-[100px] max-w-[140px]",
+                                "rounded-lg border-2 text-left transition-all overflow-hidden min-w-[110px] sm:min-w-[130px] max-w-[160px]",
                                 isSelected
-                                  ? "border-[#007185] shadow-sm"
-                                  : "border-border hover:border-[#007185]/50"
+                                  ? "border-[#007185] shadow-md ring-1 ring-[#007185]"
+                                  : "border-border hover:border-[#007185]/50 hover:shadow-sm"
                               )}
                             >
                               <div className={cn(
-                                "px-2.5 py-1.5",
+                                "px-3 py-2.5",
                                 isSelected ? "bg-[#edfdff]" : "bg-background"
                               )}>
-                                <p className="text-[11px] font-bold text-foreground leading-tight">{size}</p>
+                                <p className="text-[13px] sm:text-[14px] font-bold text-foreground leading-tight">{size}</p>
                               </div>
                               {sizePrice > 0 && (
-                                <div className="px-2.5 py-1.5 border-t border-border bg-background">
-                                  <p className="text-xs font-bold text-foreground leading-none">₹{sizePrice.toLocaleString("en-IN")}</p>
+                                <div className="px-3 py-2 border-t border-border bg-background">
+                                  <p className="text-[13px] font-bold text-foreground leading-none">₹{sizePrice.toLocaleString("en-IN")}</p>
                                   {sizeMrp > sizePrice && (
-                                    <p className="text-[10px] text-muted-foreground line-through leading-none mt-0.5">₹{sizeMrp.toLocaleString("en-IN")}</p>
+                                    <p className="text-[11px] text-muted-foreground line-through leading-none mt-1">₹{sizeMrp.toLocaleString("en-IN")}</p>
                                   )}
                                 </div>
                               )}
