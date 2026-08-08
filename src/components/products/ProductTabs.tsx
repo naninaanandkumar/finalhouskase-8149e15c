@@ -63,7 +63,7 @@ export function ProductTabs({ product, selectedSize, selectedColor, currentMoq, 
   const ratingRef = useRef<HTMLDivElement | null>(null);
 
   const fetchReviews = async () => {
-    const { data } = await supabase.rpc("get_public_product_reviews", { _product_id: product.id });
+    const { data } = await supabase.rpc("get_public_product_reviews" as any, { _product_id: product.id });
     const approved = ((data as any[]) || []).map((r) => ({ ...r, user_id: null as string | null }));
 
     // Merge current user's own reviews (may include pending) so they can edit/delete

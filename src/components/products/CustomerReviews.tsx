@@ -96,7 +96,7 @@ export function CustomerReviews({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchReviews = async () => {
-    const { data } = await supabase.rpc("get_public_product_reviews", { _product_id: productId });
+    const { data } = await supabase.rpc("get_public_product_reviews" as any, { _product_id: productId });
     const approved = ((data as any[]) || []).map((r) => ({ ...r, user_id: null as string | null, is_approved: true }));
     if (user?.id) {
       const { data: mine } = await supabase

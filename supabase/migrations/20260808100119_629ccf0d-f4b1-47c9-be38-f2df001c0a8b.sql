@@ -1,0 +1,1 @@
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA private TO anon, authenticated;
