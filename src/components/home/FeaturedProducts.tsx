@@ -33,9 +33,9 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
     const fetchProducts = async () => {
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         try {
-          const { data, error } = await supabase
             .from("products")
             .select("id, name, slug, images, guest_price, retail_price, shop_price, regular_price, has_variations")
+            .eq("is_active", true)
             .order("created_at", { ascending: false })
             .limit(12);
 
