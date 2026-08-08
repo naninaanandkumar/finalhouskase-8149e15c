@@ -38,7 +38,7 @@ export function FeaturedProducts({ onFetchStatus }: FeaturedProductsProps) {
             .select("id, name, slug, images, guest_price, retail_price, shop_price, regular_price, has_variations")
             .eq("is_active", true)
             .order("created_at", { ascending: false })
-            .limit(6);
+            .limit(12);
 
           if (!isMounted) return;
 
