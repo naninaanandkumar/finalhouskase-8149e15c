@@ -233,6 +233,12 @@ export default function AdminBlog() {
                     <TableCell>
                       <div className="flex gap-1">
                         <Button variant="ghost" size="icon" onClick={() => openForm(p)}><Edit className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={async () => {
+                          await supabase.from("blog_posts").update({ is_published: !p.is_published }).eq("id", p.id);
+                          load();
+                        }}>
+                          {p.is_published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     </TableCell>

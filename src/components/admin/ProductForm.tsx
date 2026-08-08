@@ -596,7 +596,7 @@ export function ProductForm({ product, onClose, onSave }: ProductFormProps) {
         hsn_code: hsnCode.trim() || null,
         category_id: categoryId || null,
         brand_id: brandId || null,
-        is_active: asDraft ? false : isActive,
+        is_active: asDraft ? false : (product ? isActive : true),
         has_variations: isVariable,
         images: allImages,
         banner_image: bannerImage || null,
