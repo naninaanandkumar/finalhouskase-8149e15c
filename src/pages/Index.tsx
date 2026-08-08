@@ -16,6 +16,7 @@ import { DynamicProductSections } from "@/components/home/DynamicProductSections
 import { TrustSection } from "@/components/home/TrustSection";
 import { AvailableOnBanner } from "@/components/home/AvailableOnBanner";
 import { SEOHead, SchemaGenerators } from "@/components/SEOHead";
+import { ResponsiveDebug } from "@/components/debug/ResponsiveDebug";
 
 const Index = () => {
   const siteUrl = window.location.origin;
@@ -31,7 +32,8 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      <ResponsiveDebug />
       <SEOHead
         title="Houskase - Premium Towels, Tissues & Cleaning Essentials"
         description="Houskase delivers thoughtfully crafted everyday essentials — premium towels, tissues, cleaning accessories and more. Trusted quality across India."

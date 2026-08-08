@@ -58,10 +58,11 @@ function checkImageUrl(url: string): Promise<string | null> {
 }
 
 // Build a safe storage path: no traversal, no user-supplied filename, normalized ext.
-function buildSafePath(file: File): string {
+function buildSafePath(file: File, prefix = "products"): string {
   const ext = (file.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) || "bin";
   const rand = (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/[^a-zA-Z0-9-]/g, "");
-  return `products/${new Date().getUTCFullYear()}/${rand}.${ext}`;
+  // Ensure we use the correct folder structure within the bucket
+  return `${prefix}/${new Date().getUTCFullYear()}/${rand}.${ext}`;
 }
 
 interface ImageUploadProps {
@@ -107,7 +108,9 @@ export const ImageUpload = forwardRef<HTMLDivElement, ImageUploadProps>(function
         if (!roleRow) throw new Error("Permission denied. Your account is not an admin.");
       }
 
-      const filePath = buildSafePath(file);
+      // Map bucket to its intended prefix
+      const folderPrefix = bucket === "product-images" ? "products" : bucket === "category-images" ? "categories" : "banners";
+      const filePath = buildSafePath(file, folderPrefix);
       const fileName = filePath.split("/").pop() || "file";
 
       const { error: uploadError } = await supabase.storage
@@ -406,7 +409,8 @@ export function GalleryUpload({ value, onChange, bucket = "product-images", maxI
       }
 
       try {
-        const filePath = buildSafePath(file);
+        const folderPrefix = bucket === "product-images" ? "products" : bucket === "category-images" ? "categories" : "banners";
+        const filePath = buildSafePath(file, folderPrefix);
         const fileName = filePath.split("/").pop() || "file";
 
         const { error: uploadError } = await supabase.storage
